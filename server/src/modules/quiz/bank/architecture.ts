@@ -1,0 +1,487 @@
+import { SRC, type BankQuestion } from "./types";
+
+const c = "architecture" as const;
+
+export const architectureQuestions: BankQuestion[] = [
+  // ─────────────── SEEKER ───────────────
+  {
+    id: "arc-s-01", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The Taj Mahal stands on the bank of which river?",
+    options: ["Ganga", "Yamuna", "Gomti", "Chambal"],
+    answer: 1,
+    explanation: {
+      title: "The Taj Mahal on the Yamuna",
+      body: "The Taj Mahal stands on the right bank of the Yamuna in Agra. The Mughal emperor Shah Jahan built it as a mausoleum for his wife Mumtaz Mahal, and construction ran from about 1631 to 1648. It was among India's first World Heritage Sites, inscribed in 1983.",
+      trivia: "The garden in front of the tomb follows the charbagh plan, a square divided into four parts by water channels.",
+    },
+    source: SRC.whc(252, "Taj Mahal"),
+  },
+  {
+    id: "arc-s-02", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "Rani-ki-Vav in Patan, Gujarat, is a celebrated example of what kind of structure?",
+    options: ["Fort", "Stepwell", "Observatory", "Palace"],
+    answer: 1,
+    explanation: {
+      title: "Rani-ki-Vav, the queen's stepwell",
+      body: "Rani-ki-Vav is an 11th-century stepwell on the banks of the Saraswati river. UNESCO describes it as an inverted temple that celebrates the sanctity of water, with seven levels of stairs and hundreds of sculpted panels. It was inscribed as a World Heritage Site in 2014.",
+      trivia: "The stepwell lay buried under river silt for centuries, which is one reason its carvings survived in such good condition.",
+    },
+    source: SRC.whc(922, "Rani-ki-Vav"),
+  },
+  {
+    id: "arc-s-03", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The Sun Temple at Konark is designed in the shape of what?",
+    options: ["A lotus", "A chariot", "A ship", "A conch shell"],
+    answer: 1,
+    explanation: {
+      title: "The chariot of the Sun God",
+      body: "The 13th-century Sun Temple at Konark in Odisha is built as a giant chariot for Surya, the Sun God. It has 24 carved stone wheels and was pulled, in stone, by a team of horses. It was built under King Narasimhadeva I of the Eastern Ganga dynasty.",
+      trivia: "European sailors used the temple as a landmark and called it the Black Pagoda.",
+    },
+    source: SRC.whc(246, "Sun Temple, Konarak"),
+  },
+  {
+    id: "arc-s-04", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The Ellora Caves, carved into a basalt cliff, are located in which state?",
+    options: ["Madhya Pradesh", "Karnataka", "Maharashtra", "Telangana"],
+    answer: 2,
+    explanation: {
+      title: "Ellora in Maharashtra",
+      body: "Ellora, near Chhatrapati Sambhajinagar (Aurangabad) in Maharashtra, has 34 monasteries and temples cut into a basalt cliff between roughly the 6th and 10th centuries. The caves are Buddhist, Hindu and Jain, and sit side by side along the cliff face.",
+    },
+    source: SRC.whc(243, "Ellora Caves"),
+  },
+  {
+    id: "arc-s-05", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The Ajanta Caves are world famous mainly for what?",
+    options: ["Buddhist wall paintings", "Mughal gardens", "Iron pillars", "Marble inlay work"],
+    answer: 0,
+    explanation: {
+      title: "The paintings of Ajanta",
+      body: "Ajanta's Buddhist caves, cut between about the 2nd century BCE and the 5th century CE, hold some of the finest surviving ancient Indian paintings. They show scenes from the Jataka tales, the stories of the Buddha's earlier lives.",
+      trivia: "The caves were brought to wider attention in 1819 by a British officer, John Smith, who came across them while on a tiger hunt.",
+    },
+    source: SRC.whc(242, "Ajanta Caves"),
+  },
+  {
+    id: "arc-s-06", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "Humayun's Tomb in Delhi is historically important because it was the first of its kind in the subcontinent. What was it the first of?",
+    options: ["Garden tomb", "Stepwell", "Rock-cut temple", "Clock tower"],
+    answer: 0,
+    explanation: {
+      title: "The first garden tomb",
+      body: "Humayun's Tomb, built in the 1560s and 1570s, was the first garden tomb on the Indian subcontinent. Its large charbagh garden and double dome set a pattern that later Mughal buildings followed, including the Taj Mahal.",
+    },
+    source: SRC.whc(232, "Humayun's Tomb, Delhi"),
+  },
+  {
+    id: "arc-s-07", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The Great Stupa at Sanchi, one of the oldest stone structures in India, is in which state?",
+    options: ["Bihar", "Uttar Pradesh", "Madhya Pradesh", "Odisha"],
+    answer: 2,
+    explanation: {
+      title: "Sanchi's Great Stupa",
+      body: "Sanchi in Madhya Pradesh has Buddhist stupas, temples and monasteries dating from the 3rd century BCE to the 12th century CE. The Great Stupa was first built in the time of Emperor Ashoka, and its four carved gateways (toranas) were added later.",
+    },
+    source: SRC.whc(524, "Buddhist Monuments at Sanchi"),
+  },
+  {
+    id: "arc-s-08", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The Mahabodhi Temple at Bodh Gaya marks the place where the Buddha did what?",
+    options: ["Was born", "Attained enlightenment", "Gave his first sermon", "Passed away"],
+    answer: 1,
+    explanation: {
+      title: "Mahabodhi, the place of enlightenment",
+      body: "The Mahabodhi Temple in Bihar stands where Siddhartha Gautama attained enlightenment under the Bodhi tree. The first temple here was built by Emperor Ashoka in the 3rd century BCE, and the present brick temple dates from the 5th or 6th century CE.",
+      trivia: "The Buddha's birth, first sermon and passing are linked to Lumbini, Sarnath and Kushinagar.",
+    },
+    source: SRC.whc(1056, "Mahabodhi Temple Complex at Bodh Gaya"),
+  },
+  {
+    id: "arc-s-09", category: c, difficulty: "seeker", type: "true_false",
+    prompt: "True or false: The Red Fort in Delhi takes its name from the red sandstone used to build its massive walls.",
+    answer: true,
+    explanation: {
+      title: "The Red Fort",
+      body: "The Red Fort, or Lal Qila, was built by Shah Jahan as the palace fort of his new capital, Shahjahanabad, and completed in 1648. Its walls are made of red sandstone. The Prime Minister raises the national flag here every Independence Day.",
+    },
+    source: SRC.whc(231, "Red Fort Complex"),
+  },
+  {
+    id: "arc-s-10", category: c, difficulty: "seeker", type: "odd_one_out",
+    prompt: "Three of these monuments are in Delhi. Which one is not?",
+    options: ["Qutb Minar", "Humayun's Tomb", "Red Fort", "Fatehpur Sikri"],
+    answer: 3,
+    explanation: {
+      title: "Fatehpur Sikri is near Agra",
+      body: "Fatehpur Sikri, the city Emperor Akbar built in the 16th century, lies near Agra in Uttar Pradesh. The Qutb Minar, Humayun's Tomb and the Red Fort are all World Heritage Sites in Delhi.",
+    },
+    source: SRC.whc(255, "Fatehpur Sikri"),
+  },
+  {
+    id: "arc-s-11", category: c, difficulty: "seeker", type: "match",
+    prompt: "Match each monument with the state where it stands.",
+    pairs: [
+      ["Sun Temple, Konark", "Odisha"],
+      ["Rani-ki-Vav", "Gujarat"],
+      ["Hampi", "Karnataka"],
+      ["Khajuraho temples", "Madhya Pradesh"],
+    ],
+    explanation: {
+      title: "Monuments across India",
+      body: "Konark is on the Odisha coast, Rani-ki-Vav is in Patan in Gujarat, the ruins of Hampi lie along the Tungabhadra in Karnataka, and the Khajuraho temples are in the Chhatarpur district of Madhya Pradesh. All four are UNESCO World Heritage Sites.",
+    },
+    source: SRC.unescoWhcIndia,
+  },
+  {
+    id: "arc-s-12", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The Shore Temple at Mahabalipuram was built by which dynasty?",
+    options: ["Chola", "Pallava", "Pandya", "Chalukya"],
+    answer: 1,
+    explanation: {
+      title: "The Pallavas of Mahabalipuram",
+      body: "Mahabalipuram, on the Tamil Nadu coast, was a port of the Pallava kings in the 7th and 8th centuries. Its monuments include rock-cut rathas, cave shrines, the huge open-air relief known as Arjuna's Penance, and the Shore Temple facing the Bay of Bengal.",
+    },
+    source: SRC.whc(249, "Group of Monuments at Mahabalipuram"),
+  },
+  {
+    id: "arc-s-13", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "Chhatrapati Shivaji Maharaj Terminus in Mumbai is a famous example of which architectural style?",
+    options: ["Indo-Islamic", "Victorian Gothic Revival", "Dravidian", "Art Deco"],
+    answer: 1,
+    explanation: {
+      title: "A Gothic railway palace",
+      body: "Designed by British architect Frederick William Stevens and completed in 1888, the terminus blends Victorian Gothic Revival with traditional Indian features. It is still one of the busiest railway stations in India and became a World Heritage Site in 2004.",
+    },
+    source: SRC.whc(945, "Chhatrapati Shivaji Terminus"),
+  },
+  {
+    id: "arc-s-14", category: c, difficulty: "seeker", type: "true_false",
+    prompt: "True or false: Dholavira, in the Kutch region of Gujarat, was a city of the Harappan Civilisation.",
+    answer: true,
+    explanation: {
+      title: "Dholavira, a Harappan city",
+      body: "Dholavira, on Khadir island in the Rann of Kutch, was one of the largest Harappan cities and was occupied roughly between 3000 and 1500 BCE. It is known for its planned layout and remarkable system for storing water. It became a World Heritage Site in 2021.",
+    },
+    source: SRC.whc(1645, "Dholavira: a Harappan City"),
+  },
+  {
+    id: "arc-s-15", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "What is the Jantar Mantar in Jaipur?",
+    options: ["A royal palace", "An astronomical observatory", "A water reservoir", "A temple complex"],
+    answer: 1,
+    explanation: {
+      title: "Jantar Mantar, Jaipur",
+      body: "Jantar Mantar is an astronomical observatory built by Maharaja Sawai Jai Singh II in the early 18th century. It has about 20 fixed stone instruments for tracking time and the positions of stars and planets. It was inscribed as a World Heritage Site in 2010.",
+      trivia: "Jai Singh II built five observatories in all, in Delhi, Jaipur, Ujjain, Varanasi and Mathura.",
+    },
+    source: SRC.whc(1338, "The Jantar Mantar, Jaipur"),
+  },
+  {
+    id: "arc-s-16", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "The rock shelters of Bhimbetka in Madhya Pradesh are best known for what?",
+    options: ["Prehistoric rock paintings", "Mughal miniature paintings", "Buddhist stupas", "Colonial churches"],
+    answer: 0,
+    explanation: {
+      title: "The painted shelters of Bhimbetka",
+      body: "Bhimbetka, in the foothills of the Vindhya range, has more than 400 rock shelters. Some of their paintings are thought to date back to the Mesolithic period, and they show hunting, dancing and animals. It became a World Heritage Site in 2003.",
+      trivia: "Archaeologist V. S. Wakankar identified the site's importance in 1957 after spotting the rocks from a train.",
+    },
+    source: SRC.whc(925, "Rock Shelters of Bhimbetka"),
+  },
+  {
+    id: "arc-s-17", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "Hampi, with its vast temple and palace ruins, was the capital of which empire?",
+    options: ["Maurya", "Vijayanagara", "Gupta", "Maratha"],
+    answer: 1,
+    explanation: {
+      title: "Hampi, city of victory",
+      body: "Hampi was the last capital of the Vijayanagara Empire, which ruled much of South India from the 14th to the 16th century. Its ruins cover a huge area and include the Virupaksha temple, the Vittala temple and royal enclosures.",
+      trivia: "The stone chariot in the Vittala temple complex appears on India's 50 rupee note.",
+    },
+    source: SRC.whc(241, "Group of Monuments at Hampi"),
+  },
+  {
+    id: "arc-s-18", category: c, difficulty: "seeker", type: "odd_one_out",
+    prompt: "Three of these are rock-cut cave sites. Which one is a free-standing structure?",
+    options: ["Ajanta", "Ellora", "Elephanta", "Qutb Minar"],
+    answer: 3,
+    explanation: {
+      title: "Carved into rock, or built up from the ground",
+      body: "Ajanta, Ellora and Elephanta were all cut directly into solid rock. The Qutb Minar is a built tower of red sandstone and marble, begun around 1200 CE in Delhi.",
+      trivia: "The Elephanta Caves near Mumbai are famous for the giant three-headed Sadashiva sculpture.",
+    },
+    source: SRC.unescoWhcIndia,
+  },
+  {
+    id: "arc-s-19", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "Santiniketan in West Bengal, a World Heritage Site since 2023, is linked with which figure?",
+    options: ["Rabindranath Tagore", "Swami Vivekananda", "Raja Ram Mohan Roy", "Subhas Chandra Bose"],
+    answer: 0,
+    explanation: {
+      title: "Tagore's Santiniketan",
+      body: "Santiniketan began as an ashram founded by Debendranath Tagore. His son Rabindranath Tagore set up a school there in 1901 that grew into Visva-Bharati University. UNESCO recognised it in 2023 for its blend of architecture, art and education rooted in nature.",
+    },
+    source: SRC.whc(1375, "Santiniketan"),
+  },
+  {
+    id: "arc-s-20", category: c, difficulty: "seeker", type: "true_false",
+    prompt: "True or false: The temples of Khajuraho were built by the Mughal emperors.",
+    answer: false,
+    explanation: {
+      title: "Khajuraho and the Chandellas",
+      body: "The Khajuraho temples were built by the Chandella dynasty, mostly between 950 and 1050 CE, centuries before the Mughals. The surviving Hindu and Jain temples are known for the perfect union of architecture and sculpture.",
+    },
+    source: SRC.whc(240, "Khajuraho Group of Monuments"),
+  },
+  {
+    id: "arc-s-21", category: c, difficulty: "seeker", type: "mcq",
+    prompt: "Where is the Qutb Minar located?",
+    options: ["Agra", "Delhi", "Hyderabad", "Lucknow"],
+    answer: 1,
+    explanation: {
+      title: "The Qutb Minar",
+      body: "The Qutb Minar in Mehrauli, Delhi, was begun around 1200 CE by Qutb-ud-din Aibak and completed by his successors. The complex also holds the Quwwat-ul-Islam mosque and the famous Iron Pillar.",
+    },
+    source: SRC.whc(233, "Qutb Minar and its Monuments, Delhi"),
+  },
+
+  // ─────────────── HISTORIAN ───────────────
+  {
+    id: "arc-h-01", category: c, difficulty: "historian", type: "mcq",
+    prompt: "According to UNESCO, how tall is the Qutb Minar?",
+    options: ["52.5 m", "62.5 m", "72.5 m", "82.5 m"],
+    answer: 2,
+    explanation: {
+      title: "72.5 metres of stone",
+      body: "UNESCO records the Qutb Minar as 72.5 metres tall, tapering from a base diameter of about 14.3 metres to about 2.75 metres at the top. Its fluted red sandstone storeys are separated by balconies and bands of carved inscriptions.",
+    },
+    source: SRC.whc(233, "Qutb Minar and its Monuments, Delhi"),
+  },
+  {
+    id: "arc-h-02", category: c, difficulty: "historian", type: "mcq",
+    prompt: "The Kailasa temple (Cave 16) at Ellora, carved out of a single rock, is attributed to which dynasty?",
+    options: ["Rashtrakuta", "Chola", "Satavahana", "Hoysala"],
+    answer: 0,
+    explanation: {
+      title: "The Kailasa temple",
+      body: "The Kailasa temple was carved in the 8th century, mainly under the Rashtrakuta king Krishna I. Builders cut downward and inward into the cliff, removing an enormous volume of rock to leave behind a complete multi-storey temple.",
+      trivia: "It is designed to represent Mount Kailash, the Himalayan home of Shiva.",
+    },
+    source: SRC.whc(243, "Ellora Caves"),
+  },
+  {
+    id: "arc-h-03", category: c, difficulty: "historian", type: "match",
+    prompt: "The Great Living Chola Temples are three temples. Match each with the king who built it.",
+    pairs: [
+      ["Brihadisvara, Thanjavur", "Rajaraja I"],
+      ["Brihadisvara, Gangaikondacholapuram", "Rajendra I"],
+      ["Airavatesvara, Darasuram", "Rajaraja II"],
+    ],
+    explanation: {
+      title: "Three Chola temples, three kings",
+      body: "Rajaraja I completed the Brihadisvara temple at Thanjavur in 1010. His son Rajendra I built a new capital, Gangaikondacholapuram, with its own great temple. Rajaraja II built the Airavatesvara temple at Darasuram in the 12th century. Together they form one UNESCO World Heritage Site.",
+    },
+    source: SRC.whc(250, "Great Living Chola Temples"),
+  },
+  {
+    id: "arc-h-04", category: c, difficulty: "historian", type: "mcq",
+    prompt: "Which two seasonal streams supplied water to the Harappan city of Dholavira?",
+    options: ["Mansar and Manhar", "Narmada and Tapi", "Sabarmati and Mahi", "Luni and Banas"],
+    answer: 0,
+    explanation: {
+      title: "Water in the desert",
+      body: "Dholavira depended on two seasonal streams, the Mansar and the Manhar. Its residents built dams, channels and large stone reservoirs to capture and store this water, one of the most advanced water systems of the Bronze Age.",
+    },
+    source: { label: "Gujarat Tourism: Dholavira", url: "https://gujarattourism.com/kutch-zone/kutch/dholavira.html" },
+  },
+  {
+    id: "arc-h-05", category: c, difficulty: "historian", type: "mcq",
+    prompt: "The Buland Darwaza at Fatehpur Sikri was built to commemorate Akbar's victory in which region?",
+    options: ["Bengal", "Gujarat", "Kashmir", "Deccan"],
+    answer: 1,
+    explanation: {
+      title: "The Gate of Magnificence",
+      body: "Akbar built the Buland Darwaza after his successful campaign in Gujarat in 1573. At about 54 metres from the ground, it is one of the tallest gateways in the world and leads into the courtyard of the Jama Masjid at Fatehpur Sikri.",
+    },
+    source: SRC.whc(255, "Fatehpur Sikri"),
+  },
+  {
+    id: "arc-h-06", category: c, difficulty: "historian", type: "odd_one_out",
+    prompt: "Which of these is NOT part of the Sacred Ensembles of the Hoysalas World Heritage Site?",
+    options: ["Belur", "Halebidu", "Somanathapura", "Pattadakal"],
+    answer: 3,
+    explanation: {
+      title: "Hoysala temples and a Chalukya site",
+      body: "The Sacred Ensembles of the Hoysalas, inscribed in 2023, are the temples at Belur, Halebidu and Somanathapura in Karnataka, built in the 12th and 13th centuries. Pattadakal is a separate World Heritage Site built by the Chalukyas of Badami.",
+      trivia: "Hoysala temples usually stand on star-shaped platforms and are carved from soft soapstone, which allows extremely fine detail.",
+    },
+    source: SRC.whc(1670, "Sacred Ensembles of the Hoysalas"),
+  },
+  {
+    id: "arc-h-07", category: c, difficulty: "historian", type: "chronology",
+    prompt: "Arrange these monuments by when they were built, earliest first.",
+    items: ["Great Stupa, Sanchi", "Kailasa temple, Ellora", "Brihadisvara temple, Thanjavur", "Taj Mahal, Agra"],
+    explanation: {
+      title: "Two thousand years of building",
+      body: "The Great Stupa at Sanchi was begun in the 3rd century BCE under Ashoka. The Kailasa temple was carved in the 8th century CE. The Brihadisvara temple was completed in 1010, and the Taj Mahal was built between about 1631 and 1648.",
+    },
+    source: SRC.unescoWhcIndia,
+  },
+  {
+    id: "arc-h-08", category: c, difficulty: "historian", type: "chronology",
+    prompt: "Arrange these sites in the order they were inscribed as UNESCO World Heritage Sites, earliest first.",
+    items: ["Taj Mahal", "Rani-ki-Vav", "Dholavira", "Santiniketan"],
+    explanation: {
+      title: "India's growing World Heritage list",
+      body: "The Taj Mahal was inscribed in 1983, in India's very first batch. Rani-ki-Vav followed in 2014, Dholavira in 2021 and Santiniketan in 2023.",
+    },
+    source: SRC.unescoWhcIndia,
+  },
+  {
+    id: "arc-h-09", category: c, difficulty: "historian", type: "mcq",
+    prompt: "UNESCO describes the temples of Pattadakal as a harmonious blend of which two architectural traditions?",
+    options: ["Nagara (northern) and Dravida (southern)", "Mughal and Rajput", "Greek and Gandhara", "Gothic and Indo-Islamic"],
+    answer: 0,
+    explanation: {
+      title: "North meets South at Pattadakal",
+      body: "The 8th-century temples at Pattadakal in Karnataka, built under the Chalukyas, show the northern Nagara style and the southern Dravida style side by side. The Virupaksha temple, built by Queen Lokamahadevi, is the most celebrated of the group.",
+    },
+    source: SRC.whc(239, "Group of Monuments at Pattadakal"),
+  },
+  {
+    id: "arc-h-10", category: c, difficulty: "historian", type: "mcq",
+    prompt: "The Pancha Rathas at Mahabalipuram are traditionally named after whom?",
+    options: ["The Pandavas and Draupadi", "Five Pallava kings", "The five elements", "Five river goddesses"],
+    answer: 0,
+    explanation: {
+      title: "Five chariots from single rocks",
+      body: "The Pancha Rathas are five monolithic shrines carved in the 7th century. Though they have no connection with the Mahabharata story, they are popularly named after the five Pandava brothers and Draupadi. Each shows a different roof style, almost like a model book of early temple design.",
+    },
+    source: SRC.whc(249, "Group of Monuments at Mahabalipuram"),
+  },
+  {
+    id: "arc-h-11", category: c, difficulty: "historian", type: "mcq",
+    prompt: "Which was the first Indian city to be inscribed as a World Heritage City, in 2017?",
+    options: ["Jaipur", "Ahmedabad", "Varanasi", "Mumbai"],
+    answer: 1,
+    explanation: {
+      title: "Historic Ahmedabad",
+      body: "The walled city of Ahmedabad, founded by Sultan Ahmad Shah in 1411, became India's first World Heritage City in 2017. It is known for its pols, dense neighbourhoods of wooden houses with shared gates and courtyards. Jaipur followed in 2019.",
+    },
+    source: SRC.whc(1551, "Historic City of Ahmadabad"),
+  },
+  {
+    id: "arc-h-12", category: c, difficulty: "historian", type: "true_false",
+    prompt: "True or false: The Capitol Complex in Chandigarh was designed by the architect Le Corbusier.",
+    answer: true,
+    explanation: {
+      title: "Le Corbusier's Chandigarh",
+      body: "Swiss-French architect Le Corbusier planned Chandigarh in the 1950s and designed its Capitol Complex, including the High Court, the Legislative Assembly and the Secretariat. In 2016 the complex was inscribed as part of a World Heritage Site covering his work across seven countries.",
+    },
+    source: SRC.whc(1321, "The Architectural Work of Le Corbusier"),
+  },
+  {
+    id: "arc-h-13", category: c, difficulty: "historian", type: "mcq",
+    prompt: "How many stone wheels are carved on the Sun Temple at Konark?",
+    options: ["12", "16", "24", "32"],
+    answer: 2,
+    explanation: {
+      title: "Twenty-four wheels",
+      body: "The temple has 24 carved wheels, 12 on each side, often read as the 24 fortnights or the 12 months of the year. Several of the wheels are thought to work as sundials, with their spokes casting shadows that mark the time.",
+    },
+    source: SRC.whc(246, "Sun Temple, Konarak"),
+  },
+  {
+    id: "arc-h-14", category: c, difficulty: "historian", type: "mcq",
+    prompt: "How many caves make up the Ellora complex, according to UNESCO?",
+    options: ["24", "29", "34", "44"],
+    answer: 2,
+    explanation: {
+      title: "Thirty-four caves, three faiths",
+      body: "Ellora has 34 caves stretching along more than 2 kilometres of cliff: 12 Buddhist, 17 Hindu and 5 Jain. Their side-by-side presence reflects the religious tolerance of the rulers who supported them.",
+    },
+    source: SRC.whc(243, "Ellora Caves"),
+  },
+  {
+    id: "arc-h-15", category: c, difficulty: "historian", type: "mcq",
+    prompt: "The Kakatiya Rudreshwara (Ramappa) Temple, inscribed in 2021, is in which state?",
+    options: ["Andhra Pradesh", "Telangana", "Karnataka", "Maharashtra"],
+    answer: 1,
+    explanation: {
+      title: "Ramappa Temple of Telangana",
+      body: "The Ramappa Temple near Warangal was built in the 13th century under the Kakatiya dynasty. It is known for its finely carved basalt brackets and its tower built from light, porous bricks that are often described as floating bricks.",
+      trivia: "It takes its popular name from its chief sculptor, Ramappa, a rare case of an Indian temple named after its artisan.",
+    },
+    source: SRC.whc(1570, "Kakatiya Rudreshwara (Ramappa) Temple"),
+  },
+  {
+    id: "arc-h-16", category: c, difficulty: "historian", type: "mcq",
+    prompt: "How many levels of stairs does Rani-ki-Vav descend through, according to UNESCO?",
+    options: ["Five", "Six", "Seven", "Nine"],
+    answer: 2,
+    explanation: {
+      title: "Seven levels down",
+      body: "Rani-ki-Vav is divided into seven levels of stairs with sculpted panels of high artistic quality. More than 500 principal sculptures show gods, goddesses and scenes from religious texts, many of them avatars of Vishnu.",
+    },
+    source: SRC.whc(922, "Rani-ki-Vav"),
+  },
+  {
+    id: "arc-h-17", category: c, difficulty: "historian", type: "mcq",
+    prompt: "The Moidams of Charaideo, inscribed in 2024, are royal burial mounds of which dynasty?",
+    options: ["Ahom", "Pala", "Kachari", "Koch"],
+    answer: 0,
+    explanation: {
+      title: "The Moidams of Assam",
+      body: "The Moidams at Charaideo in Assam are earthen burial mounds built for Ahom kings and nobles over roughly six centuries. Each mound covers a vaulted chamber. They became the first cultural World Heritage Site in North-East India in 2024.",
+    },
+    source: SRC.unescoWhcIndia,
+  },
+  {
+    id: "arc-h-18", category: c, difficulty: "historian", type: "true_false",
+    prompt: "True or false: The Victorian Gothic and Art Deco ensembles of Mumbai are on the UNESCO World Heritage list.",
+    answer: true,
+    explanation: {
+      title: "Mumbai's two faces",
+      body: "Inscribed in 2018, this site covers the Victorian Gothic public buildings around the Oval Maidan and the Art Deco apartment buildings of Marine Drive facing them. Mumbai has one of the largest collections of Art Deco buildings in the world.",
+    },
+    source: SRC.whc(1480, "Victorian Gothic and Art Deco Ensembles of Mumbai"),
+  },
+  {
+    id: "arc-h-19", category: c, difficulty: "historian", type: "odd_one_out",
+    prompt: "Which of these was NOT part of India's first batch of World Heritage Sites in 1983?",
+    options: ["Agra Fort", "Ajanta Caves", "Ellora Caves", "Qutb Minar"],
+    answer: 3,
+    explanation: {
+      title: "The first four",
+      body: "India's first four World Heritage Sites, inscribed in 1983, were Agra Fort, the Ajanta Caves, the Ellora Caves and the Taj Mahal. The Qutb Minar and its monuments were inscribed later, in 1993.",
+    },
+    source: SRC.unescoWhcIndia,
+  },
+  {
+    id: "arc-h-20", category: c, difficulty: "historian", type: "match",
+    prompt: "Match each monument with the dynasty that built it.",
+    pairs: [
+      ["Shore Temple, Mahabalipuram", "Pallava"],
+      ["Khajuraho temples", "Chandella"],
+      ["Sun Temple, Konark", "Eastern Ganga"],
+      ["Ramappa Temple", "Kakatiya"],
+    ],
+    explanation: {
+      title: "Builders of India's temples",
+      body: "The Pallavas built the Shore Temple in the 8th century, the Chandellas raised the Khajuraho temples around the 10th and 11th centuries, the Eastern Ganga king Narasimhadeva I built Konark in the 13th century, and the Kakatiyas built the Ramappa Temple in the same century.",
+    },
+    source: SRC.unescoWhcIndia,
+  },
+  {
+    id: "arc-h-21", category: c, difficulty: "historian", type: "mcq",
+    prompt: "The Walled City of Jaipur, inscribed in 2019, was founded in 1727 by which ruler?",
+    options: ["Maharaja Sawai Jai Singh II", "Maharana Pratap", "Raja Man Singh I", "Maharaja Ganga Singh"],
+    answer: 0,
+    explanation: {
+      title: "A planned city",
+      body: "Sawai Jai Singh II founded Jaipur in 1727. Unlike many older cities in the region, it was laid out on a grid plan, with wide streets and bazaars. The same ruler built the Jantar Mantar observatory there.",
+    },
+    source: SRC.whc(1605, "Jaipur City, Rajasthan"),
+  },
+];
