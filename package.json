@@ -1,5 +1,5 @@
 {
-  "name": "figma-make-app",
+  "name": "dharohar-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "typecheck": "tsc --noEmit",
+    "dev:api": "npm --prefix server run dev",
+    "dev:full": "concurrently -n web,api -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
+    "test:api": "npm --prefix server test"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -27,6 +31,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.0",
+    "concurrently": "^10.0.5",
     "oxfmt": "^0.2.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",

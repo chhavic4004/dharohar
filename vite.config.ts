@@ -27,12 +27,17 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@shared': path.resolve(__dirname, './shared'),
       },
     },
     server: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
+      // Forward API calls to the Dharohar backend during development (server/ on port 4000)
+      proxy: {
+        '/api': process.env.VITE_API_PROXY || 'http://localhost:4000',
+      },
       watch: {
         ignored: [
           '**/.figma/**',

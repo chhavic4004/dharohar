@@ -64,7 +64,7 @@ export function Layout() {
 
           <nav className="hidden md:flex items-center gap-1.5 lg:gap-3">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path || (item.path === '/preserve' && location.pathname.startsWith('/preserve'));
+              const isActive = location.pathname === item.path || ((item.path === '/preserve' || item.path === '/quiz') && location.pathname.startsWith(item.path));
               return (
                 <Link
                   key={item.path}

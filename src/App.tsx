@@ -1,6 +1,5 @@
-import { RouterProvider, createBrowserRouter } from "react-router";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router";
 import { Layout } from "./components/Layout";
-import InteractiveQuiz from "./pages/InteractiveQuiz";
 import Home from "./pages/Home";
 import Map from "./pages/Map";
 import Passport from "./pages/Passport";
@@ -12,6 +11,7 @@ import StoryDetail from "./pages/StoryDetail";
 import Explore from "./pages/Explore";
 import TraditionDetail from "./pages/TraditionDetail";
 import VitalityDashboard from "./pages/VitalityDashboard";
+import { quizRoutes } from "./features/quiz";
 
 const router = createBrowserRouter([
   {
@@ -29,10 +29,11 @@ const router = createBrowserRouter([
       { path: "story/:id", Component: StoryDetail },
       { path: "explore", Component: Explore },
       { path: "explore/:id", Component: TraditionDetail },
+      ...quizRoutes,
     ],
   },
-  { path: "/interactive-quiz", Component: InteractiveQuiz },
-  { path: "/quiz", Component: InteractiveQuiz },
+  // Old prototype URL
+  { path: "/interactive-quiz", element: <Navigate to="/quiz" replace /> },
 ]);
 
 export default function App() {
