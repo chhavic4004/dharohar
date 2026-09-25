@@ -1,0 +1,10 @@
+{
+  "description": "Explore and preserve cultural heritage through interactive maps, AR walks, and dashboards that highlight heritage sites and vulnerabilities.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

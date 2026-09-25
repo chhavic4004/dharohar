@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Gurmukhi:wght@400..700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-parchment: #F3ECDA;
+  --color-ink: #241B1D;
+  --color-maroon: #7A1F35;
+  --color-terracotta: #C9622E;
+  --color-turmeric: #C68A1D;
+  --color-heritage: #3E6B4F;
+  --color-alert: #A83E22;
+  
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+  --font-devanagari: "Noto Sans Devanagari", sans-serif;
+  --font-gurmukhi: "Noto Sans Gurmukhi", sans-serif;
+
+  --color-background: var(--color-parchment);
+  --color-foreground: var(--color-ink);
+  --color-primary: var(--color-terracotta);
+  --color-primary-foreground: #FFFFFF;
+}
+
+:root {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+.stitch-border {
+  border: 1px dashed var(--color-maroon);
+  border-radius: 4px;
+}
+
+.card-shadow {
+  box-shadow: 2px 2px 0px rgba(122, 31, 53, 0.1);
+}
