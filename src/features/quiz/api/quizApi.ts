@@ -8,6 +8,7 @@ import type {
   DailyAnswerResult,
   DailyChallenge,
   Difficulty,
+  HistoryPage,
   HeritageQuizInfo,
   LeaderboardResponse,
   NextQuestionResponse,
@@ -60,6 +61,9 @@ export const quizApi = {
   rewards: () => api<Reward[]>("GET", "/quiz/rewards"),
   redeem: (rewardId: string) => api<RedeemResponse>("POST", `/quiz/rewards/${rewardId}/redeem`),
   redemptions: () => api<Redemption[]>("GET", "/quiz/me/redemptions"),
+  history: (before?: string, limit = 20) =>
+    api<HistoryPage>("GET", `/quiz/me/history?limit=${limit}${before ? `&before=${encodeURIComponent(before)}` : ""}`),
+  allHeritage: () => api<HeritageQuizInfo[]>("GET", "/quiz/heritage"),
 
   adminStats: (adminKey: string) => api<AdminStats>("GET", "/quiz/admin/stats", undefined, { "X-Admin-Key": adminKey }),
 };

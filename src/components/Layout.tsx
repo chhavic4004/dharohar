@@ -1,22 +1,32 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, Outlet, useLocation } from "react-router";
-import { Mic, Map as MapIcon, ShieldCheck, Compass, BarChart2, ShieldAlert, Menu, X, Heart, ChevronDown, Check, HelpCircle } from "lucide-react";
+import { Mic, Map as MapIcon, ShieldCheck, Compass, BarChart2, ShieldAlert, Menu, X, Heart, ChevronDown, Check, HelpCircle, Globe } from "lucide-react";
+import { AccountMenu, AuthProvider } from "../features/auth";
+import { useSiteT } from "../i18n/site";
+import { SITE_LANGS, langDir, setLang, useLang } from "../lib/language";
+import { ToastHost } from "../lib/toast";
 
+/** Site shell. Provides login state to every page and the site-wide language picker. */
 export function Layout() {
+  return (
+    <AuthProvider>
+      <Shell />
+      <ToastHost />
+    </AuthProvider>
+  );
+}
+
+function Shell() {
   const location = useLocation();
+  const t = useSiteT();
+  const selectedLang = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedLang, setSelectedLang] = useState("hi");
   const [langOpen, setLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
 
-  const languages = [
-    { code: "en", label: "English", short: "EN" },
-    { code: "hi", label: "हिन्दी (Hindi)", short: "हि" },
-    { code: "pa", label: "ਪੰਜਾਬੀ (Punjabi)", short: "ਪੰ" },
-    { code: "ur", label: "اردو (Urdu)", short: "ار" },
-  ];
-
-  const currentLang = languages.find((l) => l.code === selectedLang) || languages[1];
+  const languages = SITE_LANGS;
+  const currentLang = languages.find((l) => l.code === selectedLang) || languages[0];
+  const dir = langDir(selectedLang);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -36,14 +46,14 @@ export function Layout() {
   }, [location.pathname]);
 
   const navItems = [
-    { name: "Home", path: "/", icon: <Mic className="w-4 h-4" /> },
-    { name: "Map", path: "/map", icon: <MapIcon className="w-4 h-4" /> },
-    { name: "Quiz", path: "/quiz", icon: <HelpCircle className="w-4 h-4" /> },
-    { name: "Preserve a Story", path: "/preserve", icon: <Mic className="w-4 h-4" /> },
-    { name: "Passport", path: "/passport", icon: <ShieldCheck className="w-4 h-4" /> },
-    { name: "AR Walk", path: "/ar-walk", icon: <Compass className="w-4 h-4" /> },
-    { name: "Vulnerability", path: "/dashboard", icon: <BarChart2 className="w-4 h-4" /> },
-    { name: "Admin", path: "/admin-heatmap", icon: <ShieldAlert className="w-4 h-4" /> },
+    { name: t("navHome"), path: "/", icon: <Mic className="w-4 h-4" /> },
+    { name: t("navMap"), path: "/map", icon: <MapIcon className="w-4 h-4" /> },
+    { name: t("navQuiz"), path: "/quiz", icon: <HelpCircle className="w-4 h-4" /> },
+    { name: t("navPreserve"), path: "/preserve", icon: <Mic className="w-4 h-4" /> },
+    { name: t("navPassport"), path: "/passport", icon: <ShieldCheck className="w-4 h-4" /> },
+    { name: t("navArWalk"), path: "/ar-walk", icon: <Compass className="w-4 h-4" /> },
+    { name: t("navVulnerability"), path: "/dashboard", icon: <BarChart2 className="w-4 h-4" /> },
+    { name: t("navAdmin"), path: "/admin-heatmap", icon: <ShieldAlert className="w-4 h-4" /> },
   ];
 
   return (
@@ -62,14 +72,14 @@ export function Layout() {
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-3">
+          <nav className="hidden md:flex items-center gap-1.5 lg:gap-3" dir={dir}>
             {navItems.map((item) => {
               const isActive = location.pathname === item.path || ((item.path === '/preserve' || item.path === '/quiz') && location.pathname.startsWith(item.path));
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition-all ${
+                  className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${
                     isActive
                       ? "bg-terracotta/15 text-maroon font-semibold shadow-xs"
                       : "text-ink/70 hover:text-maroon hover:bg-maroon/5"
@@ -84,26 +94,31 @@ export function Layout() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Multilingual Selector Dropdown */}
-            <div className="relative hidden sm:block" ref={langDropdownRef}>
+            <div className="relative" ref={langDropdownRef}>
               <button
                 onClick={() => setLangOpen((v) => !v)}
                 aria-expanded={langOpen}
-                aria-label="Select Language"
+                aria-haspopup="listbox"
+                aria-label={`${t("selectLanguage")}: ${currentLang.english}`}
                 className="flex items-center gap-1.5 text-xs font-semibold text-maroon hover:text-terracotta bg-maroon/5 hover:bg-maroon/10 border border-maroon/30 rounded-full px-3 py-1.5 transition-all cursor-pointer"
               >
+                <Globe className="w-3.5 h-3.5" aria-hidden />
                 <span>{currentLang.short}</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${langOpen ? "rotate-180" : ""}`} />
               </button>
 
               {langOpen && (
-                <div className="absolute right-0 mt-2 w-44 bg-parchment border border-maroon/20 rounded-lg shadow-lg py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div role="listbox" aria-label={t("selectLanguage")} className="absolute right-0 mt-2 w-48 bg-parchment border border-maroon/20 rounded-lg shadow-lg py-1 z-50">
                   {languages.map((lang) => {
                     const isSelected = selectedLang === lang.code;
                     return (
                       <button
                         key={lang.code}
+                        role="option"
+                        aria-selected={isSelected}
+                        lang={lang.code}
                         onClick={() => {
-                          setSelectedLang(lang.code);
+                          setLang(lang.code);
                           setLangOpen(false);
                         }}
                         className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-medium text-left transition-colors cursor-pointer ${
@@ -112,7 +127,10 @@ export function Layout() {
                             : "text-ink/80 hover:bg-maroon/5 hover:text-maroon"
                         }`}
                       >
-                        <span>{lang.label}</span>
+                        <span>
+                          {lang.label}
+                          {lang.code !== "en" && <span className="text-ink/45 font-normal ms-1.5">{lang.english}</span>}
+                        </span>
                         {isSelected && <Check className="w-3.5 h-3.5 text-terracotta shrink-0" />}
                       </button>
                     );
@@ -120,10 +138,12 @@ export function Layout() {
                 </div>
               )}
             </div>
-            
+
+            <AccountMenu />
+
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
               aria-expanded={menuOpen}
               className="md:hidden w-10 h-10 flex items-center justify-center rounded-md text-maroon hover:bg-maroon/10 transition-colors cursor-pointer"
             >
@@ -134,7 +154,7 @@ export function Layout() {
 
         {/* Mobile navigation drawer */}
         {menuOpen && (
-          <nav className="md:hidden border-t border-maroon/15 bg-parchment/95 backdrop-blur-sm">
+          <nav className="md:hidden border-t border-maroon/15 bg-parchment/95 backdrop-blur-sm" dir={dir}>
             <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -153,12 +173,15 @@ export function Layout() {
               })}
               <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-maroon/10">
                 <div className="flex items-center justify-between px-1 py-1">
-                  <span className="text-xs font-medium text-ink/70">Language:</span>
+                  <span className="text-xs font-medium text-ink/70">{t("languageLabel")}:</span>
                   <div className="flex gap-1.5">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
-                        onClick={() => setSelectedLang(lang.code)}
+                        lang={lang.code}
+                        aria-pressed={selectedLang === lang.code}
+                        aria-label={lang.english}
+                        onClick={() => setLang(lang.code)}
                         className={`text-xs px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
                           selectedLang === lang.code
                             ? "bg-terracotta text-white font-semibold"
@@ -171,7 +194,7 @@ export function Layout() {
                   </div>
                 </div>
                 <Link to="/preserve" className="w-full bg-terracotta text-white px-4 py-2.5 rounded text-sm font-medium hover:bg-maroon transition-colors flex items-center justify-center gap-2 shadow-sm card-shadow cursor-pointer">
-                  <Mic className="w-4 h-4" /> Record a Story
+                  <Mic className="w-4 h-4" /> {t("recordStory")}
                 </Link>
               </div>
             </div>
@@ -183,34 +206,35 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-ink text-parchment py-12 mt-auto">
+      <footer className="bg-ink text-parchment py-12 mt-auto" dir={dir}>
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <span className="font-serif text-2xl font-bold text-parchment mb-4 block">Dharohar</span>
             <p className="text-parchment/70 text-sm">
-              India's first living cultural knowledge engine.
+              {t("footerTagline")}
             </p>
           </div>
           <div>
-            <h4 className="font-serif text-lg mb-4 text-turmeric">Explore</h4>
+            <h4 className="font-serif text-lg mb-4 text-turmeric">{t("footerExplore")}</h4>
             <ul className="space-y-2 text-sm text-parchment/70">
-              <li><Link to="/map" className="hover:text-parchment transition-colors">Heritage Map</Link></li>
-              <li><Link to="/dashboard" className="hover:text-parchment transition-colors">Vulnerability Index</Link></li>
-              <li><Link to="/ar-walk" className="hover:text-parchment transition-colors">AR Time Machine</Link></li>
+              <li><Link to="/map" className="hover:text-parchment transition-colors">{t("footerHeritageMap")}</Link></li>
+              <li><Link to="/dashboard" className="hover:text-parchment transition-colors">{t("footerVulnIndex")}</Link></li>
+              <li><Link to="/ar-walk" className="hover:text-parchment transition-colors">{t("footerArTime")}</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-serif text-lg mb-4 text-turmeric">Participate</h4>
+            <h4 className="font-serif text-lg mb-4 text-turmeric">{t("footerParticipate")}</h4>
             <ul className="space-y-2 text-sm text-parchment/70">
-              <li><Link to="/preserve" className="hover:text-parchment transition-colors">Record a Story</Link></li>
-              <li><Link to="/passport" className="hover:text-parchment transition-colors">Verify Authenticity</Link></li>
+              <li><Link to="/preserve" className="hover:text-parchment transition-colors">{t("recordStory")}</Link></li>
+              <li><Link to="/passport" className="hover:text-parchment transition-colors">{t("footerVerify")}</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-serif text-lg mb-4 text-turmeric">Ethics</h4>
+            <h4 className="font-serif text-lg mb-4 text-turmeric">{t("footerEthics")}</h4>
             <p className="text-xs text-parchment/50">
-              Every story is community-owned. 
-              <br/>DPDP Act 2023 compliant.
+              {t("footerEthics1")}
+              <br />
+              {t("footerEthics2")}
             </p>
           </div>
         </div>

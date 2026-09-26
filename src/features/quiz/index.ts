@@ -51,4 +51,6 @@ export const quizRoutes: RouteObject[] = [
 export { setAuthToken } from "./api/client";
 export { quizApi } from "./api/quizApi";
 export { default as HeritageQuizCard } from "./components/HeritageQuizCard";
+export { default as QuizHistory } from "./components/QuizHistory";
+export { default as HeritageMapLayer } from "./components/HeritageMapLayer";
 export { I18nProvider, useI18n } from "./i18n";

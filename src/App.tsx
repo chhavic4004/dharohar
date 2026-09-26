@@ -11,6 +11,7 @@ import StoryDetail from "./pages/StoryDetail";
 import Explore from "./pages/Explore";
 import TraditionDetail from "./pages/TraditionDetail";
 import VitalityDashboard from "./pages/VitalityDashboard";
+import { authRoutes } from "./features/auth";
 import { quizRoutes } from "./features/quiz";
 
 const router = createBrowserRouter([
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: "explore", Component: Explore },
       { path: "explore/:id", Component: TraditionDetail },
       ...quizRoutes,
+      ...authRoutes,
     ],
   },
   // Old prototype URL
