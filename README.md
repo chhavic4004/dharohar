@@ -42,6 +42,14 @@ The quiz is built as a self-contained module, so teammates can merge it into the
 - **Admin analytics** (`/quiz/admin`, needs `ADMIN_KEY`): totals, accuracy by category and type, hardest and easiest questions, and "awareness gaps" (traditions people know least about).
 - **Heritage quiz widget**: `<HeritageQuizCard heritageId="phulkari" />` can be dropped into any page. It is already on the Phulkari tradition page.
 
+### Third batch: accounts, languages and the map
+
+- **Accounts**: sign up and sign in with email and password, or with Google. Passwords are hashed with scrypt; logins use signed tokens (JWT, 30 days). Everything a player does (quizzes, Problem of the Day, rewards, offline packs, badges, streaks) is saved on the account and follows them to any device.
+- **Guest progress is never lost**: when a guest signs up or signs in, their progress and history in that browser are moved into the account automatically.
+- **Account page** (`/account`): name, password (or set one for Google accounts), "sign out of all devices", and the **full account history** with paging.
+- **One language switch for the whole site**: the button at the top right (and in the mobile menu) now drives the header, footer, sign in, account, Heritage Map and every quiz screen. It is remembered across visits and tabs, sets `<html lang>`, and switches Urdu to right-to-left. Quiz UI text is complete in all four languages; question content is complete in English and Hindi.
+- **Heritage Map integration**: the map shows a "Heritage quiz spots" layer with every tradition and site that has questions (98 across India), coloured by vulnerability. Popups link to "Quiz on this" and the archive. "View on map" links from quiz answers fly to the spot and open it.
+
 ## Quick start
 
 You need Node.js 20 or newer.
@@ -67,7 +75,7 @@ No database setup is needed. By default the API saves data to `server/data/db.js
 ```bash
 npm run typecheck                    # frontend types
 npm --prefix server run typecheck    # backend types
-npm run test:api                     # 28 API tests (quiz flow, timer, daily, rewards, modes, review, challenges, Hindi, offline, admin)
+npm run test:api                     # 39 API tests (quiz, daily, rewards, modes, review, challenges, Hindi, offline, admin, accounts, Google, guest merge, history)
 npm --prefix server run check:bank   # validates every question: ids, answers, sources, map coordinates, Hindi coverage, no emojis
 npm run build                        # production build of the website
 ```
@@ -76,6 +84,11 @@ npm run build                        # production build of the website
 
 ```
 shared/quiz-contract.ts        API types used by BOTH frontend and backend
+src/lib/language.ts            site-wide language (useLang, setLang); used by header, quiz, map
+src/lib/http.ts                shared API client: token, guest id, X-Lang (use it for any feature)
+src/lib/toast.tsx              tiny site-wide toast
+src/i18n/site.ts               header, footer, account and map text in en, hi, pa, ur
+src/features/auth/             accounts: AuthProvider/useAuth, /login, /account, AccountMenu, Google button
 src/features/quiz/             Frontend module (the only folder the quiz UI lives in)
   index.ts                     exports quizRoutes, quizApi, setAuthToken, HeritageQuizCard, I18nProvider, useI18n
   api/client.ts                fetch wrapper, guest id, auth token hook, X-Lang header
@@ -92,7 +105,8 @@ src/features/quiz/             Frontend module (the only folder the quiz UI live
 public/quiz-sw.js              service worker for offline play
 server/
   src/app.ts                   Express app (helmet, CORS, rate limit, JSON errors)
-  src/middleware/requireUser.ts  identifies the player (auth plug-in point)
+  src/middleware/requireUser.ts  identifies the player (bearer token or guest id)
+  src/modules/auth/            accounts: register, login, Google, tokens, password hashing
   src/store/                   Store interface + FileStore + MongoStore
   src/modules/quiz/
     bank/                      question bank, one file per category + visual/map + daily pool
@@ -148,11 +162,18 @@ Heritage ids are listed in `server/src/modules/quiz/heritage/registry.ts`. `GET 
 
 **Real archive and HVS data.** Call `setArchiveAdapter({ getLinks(ids) { ... } })` (in `heritage/adapter.ts`) once at startup to replace the sample registry values with data from the archive and Vitality modules. Nothing else changes.
 
-**Site language picker.** The quiz stores its language in `localStorage["dharohar.lang"]`. The site header can switch it with:
+**Language.** The header picker is the single control. In your own pages:
 
-```ts
-window.dispatchEvent(new CustomEvent("dharohar:lang", { detail: "hi" })); // en | hi | pa | ur
+```tsx
+import { useLang, setLang } from "../lib/language";   // "en" | "hi" | "pa" | "ur"
+import { useSiteT } from "../i18n/site";               // add your strings to src/i18n/site.ts
+const t = useSiteT();
+<h1>{t("mapTitle")}</h1>
 ```
+
+Code that cannot import it can still switch the language with `window.dispatchEvent(new CustomEvent("dharohar:lang", { detail: "hi" }))`.
+
+**Heritage Map.** `<HeritageMapLayer />` (exported from `src/features/quiz`) can be dropped inside any react-leaflet `MapContainer`. It is already on `/map`, and it understands `?focus=<heritage id>&lat=..&lng=..`.
 
 **Service worker.** `public/quiz-sw.js` only runs in production builds. If the team adds a site-wide PWA worker later, merge its rules and remove `registerQuizServiceWorker()` from `QuizLayout.tsx`.
 
@@ -166,12 +187,15 @@ app.use("/api/quiz", quizRouter(new QuizService(store)));
 
 All MongoDB collections are prefixed with `quiz_`, so they never clash with other modules in the same database.
 
-**Auth (when login exists).** Nothing in the quiz needs to change:
+**Accounts (for every feature).** Login is site-wide, not quiz-only:
 
-1. On the server, call `setAuthVerifier(async (token) => ({ userId, displayName }))` once at startup.
-2. On the frontend, call `setAuthToken(token)` after login.
+- Any page can read the user: `const { account, status } = useAuth()` from `src/features/auth` (`status` is `loading`, `guest` or `signedIn`).
+- Any API call made with `api()` from `src/lib/http.ts` carries the login token automatically (or the guest id when signed out).
+- On the server, protect a route with `requireUser`; `req.user.id` is `u:<accountId>` for signed-in users and `g:<uuid>` for guests.
+- To move a feature's guest data into an account at sign in, add to the `onSignIn` hook in `server/src/app.ts` (the quiz does exactly this).
+- Accounts live in the `accounts` collection (MongoDB) with unique indexes on email and Google id.
 
-Until then, each browser gets an anonymous guest id, sent as the `X-Guest-Id` header.
+**Google sign-in setup.** In Google Cloud Console, create an OAuth client of type "Web application", add your site origin under "Authorized JavaScript origins", and put the client id in the server's `GOOGLE_CLIENT_ID`. The website reads it from `/api/auth/config`; until it is set, the Google button is hidden and email sign-in still works.
 
 **Environment variables.**
 
@@ -183,10 +207,25 @@ Until then, each browser gets an anonymous guest id, sent as the `X-Guest-Id` he
 | server | `MONGODB_URI`, `MONGODB_DB` | use MongoDB instead of the JSON file |
 | server | `ADMIN_KEY` | enables `/api/quiz/admin/stats` and the admin page |
 | server | `TRANSLATE_URL` | optional translation service for Punjabi and Urdu question content |
+| server | `AUTH_SECRET` | signs login tokens; **required in production** (32+ random characters) |
+| server | `AUTH_TOKEN_DAYS` | how long a login lasts (default 30) |
+| server | `GOOGLE_CLIENT_ID` | enables "Continue with Google" |
 
 ## API
 
-All routes are under `/api/quiz` and need `X-Guest-Id: <uuid>` or `Authorization: Bearer <token>`. Send `X-Lang: hi` (or `?lang=hi`) for Hindi content.
+Account routes are under `/api/auth`:
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/config` | Whether Google sign-in is on, password rules |
+| POST | `/register` | `{ email, password, displayName }`; moves this browser's guest progress into the new account |
+| POST | `/login` | `{ email, password }`; also merges guest progress |
+| POST | `/google` | `{ credential }` from Google Identity Services |
+| GET / PATCH | `/me` | Account details; change display name |
+| POST | `/password` | Change or set password; signs out other devices |
+| POST | `/logout-all` | Sign out of every device |
+
+Quiz routes are under `/api/quiz` and need `X-Guest-Id: <uuid>` or `Authorization: Bearer <token>`. Send `X-Lang: hi` (or `?lang=hi`) for Hindi content.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -205,6 +244,8 @@ All routes are under `/api/quiz` and need `X-Guest-Id: <uuid>` or `Authorization
 | GET | `/leaderboard?scope=overall\|<category>` | Rankings |
 | GET / POST | `/rewards`, `/rewards/:id/redeem` | Rewards store |
 | GET | `/me/redemptions` | Redeemed codes |
+| GET | `/me/history?before=&limit=` | Full account history (quizzes, daily, rewards, offline), newest first |
+| GET | `/heritage` | Every heritage entry with questions (used by the map layer) |
 
 **Anti-cheat:**
 
