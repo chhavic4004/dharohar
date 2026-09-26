@@ -9,8 +9,9 @@ The quiz is built as a self-contained module, so teammates can merge it into the
 - **5 categories** plus a *Mixed Bag* mode, and **2 difficulty levels**:
   - **Seeker**: no timer.
   - **Historian**: 30 seconds per question, with a speed bonus.
-- **10 questions per quiz**, drawn from a bank of **210 questions** (21 per category per difficulty). Players are served questions they have not seen recently, so repeat plays feel new.
-- **5 question types**: multiple choice, true or false, odd one out, put in order (chronology) and match the pairs.
+- **10 questions per quiz**, drawn from a bank of **241 questions** (21 per category per difficulty, plus 31 image, audio and map questions). Players are served questions they have not seen recently, so repeat plays feel new.
+- **6 question types**: multiple choice, true or false, odd one out, put in order (chronology), match the pairs and **map pin** (drop a pin on India; correct if within the question's radius).
+- **Image and audio questions** using freely licensed files from Wikimedia Commons, with credits shown under each one.
 - **A full explanation after every answer**: title, explanation, a "Did you know?" fact and a link to the source (UNESCO, Britannica, the GI Registry, government sites).
 - **Problem of the Day**: one new question daily at midnight IST, the same for everyone. It comes from a separate pool of 30 questions and has its own streak and streak rewards.
 - **Game layer**:
@@ -26,6 +27,20 @@ The quiz is built as a self-contained module, so teammates can merge it into the
   - Accuracy by question type.
   - A full answer review with explanations.
 - **Rewards store (prototype)**: spend coins on discount codes for museums, heritage walks, handloom, workshops and homestays. Partners are clearly marked as samples.
+- **Printable certificate** unlocked by the "Heritage Supporter Certificate" reward (`/quiz/certificate`, print or save as PDF).
+
+### Second batch of features
+
+- **Archive links**: every question is linked to one or more traditions or sites in `heritage/registry.ts` (110 traditions and sites). After answering, players see "Explore in the archive", "View on map" and "Quiz on this". `/quiz/heritage/:id` runs a quiz about one entry; short lists are topped up with related questions from the same state.
+- **Heritage Vulnerability Score (HVS)**: at-risk traditions show their score and band (Stable 0 to 33, Vulnerable 34 to 66, Critical 67 to 100) with a "Preserve a story" call to action. A **Save the Vulnerable** mode builds quizzes from those traditions. Current scores are samples (`isSample: true`) until the Vitality team connects real data.
+- **Languages**: English and Hindi are complete (all 271 questions, explanations and UI). Punjabi and Urdu have UI text and fall back to English for question content until a translation service is configured (`TRANSLATE_URL`, for example IndicTrans2). Urdu switches the layout to right-to-left.
+- **Read aloud** for questions and explanations with the browser's speech engine, or an AI4Bharat TTS endpoint via `VITE_TTS_URL`.
+- **Map Challenge** mode: only map pin questions, with distance feedback and the correct spot drawn on the map.
+- **Revise mistakes** (spaced repetition): each missed question comes back after 1, 3, 7, 14 and 30 days. Five correct reviews in a row and it is mastered (`/quiz/review`).
+- **Challenge a friend**: from the results screen, create a 6 character code. Friends get the exact same questions in the same order and see a head to head comparison (`/quiz/challenge/:code`).
+- **Offline packs**: download 10 questions, play with no internet, and results sync automatically when back online (5 XP per correct answer; coins are online only). A small service worker caches the app shell in production builds.
+- **Admin analytics** (`/quiz/admin`, needs `ADMIN_KEY`): totals, accuracy by category and type, hardest and easiest questions, and "awareness gaps" (traditions people know least about).
+- **Heritage quiz widget**: `<HeritageQuizCard heritageId="phulkari" />` can be dropped into any page. It is already on the Phulkari tradition page.
 
 ## Quick start
 
@@ -52,8 +67,8 @@ No database setup is needed. By default the API saves data to `server/data/db.js
 ```bash
 npm run typecheck                    # frontend types
 npm --prefix server run typecheck    # backend types
-npm run test:api                     # 18 API tests (quiz flow, timer, daily streak, rewards, leaderboard)
-npm --prefix server run check:bank   # validates every question: ids, answers, sources, no emojis
+npm run test:api                     # 28 API tests (quiz flow, timer, daily, rewards, modes, review, challenges, Hindi, offline, admin)
+npm --prefix server run check:bank   # validates every question: ids, answers, sources, map coordinates, Hindi coverage, no emojis
 npm run build                        # production build of the website
 ```
 
@@ -62,18 +77,30 @@ npm run build                        # production build of the website
 ```
 shared/quiz-contract.ts        API types used by BOTH frontend and backend
 src/features/quiz/             Frontend module (the only folder the quiz UI lives in)
-  index.ts                     exports quizRoutes, quizApi, setAuthToken
-  api/client.ts                fetch wrapper, guest id, auth token hook
+  index.ts                     exports quizRoutes, quizApi, setAuthToken, HeritageQuizCard, I18nProvider, useI18n
+  api/client.ts                fetch wrapper, guest id, auth token hook, X-Lang header
   api/quizApi.ts               every backend call
-  components/                  QuestionView (all 5 types), ExplanationCard, UI kit
-  pages/                       QuizHome, QuizPlay, QuizResults, DailyChallenge,
-                               Rewards, Leaderboard, Profile
+  constants.ts                 category visuals and ARCHIVE_LINKS (routes into the rest of the site)
+  i18n/                        UI strings (en, hi, pa, ur) and the language provider
+  offline/                     offline pack storage, background sync, service worker registration
+  hooks/useSpeech.ts           read aloud
+  components/                  QuestionView (all 6 types), MapPinInput, ExplanationCard,
+                               HeritageQuizCard, QuizNav, UI kit
+  pages/                       QuizHome, QuizPlay, QuizResults, DailyChallenge, Review,
+                               ChallengePage, HeritageQuiz, Offline, Rewards, Certificate,
+                               Leaderboard, Profile, Admin
+public/quiz-sw.js              service worker for offline play
 server/
   src/app.ts                   Express app (helmet, CORS, rate limit, JSON errors)
   src/middleware/requireUser.ts  identifies the player (auth plug-in point)
   src/store/                   Store interface + FileStore + MongoStore
   src/modules/quiz/
-    bank/                      question bank, one file per category + daily pool
+    bank/                      question bank, one file per category + visual/map + daily pool
+    bank/links.ts              question to heritage entry links
+    heritage/registry.ts       traditions and sites (name, Hindi, state, location, sample HVS)
+    heritage/adapter.ts        ArchiveAdapter: swap in the real archive and HVS data here
+    i18n/                      Hindi content for every question + optional translation service
+    review.ts                  spaced repetition schedule
     gamification.ts            points, levels, badges (all tuning numbers here)
     present.ts                 shuffling, grading, answer text
     quiz.service.ts            business logic
@@ -98,11 +125,36 @@ That registers these pages:
 - `/quiz/play/:sessionId`
 - `/quiz/results/:attemptId`
 - `/quiz/daily`
+- `/quiz/review`
+- `/quiz/challenge/:code`
+- `/quiz/heritage/:id`
+- `/quiz/offline`
 - `/quiz/rewards`
+- `/quiz/certificate`
 - `/quiz/leaderboard`
 - `/quiz/profile`
+- `/quiz/admin`
 
 The quiz uses the site's existing Tailwind theme colours (parchment, maroon, terracotta, turmeric, heritage) and `lucide-react` icons. It does not add any global styles apart from one fade-in keyframe in `index.css`.
+
+**Archive, map and preserve pages.** Links from quiz answers are built in one place, `ARCHIVE_LINKS` in `src/features/quiz/constants.ts`. Today they point to `/explore/:id`, `/map?focus=:id&lat=..&lng=..` and `/preserve?tradition=:id`. Change them there if your routes differ. To show a quiz on any archive page:
+
+```tsx
+import { HeritageQuizCard } from "../features/quiz";
+<HeritageQuizCard heritageId="hampi" />   // hides itself if the API is down or there are no questions
+```
+
+Heritage ids are listed in `server/src/modules/quiz/heritage/registry.ts`. `GET /api/quiz/heritage?ids=a,b` returns names, locations and HVS for many ids at once.
+
+**Real archive and HVS data.** Call `setArchiveAdapter({ getLinks(ids) { ... } })` (in `heritage/adapter.ts`) once at startup to replace the sample registry values with data from the archive and Vitality modules. Nothing else changes.
+
+**Site language picker.** The quiz stores its language in `localStorage["dharohar.lang"]`. The site header can switch it with:
+
+```ts
+window.dispatchEvent(new CustomEvent("dharohar:lang", { detail: "hi" })); // en | hi | pa | ur
+```
+
+**Service worker.** `public/quiz-sw.js` only runs in production builds. If the team adds a site-wide PWA worker later, merge its rules and remove `registerQuizServiceWorker()` from `QuizLayout.tsx`.
 
 **Backend (whoever owns the server).** Mount the router on your Express app:
 
@@ -121,21 +173,34 @@ All MongoDB collections are prefixed with `quiz_`, so they never clash with othe
 
 Until then, each browser gets an anonymous guest id, sent as the `X-Guest-Id` header.
 
-**API URL in production.** Set `VITE_API_URL=https://your-api/api` for the website. Set `CORS_ORIGINS` on the server to the website's origin.
+**Environment variables.**
+
+| Where | Variable | Purpose |
+|---|---|---|
+| website | `VITE_API_URL` | API base in production, for example `https://your-api/api` |
+| website | `VITE_TTS_URL` | optional AI4Bharat TTS endpoint for read aloud |
+| server | `CORS_ORIGINS` | the website's origin |
+| server | `MONGODB_URI`, `MONGODB_DB` | use MongoDB instead of the JSON file |
+| server | `ADMIN_KEY` | enables `/api/quiz/admin/stats` and the admin page |
+| server | `TRANSLATE_URL` | optional translation service for Punjabi and Urdu question content |
 
 ## API
 
-All routes are under `/api/quiz` and need `X-Guest-Id: <uuid>` or `Authorization: Bearer <token>`.
+All routes are under `/api/quiz` and need `X-Guest-Id: <uuid>` or `Authorization: Bearer <token>`. Send `X-Lang: hi` (or `?lang=hi`) for Hindi content.
 
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/categories` | Categories with question counts |
-| POST | `/sessions` | Start a quiz `{ category, difficulty }` |
+| POST | `/sessions` | Start a quiz `{ mode?, category?, difficulty?, heritageId?, challengeCode? }`; modes: standard, map, vulnerable, heritage, review, challenge |
 | GET | `/sessions/:id/current` | Current question (starts its timer; safe to call after a refresh) |
 | POST | `/sessions/:id/answers` | Answer `{ questionId, answer }`; returns correctness, explanation, source, points |
 | POST | `/sessions/:id/complete` | Final result, XP, coins, badges |
 | GET | `/attempts/:id` | View a past result |
 | GET / POST | `/daily`, `/daily/answer` | Problem of the Day |
+| GET | `/heritage/:id`, `/heritage?ids=a,b` | Heritage entry info and quiz size |
+| POST / GET | `/challenges`, `/challenges/:code` | Create a challenge from a result; view it |
+| POST | `/offline/packs`, `/offline/packs/:id/submit` | Download an offline pack; sync its answers |
+| GET | `/admin/stats` | Analytics (header `X-Admin-Key`) |
 | GET / PATCH | `/me` | Profile, stats, badges; change display name |
 | GET | `/leaderboard?scope=overall\|<category>` | Rankings |
 | GET / POST | `/rewards`, `/rewards/:id/redeem` | Rewards store |
@@ -147,6 +212,7 @@ All routes are under `/api/quiz` and need `X-Guest-Id: <uuid>` or `Authorization
 - Historian time limits are enforced on the server, with 3 seconds of grace.
 - Each question can be answered once, in order.
 - Coins are deducted atomically when a reward is redeemed.
+- Offline packs include answers (they must work without a network), so they earn XP only, never coins, and each pack syncs once.
 
 ## Scoring
 
@@ -180,4 +246,6 @@ Problem of the Day:
 ## Notes
 
 - The rewards partners are placeholders. Replace `rewards.catalog.ts` with real offers, or load them from the database, once agreements exist.
+- HVS scores in the registry are samples and are labelled as such in the UI.
+- Two sources are Wikipedia pages with cited references (Khejarli, Rudrama Devi) because no official page covers those facts. Replace them if the team finds a government or UNESCO source.
 - The file store suits development and demos. Use MongoDB for anything with more than one server instance.
