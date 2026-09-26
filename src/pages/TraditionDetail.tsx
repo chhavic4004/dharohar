@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { Play, Pause, ChevronRight, ShieldCheck, MapPin, Users, Globe, ExternalLink, Scissors, Map, Palette, Image as ImageIcon, BookOpen } from "lucide-react";
 import { Reveal } from "../components/Reveal";
+import { HeritageQuizCard } from "../features/quiz";
 
 export default function TraditionDetail() {
   const [playing, setPlaying] = useState(false);
@@ -97,6 +98,8 @@ export default function TraditionDetail() {
                 </div>
               </section>
             </Reveal>
+
+            <HeritageQuizCard heritageId="phulkari" />
 
             <Reveal delay={200}>
               <section>

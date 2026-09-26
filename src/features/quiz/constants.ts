@@ -1,5 +1,5 @@
 import { Crown, Flame, Landmark, Music, Shuffle, UtensilsCrossed, type LucideIcon } from "lucide-react";
-import type { CategoryId, QuestionType, QuizCategoryParam } from "@shared/quiz-contract";
+import type { CategoryId, HeritageLink, QuizCategoryParam } from "@shared/quiz-contract";
 
 export interface CategoryMeta {
   id: QuizCategoryParam;
@@ -64,18 +64,14 @@ export const CATEGORY_META: Record<QuizCategoryParam, CategoryMeta> = {
 
 export const CATEGORY_IDS: CategoryId[] = ["rhythms", "architecture", "culinary", "traditions", "rulers"];
 
-export const TYPE_LABELS: Record<QuestionType, string> = {
-  mcq: "Multiple choice",
-  true_false: "True or false",
-  odd_one_out: "Odd one out",
-  chronology: "Put in order",
-  match: "Match the pairs",
-};
-
-export const TYPE_HINTS: Record<QuestionType, string> = {
-  mcq: "Choose one answer.",
-  true_false: "Decide whether the statement is true.",
-  odd_one_out: "Find the one that does not belong.",
-  chronology: "Arrange the items from earliest to latest, then submit.",
-  match: "Pick the matching item for each row, then submit.",
+/**
+ * Where quiz answers link into the rest of Dharohar.
+ * INTEGRATION: change these to match the archive, map and preserve routes
+ * once those pages accept an id. They work today as plain links.
+ */
+export const ARCHIVE_LINKS = {
+  archive: (l: HeritageLink) => `/explore/${encodeURIComponent(l.id)}`,
+  map: (l: HeritageLink) => (l.location ? `/map?focus=${encodeURIComponent(l.id)}&lat=${l.location.lat}&lng=${l.location.lng}` : "/map"),
+  preserve: (l: HeritageLink) => `/preserve?tradition=${encodeURIComponent(l.id)}`,
+  quiz: (l: HeritageLink) => `/quiz/heritage/${encodeURIComponent(l.id)}`,
 };

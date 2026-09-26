@@ -10,6 +10,12 @@ const GUEST_KEY = "dharohar.guestId";
 
 let memoryGuestId: string | null = null;
 let authToken: string | null = null;
+let requestLang = "en";
+
+/** Set by the language provider; sent as X-Lang so the server returns translated questions. */
+export function setRequestLang(lang: string) {
+  requestLang = lang;
+}
 
 export function setAuthToken(token: string | null) {
   authToken = token;
@@ -48,11 +54,12 @@ export class ApiRequestError extends Error {
   }
 }
 
-export async function api<T>(method: "GET" | "POST" | "PATCH", path: string, body?: unknown): Promise<T> {
-  const headers: Record<string, string> = { Accept: "application/json" };
+export async function api<T>(method: "GET" | "POST" | "PATCH", path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {
+  const headers: Record<string, string> = { Accept: "application/json", "X-Lang": requestLang };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
   else headers["X-Guest-Id"] = getGuestId();
+  if (extraHeaders) Object.assign(headers, extraHeaders);
 
   let res: Response;
   try {

@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { BookOpen, Check, Copy, Gift, Headphones, Home, Landmark, Lock, MapPin, Scissors, Ticket } from "lucide-react";
+import { Link } from "react-router";
+import { Award, BookOpen, Check, Copy, Gift, Headphones, Home, Landmark, Lock, MapPin, Scissors, Ticket } from "lucide-react";
 import type { Redemption, Reward, RewardKind } from "@shared/quiz-contract";
 import { quizApi } from "../api/quizApi";
 import { useApi } from "../hooks/useApi";
 import { Button, Card, CoinBadge, ErrorState, Modal, Pill, Spinner, Toast, cx } from "../components/ui";
+import { useI18n } from "../i18n";
 
 const KIND_ICON: Record<RewardKind, typeof Gift> = {
   museum: Landmark,
@@ -19,6 +21,8 @@ function rewardIcon(r: { rewardId?: string; id?: string; kind?: RewardKind }) {
 }
 
 export default function Rewards() {
+  const { t, lang } = useI18n();
+  const locale = lang === "en" ? "en-IN" : `${lang}-IN`;
   const profile = useApi(() => quizApi.profile());
   const rewards = useApi(() => quizApi.rewards());
   const wallet = useApi(() => quizApi.redemptions());
@@ -29,7 +33,7 @@ export default function Rewards() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  if (profile.loading || rewards.loading) return <Spinner label="Opening the rewards store" />;
+  if (profile.loading || rewards.loading) return <Spinner label={t("openingStore")} />;
   if (profile.error || rewards.error) return <ErrorState error={(profile.error ?? rewards.error)!} onRetry={() => { profile.reload(); rewards.reload(); }} />;
 
   const p = profile.data!;
@@ -54,9 +58,9 @@ export default function Rewards() {
   const copy = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      setToast("Code copied");
+      setToast(t("codeCopied"));
     } catch {
-      setToast("Could not copy. Select the code and copy it manually.");
+      setToast(t("copyFailed"));
     }
   };
 
@@ -64,21 +68,20 @@ export default function Rewards() {
     <div className="bg-parchment pb-16">
       <div className="bg-gradient-to-br from-[#5c1728] to-maroon px-5 pt-10 pb-8 text-white">
         <div className="max-w-3xl mx-auto">
-          <p className="text-turmeric text-xs tracking-[0.3em] uppercase mb-2">Heritage Rewards</p>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold">Turn what you learn into real experiences</h1>
+          <p className="text-turmeric text-xs tracking-[0.3em] uppercase mb-2">{t("rewardsTop")}</p>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold">{t("rewardsTitle")}</h1>
           <p className="text-white/75 text-sm mt-2 max-w-xl">
-            Coins you earn from quizzes and the Problem of the Day can be exchanged for discounts on museums, heritage walks, handloom
-            and craft workshops.
+            {t("rewardsIntro")}
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <div className="rounded-xl bg-white/10 px-4 py-2.5">
-              <p className="text-[11px] text-white/60">Your balance</p>
+              <p className="text-[11px] text-white/60">{t("yourBalance")}</p>
               <CoinBadge amount={p.coins} className="text-xl text-white" />
             </div>
             <div className="rounded-xl bg-white/10 px-4 py-2.5">
-              <p className="text-[11px] text-white/60">Your level</p>
+              <p className="text-[11px] text-white/60">{t("yourLevel")}</p>
               <p className="font-serif text-lg font-semibold">
-                {p.level.level}. {p.level.name}
+                {p.level.level}. {lang === "hi" ? p.level.hindi : p.level.name}
               </p>
             </div>
           </div>
@@ -87,15 +90,14 @@ export default function Rewards() {
 
       <div className="max-w-3xl mx-auto px-4 mt-5">
         <div className="rounded-xl border border-turmeric/40 bg-turmeric/10 px-4 py-3 text-xs text-[#6b4a0e] mb-5">
-          <strong>Prototype.</strong> Partner names below are samples used to demonstrate how rewards will work. Codes are generated and
-          stored, but they cannot yet be used at real outlets.
+          {t("prototypeNote")}
         </div>
 
         <div className="flex gap-2 mb-5" role="tablist">
           {(
             [
-              ["store", "Rewards store"],
-              ["wallet", `My rewards${wallet.data?.length ? ` (${wallet.data.length})` : ""}`],
+              ["store", t("rewardsStore")],
+              ["wallet", `${t("myRewards")}${wallet.data?.length ? ` (${wallet.data.length})` : ""}`],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -135,14 +137,14 @@ export default function Rewards() {
                     <CoinBadge amount={r.cost} />
                     {!r.unlocked ? (
                       <span className="inline-flex items-center gap-1 text-xs text-ink/50">
-                        <Lock className="w-3.5 h-3.5" aria-hidden /> Unlocks at level {r.minLevel}
+                        <Lock className="w-3.5 h-3.5" aria-hidden /> {t("unlocksAt", { n: r.minLevel })}
                       </span>
                     ) : r.affordable ? (
                       <Button className="px-4 py-2" onClick={() => setConfirm(r)}>
-                        Redeem
+                        {t("redeem")}
                       </Button>
                     ) : (
-                      <span className="text-xs text-ink/50">{short} more coins needed</span>
+                      <span className="text-xs text-ink/50">{t("moreCoins", { n: short })}</span>
                     )}
                   </div>
                 </Card>
@@ -153,11 +155,11 @@ export default function Rewards() {
 
         {tab === "wallet" &&
           (wallet.loading ? (
-            <Spinner />
+            <Spinner label={t("loading")} />
           ) : !wallet.data?.length ? (
             <Card className="p-8 text-center">
               <Gift className="w-8 h-8 text-maroon/40 mx-auto mb-2" aria-hidden />
-              <p className="text-sm text-ink/60">You have not redeemed any rewards yet.</p>
+              <p className="text-sm text-ink/60">{t("noRewards")}</p>
             </Card>
           ) : (
             <ul className="space-y-3">
@@ -171,7 +173,7 @@ export default function Rewards() {
                         {w.title} <span className="text-heritage">· {w.discountLabel}</span>
                       </p>
                       <p className="text-xs text-ink/50">
-                        {w.status === "expired" ? "Expired" : "Valid until"} {new Date(w.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        {w.status === "expired" ? t("expired") : t("validUntil")} {new Date(w.expiresAt).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}
                       </p>
                     </div>
                     <button
@@ -181,6 +183,11 @@ export default function Rewards() {
                     >
                       {w.code} <Copy className="w-3.5 h-3.5 text-maroon" aria-hidden />
                     </button>
+                    {w.rewardId === "supporter-certificate" && w.status === "active" && (
+                      <Link to="/quiz/certificate" className="inline-flex items-center gap-1.5 text-sm font-semibold text-maroon underline">
+                        <Award className="w-4 h-4" aria-hidden /> {t("openCertificate")}
+                      </Link>
+                    )}
                   </Card>
                 );
               })}
@@ -188,7 +195,7 @@ export default function Rewards() {
           ))}
       </div>
 
-      <Modal open={!!confirm} onClose={() => setConfirm(null)} title="Redeem this reward?">
+      <Modal open={!!confirm} onClose={() => setConfirm(null)} title={t("redeemTitle")}>
         {confirm && (
           <div>
             <p className="font-serif font-semibold text-ink">{confirm.title}</p>
@@ -196,33 +203,33 @@ export default function Rewards() {
               {confirm.discountLabel} · {confirm.partner}
             </p>
             <ul className="text-xs text-ink/60 list-disc list-inside space-y-1 mb-4">
-              <li>Valid for {confirm.validityDays} days after redeeming.</li>
-              {confirm.terms.map((t) => (
-                <li key={t}>{t}</li>
+              <li>{t("validFor", { n: confirm.validityDays })}</li>
+              {confirm.terms.map((term) => (
+                <li key={term}>{term}</li>
               ))}
             </ul>
             <div className="flex items-center justify-between rounded-xl bg-white/70 p-3 text-sm mb-4">
-              <span>Cost</span>
+              <span>{t("cost")}</span>
               <CoinBadge amount={confirm.cost} />
             </div>
             <div className="flex items-center justify-between rounded-xl bg-white/70 p-3 text-sm mb-4">
-              <span>Balance after</span>
+              <span>{t("balanceAfter")}</span>
               <CoinBadge amount={p.coins - confirm.cost} />
             </div>
             {error && <p className="text-sm text-alert mb-3">{error}</p>}
             <div className="grid grid-cols-2 gap-3">
               <Button variant="secondary" onClick={() => setConfirm(null)}>
-                Cancel
+                {t("cancel")}
               </Button>
               <Button loading={busy} onClick={redeem}>
-                Confirm
+                {t("confirm")}
               </Button>
             </div>
           </div>
         )}
       </Modal>
 
-      <Modal open={!!redeemed} onClose={() => setRedeemed(null)} title="Reward unlocked">
+      <Modal open={!!redeemed} onClose={() => setRedeemed(null)} title={t("rewardUnlocked")}>
         {redeemed && (
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-heritage mx-auto flex items-center justify-center mb-3">
@@ -238,11 +245,15 @@ export default function Rewards() {
               {redeemed.code}
             </button>
             <p className="text-xs text-ink/50 mt-2">
-              Tap to copy. Valid until {new Date(redeemed.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}. You
-              can always find it under My rewards.
+              {t("tapToCopy", { date: new Date(redeemed.expiresAt).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }) })}
             </p>
-            <Button className="w-full mt-5" onClick={() => { setRedeemed(null); setTab("wallet"); }}>
-              View my rewards
+            {redeemed.rewardId === "supporter-certificate" && (
+              <Link to="/quiz/certificate" className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-sm border-2 border-turmeric text-[#8a5f12] hover:bg-turmeric/10">
+                <Award className="w-4 h-4" aria-hidden /> {t("openCertificate")}
+              </Link>
+            )}
+            <Button className="w-full mt-3" onClick={() => { setRedeemed(null); setTab("wallet"); }}>
+              {t("viewMyRewards")}
             </Button>
           </div>
         )}

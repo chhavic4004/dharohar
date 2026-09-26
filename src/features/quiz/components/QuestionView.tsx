@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, Check, X } from "lucide-react";
-import type { AnswerPayload, CorrectAnswer, PublicQuestion } from "@shared/quiz-contract";
-import { TYPE_HINTS, TYPE_LABELS } from "../constants";
-import { Button, cx } from "./ui";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { ArrowDown, ArrowUp, Check, ExternalLink, Volume2, X } from "lucide-react";
+import type { AnswerPayload, CorrectAnswer, PublicQuestion, QuestionMedia } from "@shared/quiz-contract";
+import { useI18n } from "../i18n";
+import { Button, Spinner, cx } from "./ui";
+
+// Leaflet is only loaded when a map question appears.
+const MapPinInput = lazy(() => import("./MapPinInput"));
 
 interface Props {
   question: PublicQuestion;
@@ -15,13 +18,48 @@ interface Props {
 
 const LETTERS = ["A", "B", "C", "D", "E"];
 
+export function MediaBlock({ media }: { media: QuestionMedia }) {
+  const { t } = useI18n();
+  if (media.kind === "audio") {
+    return (
+      <figure className="rounded-2xl bg-white/80 border border-maroon/10 p-4">
+        <div className="flex items-center gap-3 mb-3 text-maroon">
+          <Volume2 className="w-5 h-5" aria-hidden />
+          <span className="text-sm font-medium">{media.alt}</span>
+        </div>
+        <audio controls preload="none" src={media.url} className="w-full">
+          <track kind="captions" />
+        </audio>
+        <figcaption className="text-[11px] text-ink/50 mt-2">
+          {t("audioCredit")}:{" "}
+          <a href={media.creditUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-maroon">
+            {media.credit}
+          </a>
+        </figcaption>
+      </figure>
+    );
+  }
+  return (
+    <figure className="rounded-2xl overflow-hidden bg-ink shadow-md">
+      <img src={media.url} alt={media.alt} loading="lazy" className="w-full max-h-80 object-contain bg-ink" />
+      <figcaption className="bg-white/90 text-[11px] text-ink/55 px-3 py-1.5 flex items-center gap-1">
+        {t("imageCredit")}:
+        <a href={media.creditUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline hover:text-maroon">
+          {media.credit} <ExternalLink className="w-3 h-3" aria-hidden />
+        </a>
+      </figcaption>
+    </figure>
+  );
+}
+
 /** Renders any question type, both while answering and after the answer is revealed. */
 export default function QuestionView({ question, correctAnswer, submitted, busy, onSubmit }: Props) {
+  const { t } = useI18n();
   return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-widest text-terracotta mb-3">
-        {TYPE_LABELS[question.type]}
-        <span className="normal-case tracking-normal font-normal text-ink/50"> · {TYPE_HINTS[question.type]}</span>
+    <div className="space-y-4">
+      <p className="text-xs font-semibold uppercase tracking-widest text-terracotta">
+        {t(`type_${question.type}`)}
+        <span className="normal-case tracking-normal font-normal text-ink/50"> · {t(`hint_${question.type}`)}</span>
       </p>
       {(question.type === "mcq" || question.type === "odd_one_out" || question.type === "true_false") && (
         <ChoiceOptions question={question} correctAnswer={correctAnswer} submitted={submitted} busy={busy} onSubmit={onSubmit} />
@@ -29,8 +67,11 @@ export default function QuestionView({ question, correctAnswer, submitted, busy,
       {question.type === "chronology" && (
         <Chronology question={question} correctAnswer={correctAnswer} submitted={submitted} busy={busy} onSubmit={onSubmit} />
       )}
-      {question.type === "match" && (
-        <Match question={question} correctAnswer={correctAnswer} submitted={submitted} busy={busy} onSubmit={onSubmit} />
+      {question.type === "match" && <Match question={question} correctAnswer={correctAnswer} submitted={submitted} busy={busy} onSubmit={onSubmit} />}
+      {question.type === "map_pin" && (
+        <Suspense fallback={<Spinner />}>
+          <MapPinInput question={question} correctAnswer={correctAnswer} submitted={submitted} busy={busy} onSubmit={onSubmit} />
+        </Suspense>
       )}
     </div>
   );
@@ -55,7 +96,7 @@ function ChoiceOptions({ question, correctAnswer, submitted, busy, onSubmit }: P
             onClick={() => onSubmit({ choice: opt.id })}
             aria-pressed={opt.id === chosenId}
             className={cx(
-              "w-full flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all duration-200",
+              "w-full flex items-center gap-3 p-4 rounded-xl border-2 text-start transition-all duration-200",
               !revealed && "border-maroon/15 bg-white/70 hover:border-maroon/50 hover:bg-white hover:shadow-md cursor-pointer disabled:cursor-wait",
               isCorrect && "border-heritage bg-heritage/10 shadow-md",
               isWrongPick && "border-terracotta bg-terracotta/10",
@@ -82,6 +123,7 @@ function ChoiceOptions({ question, correctAnswer, submitted, busy, onSubmit }: P
 }
 
 function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Props) {
+  const { t } = useI18n();
   const items = question.items!;
   const [order, setOrder] = useState<number[]>(() => items.map((i) => i.id));
   useEffect(() => setOrder(items.map((i) => i.id)), [question.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -122,7 +164,7 @@ function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Prop
                     type="button"
                     onClick={() => move(pos, -1)}
                     disabled={pos === 0 || busy}
-                    aria-label={`Move "${text(id)}" up`}
+                    aria-label={`${t("moveUp")}: ${text(id)}`}
                     className="p-2 rounded-lg hover:bg-maroon/10 text-maroon disabled:opacity-25 cursor-pointer disabled:cursor-default"
                   >
                     <ArrowUp className="w-4 h-4" />
@@ -131,7 +173,7 @@ function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Prop
                     type="button"
                     onClick={() => move(pos, 1)}
                     disabled={pos === shown.length - 1 || busy}
-                    aria-label={`Move "${text(id)}" down`}
+                    aria-label={`${t("moveDown")}: ${text(id)}`}
                     className="p-2 rounded-lg hover:bg-maroon/10 text-maroon disabled:opacity-25 cursor-pointer disabled:cursor-default"
                   >
                     <ArrowDown className="w-4 h-4" />
@@ -148,7 +190,7 @@ function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Prop
       </ol>
       {revealed && !shown.every((id, pos) => correctOrder[pos] === id) && (
         <div className="mt-3 rounded-xl bg-heritage/10 border border-heritage/30 p-3">
-          <p className="text-xs font-semibold text-heritage mb-1.5">Correct order</p>
+          <p className="text-xs font-semibold text-heritage mb-1.5">{t("correctOrder")}</p>
           <ol className="text-sm text-ink/80 list-decimal list-inside space-y-0.5">
             {correctOrder.map((id) => (
               <li key={id}>{text(id)}</li>
@@ -158,7 +200,7 @@ function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Prop
       )}
       {!revealed && (
         <Button className="w-full mt-4" onClick={() => onSubmit({ order })} loading={busy}>
-          Submit order
+          {t("submitOrder")}
         </Button>
       )}
     </div>
@@ -166,6 +208,7 @@ function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Prop
 }
 
 function Match({ question, correctAnswer, submitted, busy, onSubmit }: Props) {
+  const { t } = useI18n();
   const left = question.left!;
   const right = question.right!;
   const [picks, setPicks] = useState<(number | null)[]>(() => left.map(() => null));
@@ -207,11 +250,11 @@ function Match({ question, correctAnswer, submitted, busy, onSubmit }: Props) {
                   }}
                   className="w-full rounded-lg border border-maroon/25 bg-parchment/60 px-3 py-2 text-sm text-ink focus:outline-2 focus:outline-maroon cursor-pointer"
                 >
-                  <option value="">Select a match</option>
+                  <option value="">{t("selectMatch")}</option>
                   {right.map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.text}
-                      {picks.includes(r.id) && picks[i] !== r.id ? " (used)" : ""}
+                      {picks.includes(r.id) && picks[i] !== r.id ? ` (${t("used")})` : ""}
                     </option>
                   ))}
                 </select>
@@ -230,7 +273,7 @@ function Match({ question, correctAnswer, submitted, busy, onSubmit }: Props) {
       </div>
       {!revealed && (
         <Button className="w-full mt-4" disabled={!complete} loading={busy} onClick={() => onSubmit({ pairs: picks as number[] })}>
-          {complete ? "Submit matches" : `Match all ${left.length} items to submit`}
+          {complete ? t("submitMatches") : t("matchAll", { n: left.length })}
         </Button>
       )}
     </div>

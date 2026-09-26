@@ -1,5 +1,6 @@
 import { useEffect, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { AlertCircle, Coins, Loader2, X } from "lucide-react";
+import { useI18n } from "../i18n";
 
 export function cx(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
@@ -62,14 +63,15 @@ export function Spinner({ label = "Loading" }: { label?: string }) {
 }
 
 export function ErrorState({ error, onRetry }: { error: Error; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
     <Card className="p-6 text-center max-w-md mx-auto my-10">
       <AlertCircle className="w-8 h-8 text-alert mx-auto mb-3" aria-hidden />
-      <p className="font-serif font-semibold text-ink mb-1">Something went wrong</p>
+      <p className="font-serif font-semibold text-ink mb-1">{t("somethingWrong")}</p>
       <p className="text-sm text-ink/60 mb-4">{error.message}</p>
       {onRetry && (
         <Button variant="secondary" onClick={onRetry}>
-          Try again
+          {t("tryAgain")}
         </Button>
       )}
     </Card>
