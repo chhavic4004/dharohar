@@ -295,7 +295,10 @@ export interface ReviewSummary {
 
 export interface HeritageQuizInfo {
   heritage: HeritageLink;
+  /** Questions in one heritage quiz (linked questions, topped up with related ones) */
   questionCount: number;
+  /** Questions directly about this entry */
+  directCount: number;
 }
 
 // ─── Challenges ──────────────────────────────────────────────────────────────

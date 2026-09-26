@@ -51,6 +51,28 @@ export function questionsForHeritage(heritageId: string): BankQuestion[] {
   return QUIZ_BANK.filter((q) => q.links?.includes(heritageId));
 }
 
+/** Smallest heritage quiz we serve. Short lists are topped up with related questions. */
+export const HERITAGE_QUIZ_MIN = 5;
+
+/**
+ * Questions for a heritage quiz: everything linked to the entry first, then
+ * questions about other traditions and sites from the same state, then the
+ * same category. Linked questions always come first in the returned list.
+ */
+export function heritageQuizPool(heritageId: string): { direct: BankQuestion[]; related: BankQuestion[] } {
+  const direct = questionsForHeritage(heritageId);
+  if (direct.length >= HERITAGE_QUIZ_MIN) return { direct, related: [] };
+  const seen = new Set(direct.map((q) => q.id));
+  const state = heritageById.get(heritageId)?.state;
+  const cats = new Set(direct.map((q) => q.category));
+  const sameState = state
+    ? QUIZ_BANK.filter((q) => !seen.has(q.id) && q.type !== "map_pin" && (q.links ?? []).some((id) => id !== heritageId && heritageById.get(id)?.state === state))
+    : [];
+  sameState.forEach((q) => seen.add(q.id));
+  const sameCat = QUIZ_BANK.filter((q) => !seen.has(q.id) && q.type !== "map_pin" && q.difficulty === "seeker" && cats.has(q.category) && (q.links?.length ?? 0) > 0);
+  return { direct, related: [...sameState, ...sameCat] };
+}
+
 export function getQuestion(id: string): BankQuestion | undefined {
   return byId.get(id);
 }

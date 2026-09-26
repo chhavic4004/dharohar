@@ -296,6 +296,16 @@ describe("modes", () => {
     expect(res.body.links.map((l: { id: string }) => l.id)).toContain("konark");
   });
 
+  it("tops up short heritage quizzes with related questions, linked ones first", async () => {
+    const info = await as(GUEST_A).get("/api/quiz/heritage/phulkari");
+    expect(info.body.directCount).toBe(1);
+    expect(info.body.questionCount).toBe(5);
+    const start = await as(GUEST_A).post("/api/quiz/sessions", { mode: "heritage", heritageId: "phulkari" });
+    expect(start.body.totalQuestions).toBe(5);
+    const cur = await as(GUEST_A).get(`/api/quiz/sessions/${start.body.sessionId}/current`);
+    expect(getQuestion(cur.body.question.id)!.links).toContain("phulkari");
+  });
+
   it("brings missed questions back for review after a day", async () => {
     await playQuiz(GUEST_A, "rulers", "seeker", { wrongAt: [0, 1, 2] });
     let me = await as(GUEST_A).get("/api/quiz/me");
@@ -327,7 +337,10 @@ describe("modes", () => {
     const again = await as(GUEST_B).post("/api/quiz/sessions", { mode: "challenge", challengeCode: ch.body.code });
     expect(again.status).toBe(409);
     const info = await as(GUEST_A).get(`/api/quiz/challenges/${ch.body.code}`);
-    expect(info.body.players).toHaveLength(1);
+    expect(info.body.players).toHaveLength(2);
+    expect(info.body.players[0]).toMatchObject({ score: 10, isYou: false });
+    expect(info.body.players[1]).toMatchObject({ score: 8, isYou: true });
+    expect(JSON.stringify(info.body)).not.toContain("userId");
   });
 });
 

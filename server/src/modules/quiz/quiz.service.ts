@@ -46,7 +46,8 @@ import {
   getQuestion,
   QUIZ_BANK,
   questionsFor,
-  questionsForHeritage,
+  HERITAGE_QUIZ_MIN,
+  heritageQuizPool,
   type BankQuestion,
 } from "./bank";
 import { answerPoints, BADGES, badgeById, levelFor, ratingFor, SCORING } from "./gamification";
@@ -126,6 +127,12 @@ function isVulnerable(q: BankQuestion): boolean {
   return (q.links ?? []).some((id) => (heritageById.get(id)?.sampleHvs ?? 0) >= 34);
 }
 
+function heritageCounts(id: string): { questionCount: number; directCount: number } {
+  const pool = heritageQuizPool(id);
+  const total = pool.direct.length + pool.related.length;
+  return { questionCount: Math.min(total, Math.max(HERITAGE_QUIZ_MIN, Math.min(pool.direct.length, QUESTIONS_PER_QUIZ))), directCount: pool.direct.length };
+}
+
 export class QuizService {
   constructor(
     private store: Store,
@@ -200,7 +207,7 @@ export class QuizService {
   }
 
   heritageInfo(ids: string[]): HeritageQuizInfo[] {
-    return heritageLinks(ids).map((heritage) => ({ heritage, questionCount: questionsForHeritage(heritage.id).length }));
+    return heritageLinks(ids).map((heritage) => ({ heritage, ...heritageCounts(heritage.id) }));
   }
 
   // ─── Quiz sessions ──────────────────────────────────────────────────────────
@@ -245,7 +252,8 @@ export class QuizService {
         if (!req.heritageId || !heritageById.has(req.heritageId)) throw new ApiError(404, "not_found", "That tradition or site was not found.");
         category = "mixed";
         difficulty = "seeker";
-        picked = shuffle(questionsForHeritage(req.heritageId)).slice(0, QUESTIONS_PER_QUIZ);
+        const pool = heritageQuizPool(req.heritageId);
+        picked = [...shuffle(pool.direct), ...shuffle(pool.related)].slice(0, Math.max(HERITAGE_QUIZ_MIN, Math.min(pool.direct.length, QUESTIONS_PER_QUIZ)));
         break;
       }
       case "review": {
@@ -626,7 +634,7 @@ export class QuizService {
       expiresAt: ch.expiresAt,
       isCreator: ch.creatorId === user.id,
       alreadyPlayed: ch.players.some((p) => p.userId === user.id),
-      players: [...ch.players]
+      players: [{ userId: ch.creatorId, displayName: ch.creatorName, score: ch.creatorScore, timeSeconds: ch.creatorTimeSeconds }, ...ch.players]
         .sort((a, b) => b.score - a.score || a.timeSeconds - b.timeSeconds)
         .slice(0, 20)
         .map((p) => ({ displayName: p.displayName, score: p.score, timeSeconds: p.timeSeconds, isYou: p.userId === user.id })),
