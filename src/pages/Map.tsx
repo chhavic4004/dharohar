@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { Search, MapPin, Clock, Filter, Navigation, X } from "lucide-react";
-import { Link } from "react-router";
+import { useCallback, useState } from "react";
+import { MapPin, Brain, Globe2 } from "lucide-react";
+import { Link, useSearchParams } from "react-router";
+import { HeritageMapLayer } from "../features/quiz";
+import { useSiteT, type SiteKey } from "../i18n/site";
+import { langDir, useLang } from "../lib/language";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -31,10 +34,29 @@ const icons = {
 };
 
 const mapCenter: [number, number] = [31.1471, 75.3412]; // Punjab region
+const INDIA_BOUNDS: [[number, number], [number, number]] = [[7.5, 68], [35.5, 97.5]];
+
+const TAG_KEY: Record<string, SiteKey> = {
+  All: "filterAll",
+  "Oral History": "tagOral",
+  "Craft & Tradition": "tagCraft",
+  "Folk Song": "tagFolk",
+  "Living Tradition": "tagLiving",
+};
 
 export default function Map() {
+  const t = useSiteT();
+  const lang = useLang();
+  const [params] = useSearchParams();
   const [showMigrationPath, setShowMigrationPath] = useState(true);
   const [activeFilter, setActiveFilter] = useState("All");
+  // Quiz spots are on by default; a ?focus= link from a quiz answer always shows them.
+  const [showQuizSpots, setShowQuizSpots] = useState(true);
+  const [quizCount, setQuizCount] = useState(0);
+  const [map, setMap] = useState<L.Map | null>(null);
+  const [indiaView, setIndiaView] = useState(false);
+  const onLoaded = useCallback((n: number) => setQuizCount(n), []);
+  const quizVisible = showQuizSpots || !!params.get("focus");
 
   const filters = ["All", "Oral History", "Craft & Tradition", "Folk Song", "Living Tradition"];
 
@@ -86,11 +108,11 @@ export default function Map() {
   return (
     <div className="flex flex-col md:flex-row md:h-[calc(100vh-64px)] w-full overflow-hidden bg-parchment">
       {/* Sidebar */}
-      <div className="w-full md:w-[340px] bg-[#FBF7EE] border-r border-maroon/10 flex flex-col z-[1000] shadow-xl md:overflow-hidden shrink-0 order-2 md:order-1 relative">
+      <div className="w-full md:w-[340px] bg-[#FBF7EE] border-r border-maroon/10 flex flex-col z-[1000] shadow-xl md:overflow-hidden shrink-0 order-2 md:order-1 relative" dir={langDir(lang)}>
         <div className="p-5 border-b border-maroon/10">
-          <h2 className="font-serif text-2xl text-maroon mb-4">Heritage Map</h2>
+          <h2 className="font-serif text-2xl text-maroon mb-4">{t("mapTitle")}</h2>
           
-          <p className="text-xs text-ink/70 mb-4 font-medium">Punjab · Haryana · Delhi pilot region. Click any pin to preview a story.</p>
+          <p className="text-xs text-ink/70 mb-4 font-medium">{t("mapPilot")}</p>
           
           <div className="flex flex-wrap gap-2 mb-6">
             {filters.map(filter => (
@@ -103,20 +125,53 @@ export default function Map() {
                     : "bg-white border-maroon/20 text-ink/70 hover:text-maroon hover:border-maroon/40"
                 }`}
               >
-                {filter}
+                {t(TAG_KEY[filter])}
               </button>
             ))}
           </div>
 
           <div className="flex items-center justify-between py-3 border-t border-maroon/10">
             <span className="text-xs font-medium text-ink/80 max-w-[200px]">
-              Partition migration path (Lahore ↔ Amritsar · Historical reference)
+              {t("partitionToggle")}
             </span>
             <button 
+              role="switch"
+              aria-checked={showMigrationPath}
+              aria-label={t("partitionToggle")}
               onClick={() => setShowMigrationPath(!showMigrationPath)}
               className={`w-10 h-5 rounded-full relative transition-colors duration-200 ease-in-out cursor-pointer ${showMigrationPath ? 'bg-terracotta' : 'bg-maroon/20'}`}
             >
               <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out ${showMigrationPath ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+
+          {/* Heritage quiz layer (from the quiz module) */}
+          <div className="py-3 border-t border-maroon/10">
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-ink/85">
+                <Brain className="w-4 h-4 text-maroon" aria-hidden /> {t("quizLayer")}
+              </span>
+              <button
+                role="switch"
+                aria-checked={quizVisible}
+                aria-label={t("quizLayer")}
+                onClick={() => setShowQuizSpots(!quizVisible)}
+                className={`w-10 h-5 shrink-0 rounded-full relative transition-colors duration-200 ease-in-out cursor-pointer ${quizVisible ? 'bg-maroon' : 'bg-maroon/20'}`}
+              >
+                <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out ${quizVisible ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+            {quizVisible && quizCount > 0 && <p className="text-[11px] text-ink/55 mt-1.5">{t("quizLayerHint", { n: quizCount })}</p>}
+            <button
+              onClick={() => {
+                if (!map) return;
+                if (indiaView) map.flyTo(mapCenter, 8);
+                else map.flyToBounds(INDIA_BOUNDS);
+                setIndiaView(!indiaView);
+              }}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-maroon hover:text-terracotta cursor-pointer"
+            >
+              <Globe2 className="w-3.5 h-3.5" aria-hidden /> {indiaView ? t("showPilot") : t("showIndia")}
             </button>
           </div>
         </div>
@@ -124,7 +179,7 @@ export default function Map() {
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
           {filteredStories.map((story) => (
             <div key={story.id} className="p-3 border border-maroon/10 rounded-lg hover:border-terracotta/50 hover:bg-parchment/30 transition-all cursor-pointer group">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-terracotta mb-1">{story.tag}</div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-terracotta mb-1">{t(TAG_KEY[story.tag])}</div>
               <h4 className="font-serif text-[15px] leading-tight text-maroon group-hover:text-terracotta transition-colors mb-2">{story.title}</h4>
               <div className="flex items-center gap-1 text-xs text-ink/60">
                 <MapPin className="w-3 h-3" /> {story.loc}
@@ -139,7 +194,7 @@ export default function Map() {
         
         {/* Top Banner Alert */}
         <div className="absolute top-0 left-0 right-0 bg-turmeric/90 backdrop-blur text-ink text-xs font-medium py-2 px-4 text-center z-[1000] shadow-sm border-b border-turmeric/50 flex justify-center items-center gap-2">
-          Historical reference — Partition migration paths are approximate, based on community memory, not verified historical routes.
+          {t("partitionBanner")}
         </div>
 
         <MapContainer 
@@ -147,6 +202,7 @@ export default function Map() {
           zoom={8} 
           style={{ width: "100%", height: "100%" }}
           zoomControl={false}
+          ref={setMap}
         >
           {/* Free publicly accessible basemap (CartoDB Positron) */}
           <TileLayer
@@ -161,6 +217,8 @@ export default function Map() {
             />
           )}
 
+          {quizVisible && <HeritageMapLayer onLoaded={onLoaded} />}
+
           {filteredStories.map((story) => (
             <Marker 
               key={story.id} 
@@ -169,11 +227,11 @@ export default function Map() {
             >
               <Popup className="heritage-popup" closeButton={false}>
                 <div className="p-1 max-w-[220px]">
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-terracotta mb-1">{story.tag}</div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-terracotta mb-1">{t(TAG_KEY[story.tag])}</div>
                   <h4 className="font-serif text-sm leading-tight text-maroon mb-2">{story.title}</h4>
                   <p className="text-xs text-ink/70 mb-3 leading-snug">{story.preview}</p>
                   <Link to={`/story/${story.id}`} className="text-xs text-terracotta font-medium hover:text-maroon flex items-center gap-1 transition-colors">
-                    Read full story &rarr;
+                    {t("readStory")} &rarr;
                   </Link>
                 </div>
               </Popup>
@@ -182,24 +240,34 @@ export default function Map() {
         </MapContainer>
 
         {/* Floating Legend */}
-        <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-maroon/10 z-[1000] w-64">
-          <h4 className="text-xs font-bold tracking-widest text-maroon/60 uppercase mb-3">Story Types</h4>
+        <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-maroon/10 z-[1000] w-64" dir={langDir(lang)}>
+          <h4 className="text-xs font-bold tracking-widest text-maroon/60 uppercase mb-3">{t("storyTypes")}</h4>
           <div className="space-y-2 text-xs text-ink/80">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#3B82F6] border border-white shadow-sm" /> Oral History
+              <div className="w-3 h-3 rounded-full bg-[#3B82F6] border border-white shadow-sm" /> {t("tagOral")}
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#C9622E] border border-white shadow-sm" /> Craft & Tradition
+              <div className="w-3 h-3 rounded-full bg-[#C9622E] border border-white shadow-sm" /> {t("tagCraft")}
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#10B981] border border-white shadow-sm" /> Folk Song
+              <div className="w-3 h-3 rounded-full bg-[#10B981] border border-white shadow-sm" /> {t("tagFolk")}
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#D97706] border border-white shadow-sm" /> Living Tradition
+              <div className="w-3 h-3 rounded-full bg-[#D97706] border border-white shadow-sm" /> {t("tagLiving")}
             </div>
             {showMigrationPath && (
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-maroon/10 text-[11px]">
-                <div className="w-8 border-t-2 border-dashed border-[#A83E22]" /> Partition Path
+                <div className="w-8 border-t-2 border-dashed border-[#A83E22]" /> {t("partitionPath")}
+              </div>
+            )}
+            {quizVisible && (
+              <div className="mt-3 pt-3 border-t border-maroon/10 space-y-1.5 text-[11px]">
+                <p className="font-semibold text-ink/70">{t("quizLayer")}</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#3E6B4F] border border-white shadow-sm" />{t("bandStable")}</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#C68A1D] border border-white shadow-sm" />{t("bandVulnerable")}</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#A83E22] border border-white shadow-sm" />{t("bandCritical")}</span>
+                </div>
               </div>
             )}
           </div>
