@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router";
-import { BarChart3, CalendarDays, Check, Gift, Globe, LayoutGrid, RotateCcw, UserRound, WifiOff } from "lucide-react";
-import { LANG_OPTIONS, useI18n, type StringKey } from "../i18n";
+import { BarChart3, CalendarDays, Gift, LayoutGrid, RotateCcw, UserRound, WifiOff } from "lucide-react";
+import { useI18n, type StringKey } from "../i18n";
 import { cx } from "./ui";
 
 const LINKS: { to: string; label: StringKey; icon: typeof LayoutGrid; end?: boolean }[] = [
@@ -14,51 +13,7 @@ const LINKS: { to: string; label: StringKey; icon: typeof LayoutGrid; end?: bool
   { to: "/quiz/offline", label: "navOffline", icon: WifiOff },
 ];
 
-function LanguagePicker() {
-  const { lang, setLang, t } = useI18n();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const close = (e: MouseEvent) => ref.current && !ref.current.contains(e.target as Node) && setOpen(false);
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
-  const current = LANG_OPTIONS.find((l) => l.code === lang)!;
-  return (
-    <div className="relative shrink-0" ref={ref}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label={t("language")}
-        className="flex items-center gap-1.5 text-xs font-semibold text-maroon bg-maroon/5 hover:bg-maroon/10 border border-maroon/25 rounded-full px-3 py-1.5 my-2 cursor-pointer"
-      >
-        <Globe className="w-3.5 h-3.5" aria-hidden /> {current.short}
-      </button>
-      {open && (
-        <div className="absolute end-0 mt-1 w-40 bg-parchment border border-maroon/20 rounded-lg shadow-lg py-1 z-[60]">
-          {LANG_OPTIONS.map((l) => (
-            <button
-              key={l.code}
-              onClick={() => {
-                setLang(l.code);
-                setOpen(false);
-              }}
-              className={cx(
-                "w-full flex items-center justify-between px-3.5 py-2 text-sm text-start cursor-pointer",
-                l.code === lang ? "bg-terracotta/15 text-maroon font-semibold" : "text-ink/80 hover:bg-maroon/5",
-              )}
-            >
-              {l.label}
-              {l.code === lang && <Check className="w-3.5 h-3.5 text-terracotta" aria-hidden />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** Secondary navigation shared by all quiz pages. */
+/** Secondary navigation shared by all quiz pages. The language is chosen in the site header. */
 export function QuizNav() {
   const { t } = useI18n();
   return (
@@ -82,7 +37,6 @@ export function QuizNav() {
             </NavLink>
           ))}
         </div>
-        <LanguagePicker />
       </div>
     </nav>
   );

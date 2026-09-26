@@ -6,6 +6,7 @@ import { quizApi } from "../api/quizApi";
 import { useApi } from "../hooks/useApi";
 import { Button, Card, CoinBadge, ErrorState, Modal, Pill, Spinner, Toast, cx } from "../components/ui";
 import { useI18n } from "../i18n";
+import { useLevelName } from "./QuizHome";
 
 const KIND_ICON: Record<RewardKind, typeof Gift> = {
   museum: Landmark,
@@ -23,6 +24,7 @@ function rewardIcon(r: { rewardId?: string; id?: string; kind?: RewardKind }) {
 export default function Rewards() {
   const { t, lang } = useI18n();
   const locale = lang === "en" ? "en-IN" : `${lang}-IN`;
+  const levelName = useLevelName();
   const profile = useApi(() => quizApi.profile());
   const rewards = useApi(() => quizApi.rewards());
   const wallet = useApi(() => quizApi.redemptions());
@@ -81,7 +83,7 @@ export default function Rewards() {
             <div className="rounded-xl bg-white/10 px-4 py-2.5">
               <p className="text-[11px] text-white/60">{t("yourLevel")}</p>
               <p className="font-serif text-lg font-semibold">
-                {p.level.level}. {lang === "hi" ? p.level.hindi : p.level.name}
+                {p.level.level}. {levelName(p.level.level)}
               </p>
             </div>
           </div>

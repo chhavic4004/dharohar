@@ -1,17 +1,17 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
 import type { Lang } from "@shared/quiz-contract";
-import { setRequestLang } from "../api/client";
+import { SITE_LANGS, langDir, setLang as setSiteLang, useLang } from "../../../lib/language";
 import { EN, HI, PA, UR, type StringKey } from "./strings";
+import { HI_MORE, PA_MORE, UR_MORE } from "./strings.more";
 
-const DICTS: Record<Lang, Partial<Record<StringKey, string>>> = { en: EN, hi: HI, pa: PA, ur: UR };
-const STORAGE_KEY = "dharohar.lang";
+const DICTS: Record<Lang, Partial<Record<StringKey, string>>> = {
+  en: EN,
+  hi: { ...HI, ...HI_MORE },
+  pa: { ...PA, ...PA_MORE },
+  ur: { ...UR, ...UR_MORE },
+};
 
-export const LANG_OPTIONS: { code: Lang; label: string; short: string; speech: string }[] = [
-  { code: "en", label: "English", short: "EN", speech: "en-IN" },
-  { code: "hi", label: "हिन्दी", short: "हि", speech: "hi-IN" },
-  { code: "pa", label: "ਪੰਜਾਬੀ", short: "ਪੰ", speech: "pa-IN" },
-  { code: "ur", label: "اردو", short: "ار", speech: "ur-IN" },
-];
+export const LANG_OPTIONS = SITE_LANGS;
 
 type T = (key: StringKey, vars?: Record<string, string | number>) => string;
 
@@ -24,43 +24,12 @@ interface Ctx {
 
 const I18nContext = createContext<Ctx | null>(null);
 
-function readStored(): Lang {
-  try {
-    const v = localStorage.getItem(STORAGE_KEY);
-    if (v === "en" || v === "hi" || v === "pa" || v === "ur") return v;
-  } catch {
-    /* storage blocked */
-  }
-  return "en";
-}
-
 /**
- * Language state for the quiz. Stored in localStorage under "dharohar.lang"
- * and broadcast with a "dharohar:lang" window event, so the site's main
- * language picker can drive it too: window.dispatchEvent(new CustomEvent("dharohar:lang", { detail: "hi" })).
+ * Quiz text in the site's current language. The language itself lives in
+ * src/lib/language.ts, so the header picker, the quiz and the map always agree.
  */
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(readStored);
-
-  useEffect(() => setRequestLang(lang), [lang]);
-
-  useEffect(() => {
-    const onLang = (e: Event) => {
-      const l = (e as CustomEvent<string>).detail;
-      if (l === "en" || l === "hi" || l === "pa" || l === "ur") setLangState(l);
-    };
-    window.addEventListener("dharohar:lang", onLang);
-    return () => window.removeEventListener("dharohar:lang", onLang);
-  }, []);
-
-  const setLang = useCallback((l: Lang) => {
-    setLangState(l);
-    try {
-      localStorage.setItem(STORAGE_KEY, l);
-    } catch {
-      /* ignore */
-    }
-  }, []);
+  const lang = useLang();
 
   const t = useCallback<T>(
     (key, vars) => {
@@ -71,7 +40,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [lang],
   );
 
-  const value = useMemo(() => ({ lang, setLang, t, dir: lang === "ur" ? ("rtl" as const) : ("ltr" as const) }), [lang, setLang, t]);
+  const value = useMemo(() => ({ lang, setLang: setSiteLang, t, dir: langDir(lang) }), [lang, t]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

@@ -25,7 +25,7 @@ import { HeritageLinks } from "../components/ExplanationCard";
 import { Button, Card, CoinBadge, ErrorState, ProgressBar, Spinner, Toast, cx } from "../components/ui";
 import { useApi } from "../hooks/useApi";
 import { useI18n } from "../i18n";
-import { useCategoryLabel } from "./QuizHome";
+import { useCategoryLabel, useLevelName } from "./QuizHome";
 
 function ScoreRing({ score, total }: { score: number; total: number }) {
   const r = 52;
@@ -70,6 +70,7 @@ function Stat({ icon: Icon, label, value }: { icon: typeof Clock; label: string;
 function Results({ result }: { result: QuizResult }) {
   const navigate = useNavigate();
   const { t, lang } = useI18n();
+  const levelName = useLevelName();
   const catLabel = useCategoryLabel();
   const [open, setOpen] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "wrong">("all");
@@ -148,7 +149,7 @@ function Results({ result }: { result: QuizResult }) {
             )}
             {leveledUp && (
               <span className="inline-flex items-center gap-1 rounded-full bg-turmeric text-white text-xs px-3 py-1">
-                <Sparkles className="w-3.5 h-3.5" aria-hidden /> {t("levelUp", { name: lang === "hi" ? result.levelAfter.hindi : result.levelAfter.name })}
+                <Sparkles className="w-3.5 h-3.5" aria-hidden /> {t("levelUp", { name: levelName(result.levelAfter.level) })}
               </span>
             )}
           </div>

@@ -4,11 +4,13 @@ import { quizApi } from "../api/quizApi";
 import { useApi } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Button, Card, ErrorState, Spinner } from "../components/ui";
+import { useLevelName } from "./QuizHome";
 
 /** Printable certificate, unlocked by redeeming "Heritage Supporter Certificate". */
 export default function Certificate() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
+  const levelName = useLevelName();
   const profile = useApi(() => quizApi.profile());
   const wallet = useApi(() => quizApi.redemptions());
 
@@ -62,7 +64,7 @@ export default function Certificate() {
         <p className="text-base text-ink/75 max-w-xl mx-auto leading-relaxed">
           {t("certBody", {
             level: p.level.level,
-            name: hi ? p.level.hindi : p.level.name,
+            name: levelName(p.level.level),
             correct: p.correctAnswers,
             quizzes: p.quizzesCompleted,
           })}

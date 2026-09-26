@@ -331,6 +331,20 @@ export const EN = {
   next: "Next",
   adminWrongKey: "That key was not accepted.",
   certRedeemFirst: "Unlock certificate",
+
+  // Category and level names
+  cat_rhythms: "Rhythms & Ragas",
+  cat_architecture: "Architectural Marvels",
+  cat_culinary: "Culinary Roots",
+  cat_traditions: "Living Traditions & Lore",
+  cat_rulers: "Rulers & Empires",
+  level_1: "Novice Explorer",
+  level_2: "Curious Learner",
+  level_3: "Heritage Seeker",
+  level_4: "Cultural Scholar",
+  level_5: "Keeper of Lore",
+  level_6: "Heritage Master",
+  level_7: "Dharohar Laureate",
 };
 
 export type StringKey = keyof typeof EN;

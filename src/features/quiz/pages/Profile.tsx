@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Award, Check, Flame, Lock, Pencil, RotateCcw, Target, Trophy } from "lucide-react";
+import { Award, Check, CloudUpload, Flame, Lock, Pencil, RotateCcw, Target, Trophy } from "lucide-react";
+import { siteText } from "../../../i18n/site";
 import { quizApi } from "../api/quizApi";
 import { CATEGORY_IDS, CATEGORY_META } from "../constants";
 import { useApi } from "../hooks/useApi";
 import { useI18n, type StringKey } from "../i18n";
 import { Button, Card, CoinBadge, ErrorState, ProgressBar, Spinner, cx } from "../components/ui";
-import { useCategoryLabel } from "./QuizHome";
+import { useCategoryLabel, useLevelName } from "./QuizHome";
 
 export default function Profile() {
   const { t, lang } = useI18n();
   const locale = lang === "en" ? "en-IN" : `${lang}-IN`;
   const catLabel = useCategoryLabel();
+  const levelName = useLevelName();
   const profile = useApi(() => quizApi.profile());
   const wallet = useApi(() => quizApi.redemptions());
   const [editing, setEditing] = useState(false);
@@ -83,8 +85,8 @@ export default function Profile() {
                 </h1>
               )}
               <p className="text-sm text-ink/60">
-                {t("level", { n: p.level.level })}: {hi ? p.level.hindi : p.level.name}{" "}
-                {!hi && <span className="font-devanagari text-maroon/80">{p.level.hindi}</span>}
+                {t("level", { n: p.level.level })}: {levelName(p.level.level)}{" "}
+                {lang === "en" && <span className="font-devanagari text-maroon/80">{p.level.hindi}</span>}
               </p>
               <ProgressBar value={p.level.progress} className="mt-2" label={t("level", { n: p.level.level })} />
               <p className="text-xs text-ink/50 mt-1">
@@ -128,6 +130,20 @@ export default function Profile() {
             )}
           </div>
         </Card>
+
+        {/* Guests: nudge to create an account so progress is saved */}
+        {p.id.startsWith("g:") && (
+          <Card className="p-5 border-turmeric/40 bg-turmeric/10 flex flex-wrap items-center gap-4">
+            <CloudUpload className="w-7 h-7 text-[#8a5f12] shrink-0" aria-hidden />
+            <div className="flex-1 min-w-[200px]">
+              <p className="font-serif font-semibold text-ink">{siteText(lang, "guestTitle")}</p>
+              <p className="text-xs text-ink/65 mt-0.5">{siteText(lang, "guestBody")}</p>
+            </div>
+            <Link to="/login?mode=signup&next=/quiz/profile" className="rounded-xl bg-maroon text-white text-sm font-semibold px-4 py-2.5 hover:bg-terracotta">
+              {siteText(lang, "guestCta")}
+            </Link>
+          </Card>
+        )}
 
         {/* Spaced repetition summary */}
         <Card className="p-5">

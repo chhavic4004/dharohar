@@ -5,18 +5,25 @@ import { QUESTIONS_PER_QUIZ, type Difficulty, type QuizCategoryParam, type Start
 import { quizApi } from "../api/quizApi";
 import { CATEGORY_IDS, CATEGORY_META } from "../constants";
 import { useApi } from "../hooks/useApi";
-import { useI18n } from "../i18n";
+import { useI18n, type StringKey } from "../i18n";
 import { Button, Card, CoinBadge, ProgressBar, SectionTitle, cx } from "../components/ui";
 
 export function useCategoryLabel() {
-  const { lang, t } = useI18n();
-  return (id: QuizCategoryParam) => (id === "mixed" ? t("mixedBag") : lang === "hi" ? CATEGORY_META[id].hindi : CATEGORY_META[id].label);
+  const { t } = useI18n();
+  return (id: QuizCategoryParam) => (id === "mixed" ? t("mixedBag") : t(`cat_${id}` as StringKey));
+}
+
+/** Level names in the current language (the server sends English and Hindi only). */
+export function useLevelName() {
+  const { t } = useI18n();
+  return (level: number) => t(`level_${Math.min(Math.max(level, 1), 7)}` as StringKey);
 }
 
 export default function QuizHome() {
   const navigate = useNavigate();
   const { t, lang } = useI18n();
   const catLabel = useCategoryLabel();
+  const levelName = useLevelName();
   const [selected, setSelected] = useState<QuizCategoryParam | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>("seeker");
   const [starting, setStarting] = useState<string | null>(null);
@@ -80,7 +87,7 @@ export default function QuizHome() {
             <Link to="/quiz/profile" className="flex-1 min-w-[180px] group">
               <p className="text-[11px] uppercase tracking-widest text-ink/50">{t("level", { n: profile.data.level.level })}</p>
               <p className="font-serif font-semibold text-ink group-hover:text-maroon">
-                {lang === "hi" ? profile.data.level.hindi : profile.data.level.name}
+                {levelName(profile.data.level.level)}
               </p>
               <ProgressBar value={profile.data.level.progress} className="mt-1.5" label="Level progress" />
               <p className="text-[11px] text-ink/50 mt-1">
@@ -171,7 +178,7 @@ export default function QuizHome() {
                       {catLabel(id)}
                     </p>
                     <p className="text-xs mt-0.5 font-devanagari" style={{ color: isSel ? "rgba(255,255,255,0.8)" : "#7A1F35" }}>
-                      {lang === "hi" ? m.label : m.hindi}
+                      {lang === "en" ? m.hindi : m.label}
                     </p>
                     {n !== null && (
                       <p className="text-[11px] mt-1" style={{ color: isSel ? "rgba(255,255,255,0.7)" : "rgba(36,27,29,0.5)" }}>
