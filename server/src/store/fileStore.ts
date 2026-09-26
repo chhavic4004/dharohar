@@ -4,6 +4,7 @@ import { ApiError } from "../middleware/errors";
 import {
   readField,
   type AccountDoc,
+  type OtpDoc,
   type AttemptDoc,
   type ChallengeDoc,
   type DailyAnswerDoc,
@@ -26,10 +27,11 @@ interface Data {
   offlinePacks: Record<string, OfflinePackDoc>;
   answerStats: Record<string, QuestionStatDoc>;
   accounts: Record<string, AccountDoc>;
+  otps: Record<string, OtpDoc>;
 }
 
 const empty = (): Data => ({
-  users: {}, sessions: {}, attempts: {}, daily: {}, redemptions: {}, challenges: {}, offlinePacks: {}, answerStats: {}, accounts: {},
+  users: {}, sessions: {}, attempts: {}, daily: {}, redemptions: {}, challenges: {}, offlinePacks: {}, answerStats: {}, accounts: {}, otps: {},
 });
 const clone = <T>(v: T): T => structuredClone(v);
 
@@ -181,7 +183,7 @@ export class FileStore implements Store {
 
   async insertAccount(doc: AccountDoc) {
     const taken = Object.values(this.data.accounts).some(
-      (a) => a.id === doc.id || a.email === doc.email || (doc.googleSub && a.googleSub === doc.googleSub),
+      (a) => a.id === doc.id || a.email === doc.email || (doc.googleSub && a.googleSub === doc.googleSub) || (doc.phone && a.phone === doc.phone),
     );
     if (taken) return false;
     this.data.accounts[doc.id] = clone(doc);
@@ -200,6 +202,30 @@ export class FileStore implements Store {
     const a = Object.values(this.data.accounts).find((x) => x.googleSub === sub);
     return a ? clone(a) : null;
   }
+  async findAccountByPhone(phone: string) {
+    const a = Object.values(this.data.accounts).find((x) => x.phone === phone);
+    return a ? clone(a) : null;
+  }
+
+  async insertOtp(doc: OtpDoc) {
+    // Drop expired checks while we are here
+    const now = new Date().toISOString();
+    for (const [id, o] of Object.entries(this.data.otps)) if (o.expiresAt < now) delete this.data.otps[id];
+    this.data.otps[doc.id] = clone(doc);
+    this.persist();
+  }
+  async getOtp(id: string) {
+    const o = this.data.otps[id];
+    return o ? clone(o) : null;
+  }
+  async updateOtp(id: string, mutate: (o: OtpDoc) => void) {
+    return this.update(this.data.otps, id, mutate, "Verification");
+  }
+  async deleteOtp(id: string) {
+    delete this.data.otps[id];
+    this.persist();
+  }
+
   async updateAccount(id: string, mutate: (a: AccountDoc) => void) {
     return this.update(this.data.accounts, id, mutate, "Account");
   }

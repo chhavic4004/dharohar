@@ -2,6 +2,7 @@ import { MongoClient, type Collection, type Db, type Document } from "mongodb";
 import { ApiError } from "../middleware/errors";
 import type {
   AccountDoc,
+  OtpDoc,
   AttemptDoc,
   BaseDoc,
   ChallengeDoc,
@@ -62,6 +63,7 @@ export class MongoStore implements Store {
   private get answerStats() { return this.col("quiz_answer_stats"); }
   /** Site-wide logins, so not prefixed with quiz_ */
   private get accounts() { return this.col("accounts"); }
+  private get otps() { return this.col("auth_otps"); }
 
   private async ensureIndexes() {
     await Promise.all([
@@ -73,6 +75,8 @@ export class MongoStore implements Store {
       this.offlinePacks.createIndex({ userId: 1 }),
       this.accounts.createIndex({ email: 1 }, { unique: true }),
       this.accounts.createIndex({ googleSub: 1 }, { unique: true, partialFilterExpression: { googleSub: { $type: "string" } } }),
+      this.accounts.createIndex({ phone: 1 }, { unique: true, partialFilterExpression: { phone: { $type: "string" } } }),
+      this.otps.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 }),
       this.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 }).catch(() => undefined),
     ]);
   }
@@ -216,6 +220,39 @@ export class MongoStore implements Store {
   async findAccountByGoogleSub(sub: string) {
     return fromStored<AccountDoc>(await this.accounts.findOne({ googleSub: sub } as Document));
   }
+  async findAccountByPhone(phone: string) {
+    return fromStored<AccountDoc>(await this.accounts.findOne({ phone } as Document));
+  }
+
+  async insertOtp(doc: OtpDoc) {
+    // expireAt (a Date) lets MongoDB delete old checks automatically
+    await this.otps.insertOne({ ...toStored(doc), expireAt: new Date(doc.expiresAt) } as never);
+  }
+  async getOtp(id: string) {
+    const raw = await this.otps.findOne({ _id: id } as Document);
+    if (!raw) return null;
+    const { expireAt: _e, ...rest } = raw;
+    return fromStored<OtpDoc>(rest);
+  }
+  async updateOtp(id: string, mutate: (o: OtpDoc) => void) {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const current = await this.getOtp(id);
+      if (!current) throw new ApiError(404, "not_found", "Verification not found");
+      const next = structuredClone(current);
+      mutate(next);
+      next.version = current.version + 1;
+      const res = await this.otps.replaceOne(
+        { _id: id, version: current.version } as Document,
+        { ...toStored(next), expireAt: new Date(next.expiresAt) } as never,
+      );
+      if (res.matchedCount === 1) return next;
+    }
+    throw new ApiError(409, "conflict", "Please try again.");
+  }
+  async deleteOtp(id: string) {
+    await this.otps.deleteOne({ _id: id } as Document);
+  }
+
   updateAccount(id: string, mutate: (a: AccountDoc) => void) {
     return this.update(this.accounts, id, mutate, "Account");
   }

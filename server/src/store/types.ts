@@ -151,6 +151,10 @@ export interface AccountDoc extends BaseDoc {
   /** scrypt hash, absent for Google-only accounts */
   passwordHash?: string;
   googleSub?: string;
+  /** E.164, for example +919876543210. Only ever saved after an OTP check. */
+  phone?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
   displayName: string;
   avatarUrl?: string;
   /** Bumped to sign out every device (password change, "log out everywhere") */
@@ -158,6 +162,26 @@ export interface AccountDoc extends BaseDoc {
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string;
+}
+
+/**
+ * A pending one-time-password check (sign up, password reset, adding a phone).
+ * Codes are stored only as HMAC hashes. Deleted once used or expired.
+ */
+export interface OtpDoc extends BaseDoc {
+  purpose: "register" | "reset" | "phone";
+  /** Account the check belongs to (reset, phone). Absent for sign up. */
+  accountId?: string;
+  email?: string;
+  phone?: string;
+  emailCodeHash?: string;
+  phoneCodeHash?: string;
+  attempts: number;
+  sends: number;
+  lastSentAt: string;
+  expiresAt: string;
+  /** Sign up details, held until both codes are verified */
+  pending?: { displayName: string; passwordHash: string };
 }
 
 export interface QuestionStatDoc {
@@ -218,6 +242,12 @@ export interface Store {
   getAccount(id: string): Promise<AccountDoc | null>;
   findAccountByEmail(email: string): Promise<AccountDoc | null>;
   findAccountByGoogleSub(sub: string): Promise<AccountDoc | null>;
+  findAccountByPhone(phone: string): Promise<AccountDoc | null>;
+
+  insertOtp(doc: OtpDoc): Promise<void>;
+  getOtp(id: string): Promise<OtpDoc | null>;
+  updateOtp(id: string, mutate: (o: OtpDoc) => void): Promise<OtpDoc>;
+  deleteOtp(id: string): Promise<void>;
   updateAccount(id: string, mutate: (a: AccountDoc) => void): Promise<AccountDoc>;
 
   /**

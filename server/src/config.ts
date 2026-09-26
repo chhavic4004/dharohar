@@ -16,4 +16,18 @@ export const config = {
   /** OAuth client id from Google Cloud Console. Google sign-in is off without it. */
   googleClientId: process.env.GOOGLE_CLIENT_ID?.trim() || "",
   tokenDays: Number(process.env.AUTH_TOKEN_DAYS ?? 30),
+  /** OTP email: Brevo or Resend. Without a key, codes are printed to the console (development only). */
+  email: {
+    brevoKey: process.env.BREVO_API_KEY?.trim() || "",
+    resendKey: process.env.RESEND_API_KEY?.trim() || "",
+    from: process.env.EMAIL_FROM?.trim() || "",
+    fromName: process.env.EMAIL_FROM_NAME?.trim() || "Dharohar",
+  },
+  /** OTP SMS: Twilio or Fast2SMS. Without a key, codes are printed to the console (development only). */
+  sms: {
+    twilioSid: process.env.TWILIO_ACCOUNT_SID?.trim() || "",
+    twilioToken: process.env.TWILIO_AUTH_TOKEN?.trim() || "",
+    twilioFrom: process.env.TWILIO_FROM?.trim() || "",
+    fast2smsKey: process.env.FAST2SMS_API_KEY?.trim() || "",
+  },
 };

@@ -38,21 +38,46 @@ export function authRouter(service: AuthService) {
   const r = Router();
   const strict = config.isTest
     ? []
-    : [rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false, message: { error: { code: "rate_limited", message: "Too many attempts. Please wait a few minutes and try again." } } })];
+    : [rateLimit({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: "draft-7", legacyHeaders: false, message: { error: { code: "rate_limited", message: "Too many attempts. Please wait a few minutes and try again." } } })];
 
   r.get("/config", (_req, res) => {
     const body: AuthConfig = { googleClientId: isGoogleEnabled() ? config.googleClientId || "test-client" : null, passwordMinLength: PASSWORD_MIN_LENGTH };
     res.json(body);
   });
 
-  r.post("/register", ...strict, async (req, res) => {
-    const body = z.object({ email, password, displayName }).parse(req.body);
-    res.status(201).json(await service.register(body.email, body.password, body.displayName, guestIdOf(req)));
+  const code = z.string().trim().regex(/^\d{6}$/, "Enter the 6 digit code.");
+  const verificationId = z.string().uuid();
+
+  // Sign up, step 1: send codes to the email and the phone. Nothing is saved yet.
+  r.post("/register/start", ...strict, async (req, res) => {
+    const body = z.object({ email, phone: z.string().trim().min(8).max(20), password, displayName }).parse(req.body);
+    res.status(202).json(await service.startRegistration(body.email, body.phone, body.password, body.displayName));
+  });
+
+  // Sign up, step 2: both codes correct, then the account is created.
+  r.post("/register/verify", ...strict, async (req, res) => {
+    const body = z.object({ verificationId, emailCode: code, phoneCode: code }).parse(req.body);
+    res.status(201).json(await service.completeRegistration(body.verificationId, body.emailCode, body.phoneCode, guestIdOf(req)));
+  });
+
+  r.post("/otp/resend", ...strict, async (req, res) => {
+    const body = z.object({ verificationId, channel: z.enum(["email", "phone"]) }).parse(req.body);
+    res.json(await service.resend(body.verificationId, body.channel));
   });
 
   r.post("/login", ...strict, async (req, res) => {
-    const body = z.object({ email, password: z.string().min(1).max(128) }).parse(req.body);
-    res.json(await service.login(body.email, body.password, guestIdOf(req)));
+    const body = z.object({ identifier: z.string().trim().min(3).max(120), password: z.string().min(1).max(128) }).parse(req.body);
+    res.json(await service.login(body.identifier, body.password, guestIdOf(req)));
+  });
+
+  r.post("/password/forgot", ...strict, async (req, res) => {
+    const body = z.object({ email }).parse(req.body);
+    res.status(202).json(await service.startPasswordReset(body.email));
+  });
+
+  r.post("/password/reset", ...strict, async (req, res) => {
+    const body = z.object({ verificationId, code, newPassword: password }).parse(req.body);
+    res.json(await service.completePasswordReset(body.verificationId, body.code, body.newPassword, guestIdOf(req)));
   });
 
   r.post("/google", ...strict, async (req, res) => {
@@ -76,6 +101,17 @@ export function authRouter(service: AuthService) {
   r.post("/password", ...strict, async (req, res) => {
     const body = z.object({ currentPassword: z.string().max(128).optional(), newPassword: password }).parse(req.body);
     res.json(await service.changePassword(accountIdOf(req), body.currentPassword, body.newPassword));
+  });
+
+  // Add or change the account's phone (used after Google sign-in)
+  r.post("/phone/start", ...strict, async (req, res) => {
+    const body = z.object({ phone: z.string().trim().min(8).max(20) }).parse(req.body);
+    res.status(202).json(await service.startPhoneVerification(accountIdOf(req), body.phone));
+  });
+
+  r.post("/phone/verify", ...strict, async (req, res) => {
+    const body = z.object({ verificationId, code }).parse(req.body);
+    res.json(await service.completePhoneVerification(accountIdOf(req), body.verificationId, body.code));
   });
 
   r.post("/logout-all", async (req, res) => {

@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
 import { config } from "../../config";
 
@@ -39,4 +39,21 @@ export async function readToken(token: string): Promise<TokenClaims | null> {
   } catch {
     return null;
   }
+}
+
+/** Keyed hash for one-time codes, so a leaked database does not reveal them. */
+export function hashCode(scope: string, code: string): string {
+  return createHmac("sha256", secret).update(`${scope}:${code}`).digest("base64url");
+}
+
+export function codeMatches(scope: string, code: string, hash: string | undefined): boolean {
+  if (!hash) return false;
+  const a = Buffer.from(hashCode(scope, code));
+  const b = Buffer.from(hash);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/** Six random digits from a cryptographic source. */
+export function newCode(): string {
+  return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
