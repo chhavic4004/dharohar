@@ -460,3 +460,28 @@ export interface RedeemResponse {
 export interface ApiError {
   error: { code: string; message: string };
 }
+
+// ─── Account history ─────────────────────────────────────────────────────────
+
+export type HistoryItem =
+  | {
+      kind: "quiz";
+      at: string;
+      attemptId: string;
+      mode: QuizMode;
+      category: QuizCategoryParam;
+      difficulty: Difficulty;
+      score: number;
+      totalQuestions: number;
+      xp: number;
+      coins: number;
+    }
+  | { kind: "daily"; at: string; date: string; correct: boolean; prompt: string; xp: number; coins: number }
+  | { kind: "reward"; at: string; title: string; partner: string; cost: number }
+  | { kind: "offline"; at: string; category: QuizCategoryParam; difficulty: Difficulty; score: number; totalQuestions: number; xp: number };
+
+export interface HistoryPage {
+  items: HistoryItem[];
+  /** Pass as ?before= to load older items; null when there is nothing older */
+  nextBefore: string | null;
+}

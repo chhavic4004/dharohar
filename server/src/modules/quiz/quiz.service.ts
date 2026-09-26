@@ -17,6 +17,8 @@ import {
   type Lang,
   type LeaderboardResponse,
   type NextQuestionResponse,
+  type HistoryItem,
+  type HistoryPage,
   type OfflinePack,
   type OfflineQuestion,
   type OfflineSubmission,
@@ -52,7 +54,7 @@ import {
 } from "./bank";
 import { answerPoints, BADGES, badgeById, levelFor, ratingFor, SCORING } from "./gamification";
 import { heritageLinks } from "./heritage/adapter";
-import { heritageById, toLink } from "./heritage/registry";
+import { HERITAGE, heritageById, toLink } from "./heritage/registry";
 import { localize } from "./i18n";
 import { correctAnswerFor, correctAnswerText, createLayout, grade, identityLayout, responseText, toPublic } from "./present";
 import { applyReview, dueQuestionIds, summarize } from "./review";
@@ -150,6 +152,118 @@ export class QuizService {
     return normalize(existing ?? (await this.store.insertUser(newUser(user, this.nowIso()))));
   }
 
+  /**
+   * Moves a guest's progress into a signed-in player. Called right after
+   * sign in or sign up. Safe to call when the guest has no data.
+   * Returns true if anything was merged.
+   */
+  async mergeGuestInto(guestUserId: string, userId: string, displayName: string): Promise<boolean> {
+    if (guestUserId === userId || !guestUserId.startsWith("g:")) return false;
+    const guest = await this.store.getUser(guestUserId);
+    if (!guest) return false;
+    const g = normalize(guest);
+    const now = this.nowIso();
+    const target = await this.store.getUser(userId);
+    if (!target) {
+      await this.store.insertUser({ ...g, id: userId, version: 0, displayName, updatedAt: now });
+    } else {
+      await this.updateUser(userId, (u) => {
+        const maxN = (a: number | null, b: number | null) => (a === null ? b : b === null ? a : Math.max(a, b));
+        u.xp += g.xp;
+        u.coins += g.coins;
+        u.quizzesCompleted += g.quizzesCompleted;
+        u.correctAnswers += g.correctAnswers;
+        u.totalAnswered += g.totalAnswered;
+        u.bestStreak = Math.max(u.bestStreak, g.bestStreak);
+        u.challengesWon += g.challengesWon;
+        const have = new Map(u.badges.map((b) => [b.id, b]));
+        for (const b of g.badges) if (!have.has(b.id)) u.badges.push(b);
+        for (const cat of CATEGORY_IDS) {
+          const gs = g.stats[cat];
+          if (!gs) continue;
+          const us = u.stats[cat] ?? emptyStats();
+          us.quizzes += gs.quizzes;
+          us.correct += gs.correct;
+          us.answered += gs.answered;
+          us.xp += gs.xp;
+          us.bestScore = { seeker: maxN(us.bestScore.seeker, gs.bestScore.seeker), historian: maxN(us.bestScore.historian, gs.bestScore.historian) };
+          u.stats[cat] = us;
+        }
+        u.mixedBest = { seeker: maxN(u.mixedBest.seeker, g.mixedBest.seeker), historian: maxN(u.mixedBest.historian, g.mixedBest.historian) };
+        u.categoriesPlayed = [...new Set([...u.categoriesPlayed, ...g.categoriesPlayed])];
+        for (const [qid, card] of Object.entries(g.review)) if (!u.review[qid]) u.review[qid] = card;
+        // Daily streak: keep whichever record answered most recently, and the best longest streak.
+        const newer = (g.daily.lastDate ?? "") > (u.daily.lastDate ?? "") ? g.daily : u.daily;
+        u.daily = {
+          streak: newer.streak,
+          lastDate: newer.lastDate,
+          longestStreak: Math.max(u.daily.longestStreak, g.daily.longestStreak),
+          totalAnswered: u.daily.totalAnswered + g.daily.totalAnswered,
+          totalCorrect: u.daily.totalCorrect + g.daily.totalCorrect,
+        };
+        u.updatedAt = now;
+      });
+    }
+    await this.store.transferUserData(guestUserId, userId);
+    await this.store.deleteUser(guestUserId);
+    return true;
+  }
+
+  /** Keeps the quiz name in step with the account name. */
+  async syncDisplayName(userId: string, displayName: string) {
+    if (await this.store.getUser(userId)) await this.updateUser(userId, (u) => (u.displayName = displayName));
+  }
+
+  /** Everything the player has done, newest first, across quizzes, daily problems, rewards and offline packs. */
+  async history(user: RequestUser, before: string | undefined, limit = 20): Promise<HistoryPage> {
+    const u = await this.ensureUser(user);
+    const [attempts, daily, redemptions, packs] = await Promise.all([
+      this.store.listAttempts(u.id, limit + 1, before),
+      this.store.listDailyAnswers(u.id, limit + 1, before),
+      this.store.listRedemptions(u.id),
+      this.store.listOfflinePacks(u.id),
+    ]);
+    const items: HistoryItem[] = [
+      ...attempts.map((a): HistoryItem => ({
+        kind: "quiz",
+        at: a.completedAt,
+        attemptId: a.id,
+        mode: a.mode ?? "standard",
+        category: a.category,
+        difficulty: a.difficulty,
+        score: a.score,
+        totalQuestions: a.totalQuestions,
+        xp: a.points,
+        coins: a.coins,
+      })),
+      ...daily.map((d): HistoryItem => ({
+        kind: "daily",
+        at: d.answeredAt,
+        date: d.date,
+        correct: d.correct,
+        prompt: DAILY_BANK.find((q) => q.id === d.questionId)?.prompt ?? "",
+        xp: d.result.xpEarned,
+        coins: d.result.coinsEarned,
+      })),
+      ...redemptions
+        .filter((r) => !before || r.redeemedAt < before)
+        .map((r): HistoryItem => ({ kind: "reward", at: r.redeemedAt, title: r.title, partner: r.partner, cost: r.cost })),
+      ...packs
+        .filter((p) => p.submittedAt && (!before || p.submittedAt < before))
+        .map((p): HistoryItem => ({
+          kind: "offline",
+          at: p.submittedAt!,
+          category: p.category,
+          difficulty: p.difficulty,
+          score: p.score ?? 0,
+          totalQuestions: p.questionIds.length,
+          xp: p.xpEarned ?? 0,
+        })),
+    ].sort((a, b) => b.at.localeCompare(a.at));
+    const page = items.slice(0, limit);
+    return { items: page, nextBefore: items.length > limit ? page[page.length - 1].at : null };
+  }
+
   private async updateUser(id: string, mutate: (u: UserDoc) => void) {
     return this.store.updateUser(id, (u) => mutate(normalize(u)));
   }
@@ -191,12 +305,16 @@ export class QuizService {
     };
   }
 
+  /** Set in app.ts so renaming a signed-in player also renames their account. */
+  onAccountRename?: (userId: string, displayName: string) => Promise<void>;
+
   async updateDisplayName(user: RequestUser, displayName: string): Promise<PlayerProfile> {
     await this.ensureUser(user);
     await this.updateUser(user.id, (u) => {
       u.displayName = displayName;
       u.updatedAt = this.nowIso();
     });
+    if (!user.isGuest) await this.onAccountRename?.(user.id, displayName);
     return this.getProfile(user);
   }
 
@@ -204,6 +322,10 @@ export class QuizService {
 
   listCategories() {
     return categorySummaries();
+  }
+
+  allHeritage(): HeritageQuizInfo[] {
+    return this.heritageInfo(HERITAGE.map((h) => h.id)).filter((h) => h.directCount > 0 && h.heritage.location);
   }
 
   heritageInfo(ids: string[]): HeritageQuizInfo[] {

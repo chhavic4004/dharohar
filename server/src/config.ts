@@ -10,4 +10,10 @@ export const config = {
     .map((s) => s.trim())
     .filter(Boolean),
   isTest: process.env.NODE_ENV === "test",
+  isProd: process.env.NODE_ENV === "production",
+  /** Secret used to sign login tokens. Required in production. */
+  authSecret: process.env.AUTH_SECRET?.trim() || "",
+  /** OAuth client id from Google Cloud Console. Google sign-in is off without it. */
+  googleClientId: process.env.GOOGLE_CLIENT_ID?.trim() || "",
+  tokenDays: Number(process.env.AUTH_TOKEN_DAYS ?? 30),
 };

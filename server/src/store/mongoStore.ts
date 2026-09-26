@@ -1,6 +1,7 @@
 import { MongoClient, type Collection, type Db, type Document } from "mongodb";
 import { ApiError } from "../middleware/errors";
 import type {
+  AccountDoc,
   AttemptDoc,
   BaseDoc,
   ChallengeDoc,
@@ -59,6 +60,8 @@ export class MongoStore implements Store {
   private get challenges() { return this.col("quiz_challenges"); }
   private get offlinePacks() { return this.col("quiz_offline_packs"); }
   private get answerStats() { return this.col("quiz_answer_stats"); }
+  /** Site-wide logins, so not prefixed with quiz_ */
+  private get accounts() { return this.col("accounts"); }
 
   private async ensureIndexes() {
     await Promise.all([
@@ -66,6 +69,10 @@ export class MongoStore implements Store {
       this.attempts.createIndex({ userId: 1, completedAt: -1 }),
       this.daily.createIndex({ userId: 1, date: 1 }, { unique: true }),
       this.redemptions.createIndex({ userId: 1, redeemedAt: -1 }),
+      this.daily.createIndex({ userId: 1, answeredAt: -1 }),
+      this.offlinePacks.createIndex({ userId: 1 }),
+      this.accounts.createIndex({ email: 1 }, { unique: true }),
+      this.accounts.createIndex({ googleSub: 1 }, { unique: true, partialFilterExpression: { googleSub: { $type: "string" } } }),
       this.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 }).catch(() => undefined),
     ]);
   }
@@ -131,8 +138,8 @@ export class MongoStore implements Store {
   async getAttempt(id: string) {
     return fromStored<AttemptDoc>(await this.attempts.findOne({ _id: id } as Document));
   }
-  async listAttempts(userId: string, limit: number) {
-    const docs = await this.attempts.find({ userId } as Document).sort({ completedAt: -1 }).limit(limit).toArray();
+  async listAttempts(userId: string, limit: number, before?: string) {
+    const docs = await this.attempts.find({ userId, ...(before ? { completedAt: { $lt: before } } : {}) } as Document).sort({ completedAt: -1 }).limit(limit).toArray();
     return docs.map((d) => fromStored<AttemptDoc>(d)!);
   }
 
@@ -147,6 +154,15 @@ export class MongoStore implements Store {
       if ((e as { code?: number }).code === 11000) return false;
       throw e;
     }
+  }
+
+  async listDailyAnswers(userId: string, limit: number, before?: string) {
+    const docs = await this.daily
+      .find({ userId, ...(before ? { answeredAt: { $lt: before } } : {}) } as Document)
+      .sort({ answeredAt: -1 })
+      .limit(limit)
+      .toArray();
+    return docs.map((d) => fromStored<DailyAnswerDoc>(d)!);
   }
 
   async insertRedemption(doc: RedemptionDoc) {
@@ -175,6 +191,64 @@ export class MongoStore implements Store {
   }
   updateOfflinePack(id: string, mutate: (p: OfflinePackDoc) => void) {
     return this.update(this.offlinePacks, id, mutate, "Offline pack");
+  }
+
+  async listOfflinePacks(userId: string) {
+    const docs = await this.offlinePacks.find({ userId } as Document).toArray();
+    return docs.map((d) => fromStored<OfflinePackDoc>(d)!);
+  }
+
+  async insertAccount(doc: AccountDoc) {
+    try {
+      await this.accounts.insertOne(toStored(doc) as never);
+      return true;
+    } catch (e) {
+      if ((e as { code?: number }).code === 11000) return false;
+      throw e;
+    }
+  }
+  async getAccount(id: string) {
+    return fromStored<AccountDoc>(await this.accounts.findOne({ _id: id } as Document));
+  }
+  async findAccountByEmail(email: string) {
+    return fromStored<AccountDoc>(await this.accounts.findOne({ email } as Document));
+  }
+  async findAccountByGoogleSub(sub: string) {
+    return fromStored<AccountDoc>(await this.accounts.findOne({ googleSub: sub } as Document));
+  }
+  updateAccount(id: string, mutate: (a: AccountDoc) => void) {
+    return this.update(this.accounts, id, mutate, "Account");
+  }
+
+  async transferUserData(from: string, to: string) {
+    const f = { userId: from } as Document;
+    const set = { $set: { userId: to } };
+    await Promise.all([
+      this.attempts.updateMany(f, set),
+      this.redemptions.updateMany(f, set),
+      this.offlinePacks.updateMany(f, set),
+      this.sessions.updateMany(f, set),
+      this.challenges.updateMany({ creatorId: from } as Document, { $set: { creatorId: to } }),
+    ]);
+    // Challenges the target already played keep the target's entry.
+    await this.challenges.updateMany({ "players.userId": { $all: [from, to] } } as Document, { $pull: { players: { userId: from } } } as Document);
+    await this.challenges.updateMany(
+      { "players.userId": from } as Document,
+      { $set: { "players.$[p].userId": to } } as Document,
+      { arrayFilters: [{ "p.userId": from }] },
+    );
+    const daily = await this.daily.find(f).toArray();
+    for (const raw of daily) {
+      const doc = fromStored<DailyAnswerDoc>(raw)!;
+      const id = `${to}|${doc.date}`;
+      await this.daily.insertOne(toStored({ ...doc, id, userId: to }) as never).catch((e) => {
+        if ((e as { code?: number }).code !== 11000) throw e;
+      });
+    }
+    await this.daily.deleteMany(f);
+  }
+  async deleteUser(id: string) {
+    await this.users.deleteOne({ _id: id } as Document);
   }
 
   async recordAnswerStat(questionId: string, correct: boolean, timeMs: number) {

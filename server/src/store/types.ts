@@ -144,6 +144,22 @@ export interface OfflinePackDoc extends BaseDoc {
   xpEarned?: number;
 }
 
+/** A Dharohar login. Quiz progress for this account is the UserDoc with id "u:<account id>". */
+export interface AccountDoc extends BaseDoc {
+  /** Lowercased */
+  email: string;
+  /** scrypt hash, absent for Google-only accounts */
+  passwordHash?: string;
+  googleSub?: string;
+  displayName: string;
+  avatarUrl?: string;
+  /** Bumped to sign out every device (password change, "log out everywhere") */
+  tokenVersion: number;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt: string;
+}
+
 export interface QuestionStatDoc {
   id: string;
   answered: number;
@@ -177,11 +193,13 @@ export interface Store {
 
   insertAttempt(attempt: AttemptDoc): Promise<void>;
   getAttempt(id: string): Promise<AttemptDoc | null>;
-  listAttempts(userId: string, limit: number): Promise<AttemptDoc[]>;
+  /** Newest first. `before` is an ISO time; only older attempts are returned. */
+  listAttempts(userId: string, limit: number, before?: string): Promise<AttemptDoc[]>;
 
   getDailyAnswer(userId: string, date: string): Promise<DailyAnswerDoc | null>;
   /** Returns false if the player already answered that day. */
   insertDailyAnswer(doc: DailyAnswerDoc): Promise<boolean>;
+  listDailyAnswers(userId: string, limit: number, before?: string): Promise<DailyAnswerDoc[]>;
 
   insertRedemption(doc: RedemptionDoc): Promise<void>;
   listRedemptions(userId: string): Promise<RedemptionDoc[]>;
@@ -193,6 +211,22 @@ export interface Store {
   insertOfflinePack(doc: OfflinePackDoc): Promise<void>;
   getOfflinePack(id: string): Promise<OfflinePackDoc | null>;
   updateOfflinePack(id: string, mutate: (p: OfflinePackDoc) => void): Promise<OfflinePackDoc>;
+  listOfflinePacks(userId: string): Promise<OfflinePackDoc[]>;
+
+  /** Accounts. insertAccount returns false if the email or Google id is already used. */
+  insertAccount(doc: AccountDoc): Promise<boolean>;
+  getAccount(id: string): Promise<AccountDoc | null>;
+  findAccountByEmail(email: string): Promise<AccountDoc | null>;
+  findAccountByGoogleSub(sub: string): Promise<AccountDoc | null>;
+  updateAccount(id: string, mutate: (a: AccountDoc) => void): Promise<AccountDoc>;
+
+  /**
+   * Moves everything a player owns (attempts, daily answers, rewards, offline
+   * packs, sessions, challenges) from one player id to another. Used when a
+   * guest signs in. Daily answers for dates the target already has are dropped.
+   */
+  transferUserData(fromUserId: string, toUserId: string): Promise<void>;
+  deleteUser(id: string): Promise<void>;
 
   /** Adds one answer to a question's running totals (atomic). */
   recordAnswerStat(questionId: string, correct: boolean, timeMs: number): Promise<void>;

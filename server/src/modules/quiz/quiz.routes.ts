@@ -64,7 +64,8 @@ export function quizRouter(service: QuizService): Router {
       .map((s) => s.trim())
       .filter(Boolean)
       .slice(0, 50);
-    res.json(service.heritageInfo(ids));
+    // No ids: every entry that has at least one question (used by the Heritage Map layer).
+    res.json(ids.length ? service.heritageInfo(ids) : service.allHeritage());
   });
 
   r.get("/heritage/:id", (req, res) => {
@@ -167,6 +168,13 @@ export function quizRouter(service: QuizService): Router {
   r.post("/rewards/:id/redeem", async (req, res) => {
     const id = z.string().min(1).max(60).parse(req.params.id);
     res.status(201).json(await service.redeem(req.user!, id));
+  });
+
+  r.get("/me/history", async (req, res) => {
+    const q = z
+      .object({ before: z.string().datetime().optional(), limit: z.coerce.number().int().min(1).max(50).optional() })
+      .parse(req.query);
+    res.json(await service.history(req.user!, q.before, q.limit));
   });
 
   r.get("/me/redemptions", async (req, res) => {

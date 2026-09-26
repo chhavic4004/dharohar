@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { ApiError } from "../middleware/errors";
 import {
   readField,
+  type AccountDoc,
   type AttemptDoc,
   type ChallengeDoc,
   type DailyAnswerDoc,
@@ -24,10 +25,11 @@ interface Data {
   challenges: Record<string, ChallengeDoc>;
   offlinePacks: Record<string, OfflinePackDoc>;
   answerStats: Record<string, QuestionStatDoc>;
+  accounts: Record<string, AccountDoc>;
 }
 
 const empty = (): Data => ({
-  users: {}, sessions: {}, attempts: {}, daily: {}, redemptions: {}, challenges: {}, offlinePacks: {}, answerStats: {},
+  users: {}, sessions: {}, attempts: {}, daily: {}, redemptions: {}, challenges: {}, offlinePacks: {}, answerStats: {}, accounts: {},
 });
 const clone = <T>(v: T): T => structuredClone(v);
 
@@ -110,9 +112,9 @@ export class FileStore implements Store {
     const a = this.data.attempts[id];
     return a ? clone(a) : null;
   }
-  async listAttempts(userId: string, limit: number) {
+  async listAttempts(userId: string, limit: number, before?: string) {
     return Object.values(this.data.attempts)
-      .filter((a) => a.userId === userId)
+      .filter((a) => a.userId === userId && (!before || a.completedAt < before))
       .sort((a, b) => b.completedAt.localeCompare(a.completedAt))
       .slice(0, limit)
       .map(clone);
@@ -128,6 +130,14 @@ export class FileStore implements Store {
     this.data.daily[key] = clone(doc);
     this.persist();
     return true;
+  }
+
+  async listDailyAnswers(userId: string, limit: number, before?: string) {
+    return Object.values(this.data.daily)
+      .filter((d) => d.userId === userId && (!before || d.answeredAt < before))
+      .sort((a, b) => b.answeredAt.localeCompare(a.answeredAt))
+      .slice(0, limit)
+      .map(clone);
   }
 
   async insertRedemption(doc: RedemptionDoc) {
@@ -163,6 +173,59 @@ export class FileStore implements Store {
   }
   async updateOfflinePack(id: string, mutate: (p: OfflinePackDoc) => void) {
     return this.update(this.data.offlinePacks, id, mutate, "Offline pack");
+  }
+
+  async listOfflinePacks(userId: string) {
+    return Object.values(this.data.offlinePacks).filter((p) => p.userId === userId).map(clone);
+  }
+
+  async insertAccount(doc: AccountDoc) {
+    const taken = Object.values(this.data.accounts).some(
+      (a) => a.id === doc.id || a.email === doc.email || (doc.googleSub && a.googleSub === doc.googleSub),
+    );
+    if (taken) return false;
+    this.data.accounts[doc.id] = clone(doc);
+    this.persist();
+    return true;
+  }
+  async getAccount(id: string) {
+    const a = this.data.accounts[id];
+    return a ? clone(a) : null;
+  }
+  async findAccountByEmail(email: string) {
+    const a = Object.values(this.data.accounts).find((x) => x.email === email);
+    return a ? clone(a) : null;
+  }
+  async findAccountByGoogleSub(sub: string) {
+    const a = Object.values(this.data.accounts).find((x) => x.googleSub === sub);
+    return a ? clone(a) : null;
+  }
+  async updateAccount(id: string, mutate: (a: AccountDoc) => void) {
+    return this.update(this.data.accounts, id, mutate, "Account");
+  }
+
+  async transferUserData(from: string, to: string) {
+    const d = this.data;
+    for (const a of Object.values(d.attempts)) if (a.userId === from) a.userId = to;
+    for (const r of Object.values(d.redemptions)) if (r.userId === from) r.userId = to;
+    for (const p of Object.values(d.offlinePacks)) if (p.userId === from) p.userId = to;
+    for (const s of Object.values(d.sessions)) if (s.userId === from) s.userId = to;
+    for (const [key, doc] of Object.entries(d.daily)) {
+      if (doc.userId !== from) continue;
+      delete d.daily[key];
+      const next = `${to}|${doc.date}`;
+      if (!d.daily[next]) d.daily[next] = { ...doc, id: next, userId: to };
+    }
+    for (const c of Object.values(d.challenges)) {
+      if (c.creatorId === from) c.creatorId = to;
+      const hasTarget = c.players.some((p) => p.userId === to);
+      c.players = c.players.filter((p) => !(hasTarget && p.userId === from)).map((p) => (p.userId === from ? { ...p, userId: to } : p));
+    }
+    this.persist();
+  }
+  async deleteUser(id: string) {
+    delete this.data.users[id];
+    this.persist();
   }
 
   async recordAnswerStat(questionId: string, correct: boolean, timeMs: number) {
