@@ -6,8 +6,9 @@ const DAY = 86_400_000;
 export const MASTERED_BOX = 6;
 
 /**
- * Leitner-style spaced repetition. A wrong answer puts the question in box 1
- * (back tomorrow). Each correct answer when it is due moves it up a box
+ * Leitner-style spaced repetition. A wrong answer puts the question in box 0,
+ * due immediately, so it shows up in Revise straight away. Each correct
+ * answer when it is due moves it up a box and schedules the next review
  * (1, 3, 7, 14, 30 days). Getting it right in box 5 marks it mastered.
  * Returns true when this answer mastered the card. O(1).
  */
@@ -15,7 +16,7 @@ export function applyReview(cards: Record<string, ReviewCard>, questionId: strin
   const nowIso = now.toISOString();
   const card = cards[questionId];
   if (!correct) {
-    cards[questionId] = { box: 1, due: new Date(now.getTime() + DAY).toISOString(), lastSeen: nowIso };
+    cards[questionId] = { box: 0, due: nowIso, lastSeen: nowIso };
     return false;
   }
   if (!card || card.box >= MASTERED_BOX) return false;

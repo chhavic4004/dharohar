@@ -136,7 +136,7 @@ describe("quiz session", () => {
     const cur = await as(GUEST_A).get(`/api/quiz/sessions/${id}/current`);
     const qid = cur.body.question.id;
     const session = (await store.getSession(id))!;
-    const answer = correctAnswerFor(getQuestion(qid)!, session.layouts[qid]);
+    const answer = toPayload(correctAnswerFor(getQuestion(qid)!, session.layouts[qid]));
     const first = await as(GUEST_A).post(`/api/quiz/sessions/${id}/answers`, { questionId: qid, answer });
     expect(first.status).toBe(200);
     const again = await as(GUEST_A).post(`/api/quiz/sessions/${id}/answers`, { questionId: qid, answer });
@@ -306,21 +306,33 @@ describe("modes", () => {
     expect(getQuestion(cur.body.question.id)!.links).toContain("phulkari");
   });
 
-  it("brings missed questions back for review after a day", async () => {
+  it("lets missed questions be revised straight away, then after 1 day", async () => {
     await playQuiz(GUEST_A, "rulers", "seeker", { wrongAt: [0, 1, 2] });
     let me = await as(GUEST_A).get("/api/quiz/me");
     expect(me.body.review.learning).toBe(3);
-    expect(me.body.review.due).toBe(0);
-    expect((await as(GUEST_A).post("/api/quiz/sessions", { mode: "review" })).status).toBe(409);
-
-    now = new Date(now.getTime() + 86_400_000 + 1000);
-    me = await as(GUEST_A).get("/api/quiz/me");
     expect(me.body.review.due).toBe(3);
-    const { result } = await playQuiz(GUEST_A, "", "seeker", { body: { mode: "review" } });
+
+    // First revision is available immediately
+    let { result } = await playQuiz(GUEST_A, "", "seeker", { body: { mode: "review" } });
     expect(result.totalQuestions).toBe(3);
     me = await as(GUEST_A).get("/api/quiz/me");
     expect(me.body.review.due).toBe(0);
     expect(me.body.review.learning).toBe(3);
+    expect((await as(GUEST_A).post("/api/quiz/sessions", { mode: "review" })).status).toBe(409);
+
+    // Next review comes back after a day
+    now = new Date(now.getTime() + 86_400_000 + 1000);
+    me = await as(GUEST_A).get("/api/quiz/me");
+    expect(me.body.review.due).toBe(3);
+    ({ result } = await playQuiz(GUEST_A, "", "seeker", { body: { mode: "review", difficulty: "seeker" } }));
+    expect(result.totalQuestions).toBe(3);
+  });
+
+  it("puts a question missed during revision straight back into Revise", async () => {
+    await playQuiz(GUEST_A, "rulers", "seeker", { wrongAt: [0] });
+    await playQuiz(GUEST_A, "", "seeker", { body: { mode: "review" }, wrongAt: [0] });
+    const me = await as(GUEST_A).get("/api/quiz/me");
+    expect(me.body.review.due).toBe(1);
   });
 
   it("lets a friend replay the exact same quiz as a challenge", async () => {
