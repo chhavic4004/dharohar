@@ -11,7 +11,46 @@
 export type CategoryId = "rhythms" | "architecture" | "culinary" | "traditions" | "rulers";
 export type QuizCategoryParam = CategoryId | "mixed";
 export type Difficulty = "seeker" | "historian";
-export type QuestionType = "mcq" | "true_false" | "odd_one_out" | "chronology" | "match";
+export type QuestionType = "mcq" | "true_false" | "odd_one_out" | "chronology" | "match" | "map_pin";
+
+/** UI and content languages. Hindi content is hand-translated; others use the translation service when configured. */
+export type Lang = "en" | "hi" | "pa" | "ur";
+export const LANGS: Lang[] = ["en", "hi", "pa", "ur"];
+
+/**
+ * How a quiz is assembled.
+ * standard: by category and difficulty. review: questions you got wrong, when due.
+ * map: map pin questions. vulnerable: traditions with a high vulnerability score.
+ * heritage: questions about one tradition or site. challenge: replay a friend's exact quiz.
+ */
+export type QuizMode = "standard" | "review" | "map" | "vulnerable" | "heritage" | "challenge";
+
+export interface LatLng {
+  lat: number;
+  lng: number;
+}
+
+export interface QuestionMedia {
+  kind: "image" | "audio";
+  url: string;
+  alt: string;
+  credit: string;
+  creditUrl: string;
+}
+
+export type HvsBand = "Stable" | "Vulnerable" | "Critical";
+
+export interface HeritageLink {
+  id: string;
+  kind: "tradition" | "site" | "food";
+  name: string;
+  hindi?: string;
+  state?: string;
+  location?: LatLng;
+  /** Heritage Vulnerability Score (0 to 100, higher means more at risk) */
+  hvs?: { score: number; band: HvsBand; isSample: boolean };
+  archive?: { storyCount?: number; recordingUrl?: string };
+}
 
 export const QUESTIONS_PER_QUIZ = 10;
 export const HISTORIAN_SECONDS = 30;
@@ -44,12 +83,18 @@ export interface PublicQuestion {
   /** match: fixed left column and shuffled right column */
   left?: ChoiceOption[];
   right?: ChoiceOption[];
+  /** map_pin: where to centre the map */
+  map?: { center: LatLng; zoom: number };
+  media?: QuestionMedia;
+  /** Language the question text is in (may fall back to English) */
+  lang: Lang;
 }
 
 export type AnswerPayload =
   | { choice: number }
   | { order: number[] }
   | { pairs: number[] }
+  | { point: LatLng }
   | { timedOut: true };
 
 export interface Explanation {
@@ -65,7 +110,11 @@ export interface Source {
 }
 
 /** The correct answer, expressed in the same display ids the player saw. */
-export type CorrectAnswer = { choice: number } | { order: number[] } | { pairs: number[] };
+export type CorrectAnswer =
+  | { choice: number }
+  | { order: number[] }
+  | { pairs: number[] }
+  | { point: LatLng; radiusKm: number; label: string; distanceKm?: number };
 
 export interface PointsBreakdown {
   base: number;
@@ -82,6 +131,7 @@ export interface AnswerResult {
   correctAnswerText: string;
   explanation: Explanation;
   source: Source;
+  links: HeritageLink[];
   points: PointsBreakdown;
   streak: number;
   score: number;
@@ -91,12 +141,16 @@ export interface AnswerResult {
 }
 
 export interface StartSessionRequest {
-  category: QuizCategoryParam;
-  difficulty: Difficulty;
+  mode?: QuizMode;
+  category?: QuizCategoryParam;
+  difficulty?: Difficulty;
+  heritageId?: string;
+  challengeCode?: string;
 }
 
 export interface SessionInfo {
   sessionId: string;
+  mode: QuizMode;
   category: QuizCategoryParam;
   difficulty: Difficulty;
   totalQuestions: number;
@@ -124,6 +178,7 @@ export interface ReviewItem {
   points: number;
   explanation: Explanation;
   source: Source;
+  links: HeritageLink[];
 }
 
 export interface Badge {
@@ -144,8 +199,20 @@ export interface LevelInfo {
   progress: number; // 0 to 1
 }
 
+export interface ChallengeComparison {
+  code: string;
+  creatorName: string;
+  creatorScore: number;
+  creatorTimeSeconds: number;
+  youWon: boolean | null; // null = tie
+  isCreator: boolean;
+}
+
 export interface QuizResult {
   attemptId: string;
+  mode: QuizMode;
+  heritage?: HeritageLink;
+  challenge?: ChallengeComparison;
   category: QuizCategoryParam;
   difficulty: Difficulty;
   score: number;
@@ -203,8 +270,10 @@ export interface PlayerProfile {
   badges: Badge[];
   lockedBadges: Badge[];
   stats: Partial<Record<CategoryId, CategoryStats>>;
+  review: ReviewSummary;
   recentAttempts: {
     attemptId: string;
+    mode: QuizMode;
     category: QuizCategoryParam;
     difficulty: Difficulty;
     score: number;
@@ -212,6 +281,100 @@ export interface PlayerProfile {
     points: number;
     completedAt: string;
   }[];
+}
+
+/** Spaced repetition: missed questions come back after 1, 3, 7, 14 and 30 days. */
+export interface ReviewSummary {
+  due: number;
+  learning: number;
+  mastered: number;
+  nextDueAt: string | null;
+}
+
+// ─── Heritage (archive) links ────────────────────────────────────────────────
+
+export interface HeritageQuizInfo {
+  heritage: HeritageLink;
+  questionCount: number;
+}
+
+// ─── Challenges ──────────────────────────────────────────────────────────────
+
+export interface ChallengeInfo {
+  code: string;
+  creatorName: string;
+  category: QuizCategoryParam;
+  difficulty: Difficulty;
+  totalQuestions: number;
+  creatorScore: number;
+  expiresAt: string;
+  isCreator: boolean;
+  alreadyPlayed: boolean;
+  players: { displayName: string; score: number; timeSeconds: number; isYou: boolean }[];
+}
+
+// ─── Offline packs ───────────────────────────────────────────────────────────
+
+/** A question with its answer key, for playing offline. Answers use original (unshuffled) positions. */
+export interface OfflineQuestion {
+  id: string;
+  type: QuestionType;
+  category: CategoryId;
+  prompt: string;
+  options?: string[];
+  items?: string[];
+  left?: string[];
+  right?: string[];
+  answer: { choice: number } | { order: number[] } | { pairs: number[] };
+  correctAnswerText: string;
+  explanation: Explanation;
+  source: Source;
+  media?: QuestionMedia;
+}
+
+export interface OfflinePack {
+  packId: string;
+  category: QuizCategoryParam;
+  difficulty: Difficulty;
+  lang: Lang;
+  createdAt: string;
+  expiresAt: string;
+  questions: OfflineQuestion[];
+}
+
+export interface OfflineSubmission {
+  answers: { questionId: string; answer: { choice: number } | { order: number[] } | { pairs: number[] }; timeMs: number }[];
+}
+
+export interface OfflineSyncResult {
+  packId: string;
+  score: number;
+  totalQuestions: number;
+  xpEarned: number;
+  alreadySynced: boolean;
+}
+
+// ─── Admin analytics ─────────────────────────────────────────────────────────
+
+export interface QuestionStat {
+  questionId: string;
+  prompt: string;
+  category: CategoryId;
+  type: QuestionType;
+  answered: number;
+  correct: number;
+  accuracy: number;
+  avgTimeSeconds: number;
+}
+
+export interface AdminStats {
+  totals: { players: number; quizzes: number; answers: number; dailyAnswers: number; redemptions: number };
+  byCategory: { category: CategoryId; answered: number; accuracy: number }[];
+  byType: { type: QuestionType; answered: number; accuracy: number }[];
+  hardest: QuestionStat[];
+  easiest: QuestionStat[];
+  /** Traditions and sites people know least about: where awareness work is needed */
+  awarenessGaps: { heritage: HeritageLink; answered: number; accuracy: number }[];
 }
 
 export interface DailyChallenge {
@@ -233,6 +396,7 @@ export interface DailyAnswerResult {
   yourAnswerText: string;
   explanation: Explanation;
   source: Source;
+  links: HeritageLink[];
   coinsEarned: number;
   xpEarned: number;
   streak: number;

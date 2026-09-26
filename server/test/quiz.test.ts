@@ -21,20 +21,26 @@ const as = (guest: string) => ({
   patch: (url: string, body?: object) => request(app).patch(url).set("X-Guest-Id", guest).send(body ?? {}),
 });
 
-const toPayload = (c: CorrectAnswer): AnswerPayload => c;
+const toPayload = (c: CorrectAnswer): AnswerPayload => ("point" in c ? { point: c.point } : c);
 const wrongPayload = (c: CorrectAnswer): AnswerPayload => {
   if ("choice" in c) return { choice: c.choice === 0 ? 1 : 0 };
   if ("order" in c) return { order: [...c.order].reverse() };
+  if ("point" in c) return { point: { lat: c.point.lat > 20 ? 8.5 : 34, lng: c.point.lng > 85 ? 70 : 95 } };
   return { pairs: [...c.pairs].reverse() };
 };
 
-async function playQuiz(guest: string, category: string, difficulty: string, opts: { wrongAt?: number[]; secondsPerAnswer?: number } = {}) {
-  const start = await as(guest).post("/api/quiz/sessions", { category, difficulty });
+async function playQuiz(
+  guest: string,
+  category: string,
+  difficulty: string,
+  opts: { wrongAt?: number[]; secondsPerAnswer?: number; body?: object; lang?: string } = {},
+) {
+  const start = await as(guest).post("/api/quiz/sessions", opts.body ?? { category, difficulty });
   expect(start.status).toBe(201);
   const { sessionId, totalQuestions } = start.body;
   const seen: string[] = [];
   for (let i = 0; i < totalQuestions; i++) {
-    const cur = await as(guest).get(`/api/quiz/sessions/${sessionId}/current`);
+    const cur = await as(guest).get(`/api/quiz/sessions/${sessionId}/current${opts.lang ? `?lang=${opts.lang}` : ""}`);
     expect(cur.status).toBe(200);
     const qid = cur.body.question.id as string;
     seen.push(qid);
@@ -42,11 +48,11 @@ async function playQuiz(guest: string, category: string, difficulty: string, opt
     const correct = correctAnswerFor(getQuestion(qid)!, session.layouts[qid]);
     now = new Date(now.getTime() + (opts.secondsPerAnswer ?? 5) * 1000);
     const answer = opts.wrongAt?.includes(i) ? wrongPayload(correct) : toPayload(correct);
-    const res = await as(guest).post(`/api/quiz/sessions/${sessionId}/answers`, { questionId: qid, answer });
+    const res = await as(guest).post(`/api/quiz/sessions/${sessionId}/answers${opts.lang ? `?lang=${opts.lang}` : ""}`, { questionId: qid, answer });
     expect(res.status).toBe(200);
     expect(res.body.correct).toBe(!opts.wrongAt?.includes(i));
   }
-  const done = await as(guest).post(`/api/quiz/sessions/${sessionId}/complete`);
+  const done = await as(guest).post(`/api/quiz/sessions/${sessionId}/complete${opts.lang ? `?lang=${opts.lang}` : ""}`);
   expect(done.status).toBe(200);
   return { result: done.body as QuizResult, seen, sessionId };
 }
@@ -256,5 +262,127 @@ describe("leaderboard and profile", () => {
   it("validates display names", async () => {
     const res = await as(GUEST_A).patch("/api/quiz/me", { displayName: "<script>" });
     expect(res.status).toBe(400);
+  });
+});
+
+describe("modes", () => {
+  it("runs a map challenge graded by distance", async () => {
+    const { result } = await playQuiz(GUEST_A, "", "seeker", { body: { mode: "map", difficulty: "seeker" }, wrongAt: [1] });
+    expect(result.mode).toBe("map");
+    expect(result.byType.every((t) => t.type === "map_pin")).toBe(true);
+    expect(result.review[1].correct).toBe(false);
+    expect(result.review[1].yourAnswerText).toMatch(/km from/);
+  });
+
+  it("builds a Save the Vulnerable quiz from traditions with a high HVS", async () => {
+    const { result } = await playQuiz(GUEST_A, "", "seeker", { body: { mode: "vulnerable", difficulty: "seeker" } });
+    expect(result.mode).toBe("vulnerable");
+    const hvs = result.review.flatMap((r) => r.links).map((l) => l.hvs?.score ?? 0);
+    expect(Math.max(...hvs)).toBeGreaterThanOrEqual(34);
+  });
+
+  it("links answers to the archive and quizzes about one tradition", async () => {
+    const info = await as(GUEST_A).get("/api/quiz/heritage/konark");
+    expect(info.body.questionCount).toBeGreaterThanOrEqual(3);
+    const start = await as(GUEST_A).post("/api/quiz/sessions", { mode: "heritage", heritageId: "konark" });
+    expect(start.status).toBe(201);
+    const cur = await as(GUEST_A).get(`/api/quiz/sessions/${start.body.sessionId}/current`);
+    const qid = cur.body.question.id;
+    const session = (await store.getSession(start.body.sessionId))!;
+    const res = await as(GUEST_A).post(`/api/quiz/sessions/${start.body.sessionId}/answers`, {
+      questionId: qid,
+      answer: toPayload(correctAnswerFor(getQuestion(qid)!, session.layouts[qid])),
+    });
+    expect(res.body.links.map((l: { id: string }) => l.id)).toContain("konark");
+  });
+
+  it("brings missed questions back for review after a day", async () => {
+    await playQuiz(GUEST_A, "rulers", "seeker", { wrongAt: [0, 1, 2] });
+    let me = await as(GUEST_A).get("/api/quiz/me");
+    expect(me.body.review.learning).toBe(3);
+    expect(me.body.review.due).toBe(0);
+    expect((await as(GUEST_A).post("/api/quiz/sessions", { mode: "review" })).status).toBe(409);
+
+    now = new Date(now.getTime() + 86_400_000 + 1000);
+    me = await as(GUEST_A).get("/api/quiz/me");
+    expect(me.body.review.due).toBe(3);
+    const { result } = await playQuiz(GUEST_A, "", "seeker", { body: { mode: "review" } });
+    expect(result.totalQuestions).toBe(3);
+    me = await as(GUEST_A).get("/api/quiz/me");
+    expect(me.body.review.due).toBe(0);
+    expect(me.body.review.learning).toBe(3);
+  });
+
+  it("lets a friend replay the exact same quiz as a challenge", async () => {
+    const mine = await playQuiz(GUEST_A, "culinary", "seeker", { wrongAt: [0, 1] });
+    const ch = await as(GUEST_A).post("/api/quiz/challenges", { attemptId: mine.result.attemptId });
+    expect(ch.status).toBe(201);
+    expect(ch.body.creatorScore).toBe(8);
+
+    const theirs = await playQuiz(GUEST_B, "", "", { body: { mode: "challenge", challengeCode: ch.body.code } });
+    expect(theirs.seen).toEqual(mine.seen);
+    expect(theirs.result.challenge?.youWon).toBe(true);
+    expect(theirs.result.newBadges.map((b) => b.id)).toContain("challenger");
+
+    const again = await as(GUEST_B).post("/api/quiz/sessions", { mode: "challenge", challengeCode: ch.body.code });
+    expect(again.status).toBe(409);
+    const info = await as(GUEST_A).get(`/api/quiz/challenges/${ch.body.code}`);
+    expect(info.body.players).toHaveLength(1);
+  });
+});
+
+describe("languages", () => {
+  it("serves questions and explanations in Hindi", async () => {
+    const start = await as(GUEST_A).post("/api/quiz/sessions", { category: "architecture", difficulty: "seeker" });
+    const cur = await as(GUEST_A).get(`/api/quiz/sessions/${start.body.sessionId}/current?lang=hi`);
+    expect(cur.body.question.lang).toBe("hi");
+    expect(cur.body.question.prompt).toMatch(/[\u0900-\u097F]/);
+    const { result } = await playQuiz(GUEST_B, "traditions", "seeker", { lang: "hi" });
+    expect(result.review[0].explanation.body).toMatch(/[\u0900-\u097F]/);
+    expect(result.newBadges.map((b) => b.id)).toContain("polyglot");
+  });
+
+  it("falls back to English when no translation is available", async () => {
+    const daily = await as(GUEST_A).get("/api/quiz/daily?lang=pa");
+    expect(daily.body.question.lang).toBe("en");
+  });
+});
+
+describe("offline packs", () => {
+  it("downloads a pack with answers and syncs results once", async () => {
+    const pack = await as(GUEST_A).post("/api/quiz/offline/packs", { category: "rhythms", difficulty: "seeker" });
+    expect(pack.status).toBe(201);
+    expect(pack.body.questions).toHaveLength(10);
+    expect(pack.body.questions.some((q: { type: string }) => q.type === "map_pin")).toBe(false);
+    const answers = pack.body.questions.map((q: { id: string; answer: object }, i: number) => ({
+      questionId: q.id,
+      answer: i === 0 && "choice" in q.answer ? { choice: ((q.answer as { choice: number }).choice + 1) % 2 } : q.answer,
+      timeMs: 4000,
+    }));
+    const sync = await as(GUEST_A).post(`/api/quiz/offline/packs/${pack.body.packId}/submit`, { answers });
+    expect(sync.status).toBe(200);
+    expect(sync.body.score).toBeGreaterThanOrEqual(9);
+    expect(sync.body.xpEarned).toBe(sync.body.score * 5);
+    const again = await as(GUEST_A).post(`/api/quiz/offline/packs/${pack.body.packId}/submit`, { answers });
+    expect(again.body.alreadySynced).toBe(true);
+    const me = await as(GUEST_A).get("/api/quiz/me");
+    expect(me.body.level.xp).toBe(sync.body.xpEarned);
+    expect(me.body.coins).toBe(0);
+  });
+});
+
+describe("admin analytics", () => {
+  it("is disabled without ADMIN_KEY and reports stats with it", async () => {
+    delete process.env.ADMIN_KEY;
+    expect((await request(app).get("/api/quiz/admin/stats")).status).toBe(404);
+    process.env.ADMIN_KEY = "test-key";
+    for (let i = 0; i < 3; i++) await playQuiz(i === 0 ? GUEST_A : GUEST_B, "rulers", "seeker", { wrongAt: [0] });
+    expect((await request(app).get("/api/quiz/admin/stats").set("X-Admin-Key", "nope")).status).toBe(401);
+    const res = await request(app).get("/api/quiz/admin/stats").set("X-Admin-Key", "test-key");
+    expect(res.status).toBe(200);
+    expect(res.body.totals.quizzes).toBe(3);
+    expect(res.body.totals.answers).toBe(30);
+    expect(res.body.byCategory[0].category).toBe("rulers");
+    delete process.env.ADMIN_KEY;
   });
 });

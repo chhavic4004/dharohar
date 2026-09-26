@@ -3,7 +3,10 @@ import { ApiError } from "../middleware/errors";
 import type {
   AttemptDoc,
   BaseDoc,
+  ChallengeDoc,
   DailyAnswerDoc,
+  OfflinePackDoc,
+  QuestionStatDoc,
   LeaderboardField,
   RedemptionDoc,
   SessionDoc,
@@ -53,6 +56,9 @@ export class MongoStore implements Store {
   private get attempts() { return this.col("quiz_attempts"); }
   private get daily() { return this.col("quiz_daily_answers"); }
   private get redemptions() { return this.col("quiz_redemptions"); }
+  private get challenges() { return this.col("quiz_challenges"); }
+  private get offlinePacks() { return this.col("quiz_offline_packs"); }
+  private get answerStats() { return this.col("quiz_answer_stats"); }
 
   private async ensureIndexes() {
     await Promise.all([
@@ -149,6 +155,47 @@ export class MongoStore implements Store {
   async listRedemptions(userId: string) {
     const docs = await this.redemptions.find({ userId } as Document).sort({ redeemedAt: -1 }).toArray();
     return docs.map((d) => fromStored<RedemptionDoc>(d)!);
+  }
+
+  async insertChallenge(doc: ChallengeDoc) {
+    await this.challenges.insertOne(toStored(doc) as never);
+  }
+  async getChallenge(code: string) {
+    return fromStored<ChallengeDoc>(await this.challenges.findOne({ _id: code } as Document));
+  }
+  updateChallenge(code: string, mutate: (c: ChallengeDoc) => void) {
+    return this.update(this.challenges, code, mutate, "Challenge");
+  }
+
+  async insertOfflinePack(doc: OfflinePackDoc) {
+    await this.offlinePacks.insertOne(toStored(doc) as never);
+  }
+  async getOfflinePack(id: string) {
+    return fromStored<OfflinePackDoc>(await this.offlinePacks.findOne({ _id: id } as Document));
+  }
+  updateOfflinePack(id: string, mutate: (p: OfflinePackDoc) => void) {
+    return this.update(this.offlinePacks, id, mutate, "Offline pack");
+  }
+
+  async recordAnswerStat(questionId: string, correct: boolean, timeMs: number) {
+    await this.answerStats.updateOne(
+      { _id: questionId } as Document,
+      { $inc: { answered: 1, correct: correct ? 1 : 0, totalTimeMs: timeMs } },
+      { upsert: true },
+    );
+  }
+  async listAnswerStats() {
+    const docs = await this.answerStats.find({}).toArray();
+    return docs.map((d) => ({ id: String(d._id), answered: d.answered ?? 0, correct: d.correct ?? 0, totalTimeMs: d.totalTimeMs ?? 0 }) as QuestionStatDoc);
+  }
+  async totals() {
+    const [players, quizzes, dailyAnswers, redemptions] = await Promise.all([
+      this.users.estimatedDocumentCount(),
+      this.attempts.estimatedDocumentCount(),
+      this.daily.estimatedDocumentCount(),
+      this.redemptions.estimatedDocumentCount(),
+    ]);
+    return { players, quizzes, dailyAnswers, redemptions };
   }
 
   async topUsers(field: LeaderboardField, limit: number) {

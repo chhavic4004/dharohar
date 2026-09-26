@@ -18,6 +18,10 @@ export const SCORING = {
   /** Grace period for network delay before an answer counts as timed out */
   graceSeconds: 3,
   daily: { xpCorrect: 15, xpWrong: 5, coinsCorrect: 5, coinsWrong: 1, streakCoinCap: 7 },
+  /** Offline answers earn this XP each when synced, and no coins (answers are on the device) */
+  offlineXpPerCorrect: 5,
+  /** Spaced repetition: days until a missed question returns, by box number 1 to 5 */
+  reviewIntervalsDays: [1, 3, 7, 14, 30],
 };
 
 export function answerPoints(difficulty: Difficulty, correct: boolean, secondsTaken: number, newStreak: number): PointsBreakdown {
@@ -93,6 +97,11 @@ export const BADGES: Badge[] = [
     hindi: SCHOLAR[cat].hindi,
     description: `Score 80 percent or more in a Historian quiz on ${SCHOLAR[cat].topic}.`,
   })),
+  { id: "cartographer", label: "Cartographer", hindi: "मानचित्रकार", description: "Score 80 percent or more in a Map Challenge." },
+  { id: "guardian", label: "Heritage Guardian", hindi: "धरोहर रक्षक", description: "Complete a Save the Vulnerable quiz with 80 percent or more." },
+  { id: "second-chance", label: "Second Chance", hindi: "दूसरा मौका", description: "Master a question you once got wrong by getting it right on every review." },
+  { id: "challenger", label: "Challenger", hindi: "चुनौतीकर्ता", description: "Beat a friend's score in a challenge." },
+  { id: "polyglot", label: "In My Language", hindi: "मेरी भाषा में", description: "Complete a quiz in Hindi, Punjabi or Urdu." },
   { id: "daily-3", label: "Steady Lamp", hindi: "स्थिर दीप", description: "Keep a 3 day Problem of the Day streak." },
   { id: "daily-7", label: "Week of Wisdom", hindi: "ज्ञान सप्ताह", description: "Keep a 7 day Problem of the Day streak." },
   { id: "daily-30", label: "Month of Devotion", hindi: "साधना मास", description: "Keep a 30 day Problem of the Day streak." },

@@ -7,6 +7,7 @@ import type {
   Difficulty,
   PointsBreakdown,
   QuizCategoryParam,
+  QuizMode,
   QuizResult,
 } from "../../../shared/quiz-contract";
 
@@ -33,6 +34,15 @@ export interface UserDoc extends BaseDoc {
   categoriesPlayed: CategoryId[];
   /** Recently served question ids per "<category>:<difficulty>", newest last */
   recentQuestions: Record<string, string[]>;
+  /** Spaced repetition boxes for questions answered wrongly (box 6 = mastered) */
+  review: Record<string, ReviewCard>;
+  challengesWon: number;
+}
+
+export interface ReviewCard {
+  box: number;
+  due: string;
+  lastSeen: string;
 }
 
 /** How a question was laid out for this player (display position -> original index). */
@@ -52,6 +62,9 @@ export interface AnswerRecord {
 
 export interface SessionDoc extends BaseDoc {
   userId: string;
+  mode: QuizMode;
+  heritageId?: string;
+  challengeCode?: string;
   category: QuizCategoryParam;
   difficulty: Difficulty;
   questionIds: string[];
@@ -70,6 +83,7 @@ export interface SessionDoc extends BaseDoc {
 export interface AttemptDoc extends BaseDoc {
   userId: string;
   sessionId: string;
+  mode: QuizMode;
   category: QuizCategoryParam;
   difficulty: Difficulty;
   score: number;
@@ -102,6 +116,48 @@ export interface RedemptionDoc extends BaseDoc {
   expiresAt: string;
 }
 
+export interface ChallengeDoc extends BaseDoc {
+  /** id is the share code */
+  creatorId: string;
+  creatorName: string;
+  attemptId: string;
+  category: QuizCategoryParam;
+  difficulty: Difficulty;
+  questionIds: string[];
+  layouts: Record<string, QuestionLayout>;
+  creatorScore: number;
+  creatorTimeSeconds: number;
+  createdAt: string;
+  expiresAt: string;
+  players: { userId: string; displayName: string; score: number; timeSeconds: number; playedAt: string }[];
+}
+
+export interface OfflinePackDoc extends BaseDoc {
+  userId: string;
+  category: QuizCategoryParam;
+  difficulty: Difficulty;
+  questionIds: string[];
+  createdAt: string;
+  expiresAt: string;
+  submittedAt?: string;
+  score?: number;
+  xpEarned?: number;
+}
+
+export interface QuestionStatDoc {
+  id: string;
+  answered: number;
+  correct: number;
+  totalTimeMs: number;
+}
+
+export interface Totals {
+  players: number;
+  quizzes: number;
+  dailyAnswers: number;
+  redemptions: number;
+}
+
 export type LeaderboardField = "xp" | `stats.${CategoryId}.xp`;
 
 /**
@@ -129,6 +185,19 @@ export interface Store {
 
   insertRedemption(doc: RedemptionDoc): Promise<void>;
   listRedemptions(userId: string): Promise<RedemptionDoc[]>;
+
+  insertChallenge(doc: ChallengeDoc): Promise<void>;
+  getChallenge(code: string): Promise<ChallengeDoc | null>;
+  updateChallenge(code: string, mutate: (c: ChallengeDoc) => void): Promise<ChallengeDoc>;
+
+  insertOfflinePack(doc: OfflinePackDoc): Promise<void>;
+  getOfflinePack(id: string): Promise<OfflinePackDoc | null>;
+  updateOfflinePack(id: string, mutate: (p: OfflinePackDoc) => void): Promise<OfflinePackDoc>;
+
+  /** Adds one answer to a question's running totals (atomic). */
+  recordAnswerStat(questionId: string, correct: boolean, timeMs: number): Promise<void>;
+  listAnswerStats(): Promise<QuestionStatDoc[]>;
+  totals(): Promise<Totals>;
 
   topUsers(field: LeaderboardField, limit: number): Promise<UserDoc[]>;
   countUsersAbove(field: LeaderboardField, value: number): Promise<number>;

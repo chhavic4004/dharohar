@@ -6,6 +6,9 @@ import { rhythmsQuestions } from "./rhythms";
 import { rulersQuestions } from "./rulers";
 import { traditionsQuestions } from "./traditions";
 import type { BankQuestion } from "./types";
+import { QUESTION_LINKS } from "./links";
+import { visualQuestions } from "./visual";
+import { heritageById } from "../heritage/registry";
 
 export type { BankQuestion } from "./types";
 
@@ -27,6 +30,7 @@ export const QUIZ_BANK: BankQuestion[] = [
   ...culinaryQuestions,
   ...traditionsQuestions,
   ...rulersQuestions,
+  ...visualQuestions,
 ];
 
 export const DAILY_BANK: BankQuestion[] = dailyQuestions;
@@ -34,7 +38,17 @@ export const DAILY_BANK: BankQuestion[] = dailyQuestions;
 const byId = new Map<string, BankQuestion>();
 for (const q of [...QUIZ_BANK, ...DAILY_BANK]) {
   if (byId.has(q.id)) throw new Error(`Duplicate question id in bank: ${q.id}`);
+  const links = QUESTION_LINKS[q.id];
+  if (links) {
+    for (const id of links) if (!heritageById.has(id)) throw new Error(`Unknown heritage id "${id}" linked from ${q.id}`);
+    q.links = links;
+  }
   byId.set(q.id, q);
+}
+
+/** Questions that mention a given tradition, site or food. */
+export function questionsForHeritage(heritageId: string): BankQuestion[] {
+  return QUIZ_BANK.filter((q) => q.links?.includes(heritageId));
 }
 
 export function getQuestion(id: string): BankQuestion | undefined {

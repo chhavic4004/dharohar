@@ -15,7 +15,7 @@ export function createApp(store: Store, opts: { clock?: () => Date } = {}) {
   app.use(
     cors({
       origin: config.corsOrigins,
-      allowedHeaders: ["Content-Type", "Authorization", "X-Guest-Id"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Guest-Id", "X-Lang", "X-Admin-Key"],
       methods: ["GET", "POST", "PATCH", "OPTIONS"],
     }),
   );

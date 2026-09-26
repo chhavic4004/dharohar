@@ -1,4 +1,4 @@
-import type { CategoryId, Difficulty, Explanation, Source } from "../../../../../shared/quiz-contract";
+import type { CategoryId, Difficulty, Explanation, LatLng, QuestionMedia, Source } from "../../../../../shared/quiz-contract";
 
 interface BaseQuestion {
   /** Stable id, never reuse one. Format: <cat>-<s|h|d>-<nn> */
@@ -8,6 +8,10 @@ interface BaseQuestion {
   prompt: string;
   explanation: Explanation;
   source: Source;
+  /** Optional image or audio clip shown with the question */
+  media?: QuestionMedia;
+  /** Heritage registry ids (filled from links.ts) */
+  links?: string[];
 }
 
 export interface McqQuestion extends BaseQuestion {
@@ -39,12 +43,22 @@ export interface MatchQuestion extends BaseQuestion {
   pairs: [string, string][];
 }
 
+export interface MapPinQuestion extends BaseQuestion {
+  type: "map_pin";
+  target: LatLng;
+  /** Name of the correct place, shown after answering */
+  label: string;
+  /** A pin within this distance counts as correct */
+  radiusKm: number;
+}
+
 export type BankQuestion =
   | McqQuestion
   | OddOneOutQuestion
   | TrueFalseQuestion
   | ChronologyQuestion
-  | MatchQuestion;
+  | MatchQuestion
+  | MapPinQuestion;
 
 /** Frequently cited, authoritative sources. Reuse these so links stay consistent. */
 export const SRC = {
@@ -56,5 +70,19 @@ export const SRC = {
   sna: { label: "Sangeet Natak Akademi", url: "https://www.sangeetnatak.gov.in/" },
   asi: { label: "Archaeological Survey of India", url: "https://asi.nic.in/" },
   indiaCulture: { label: "Ministry of Culture, Government of India", url: "https://www.indiaculture.gov.in/" },
+  commonsImage: (file: string, alt: string): QuestionMedia => ({
+    kind: "image",
+    url: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=900`,
+    alt,
+    credit: "Wikimedia Commons (author and licence on the file page)",
+    creditUrl: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}`,
+  }),
+  commonsAudio: (file: string, alt: string): QuestionMedia => ({
+    kind: "audio",
+    url: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}`,
+    alt,
+    credit: "Wikimedia Commons (author and licence on the file page)",
+    creditUrl: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}`,
+  }),
   knowIndia: { label: "National Portal of India: Explore India", url: "https://www.india.gov.in/explore-india" },
 } as const;

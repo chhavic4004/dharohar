@@ -4,7 +4,10 @@ import { ApiError } from "../middleware/errors";
 import {
   readField,
   type AttemptDoc,
+  type ChallengeDoc,
   type DailyAnswerDoc,
+  type OfflinePackDoc,
+  type QuestionStatDoc,
   type LeaderboardField,
   type RedemptionDoc,
   type SessionDoc,
@@ -18,9 +21,14 @@ interface Data {
   attempts: Record<string, AttemptDoc>;
   daily: Record<string, DailyAnswerDoc>;
   redemptions: Record<string, RedemptionDoc>;
+  challenges: Record<string, ChallengeDoc>;
+  offlinePacks: Record<string, OfflinePackDoc>;
+  answerStats: Record<string, QuestionStatDoc>;
 }
 
-const empty = (): Data => ({ users: {}, sessions: {}, attempts: {}, daily: {}, redemptions: {} });
+const empty = (): Data => ({
+  users: {}, sessions: {}, attempts: {}, daily: {}, redemptions: {}, challenges: {}, offlinePacks: {}, answerStats: {},
+});
 const clone = <T>(v: T): T => structuredClone(v);
 
 /**
@@ -131,6 +139,49 @@ export class FileStore implements Store {
       .filter((r) => r.userId === userId)
       .sort((a, b) => b.redeemedAt.localeCompare(a.redeemedAt))
       .map(clone);
+  }
+
+  async insertChallenge(doc: ChallengeDoc) {
+    this.data.challenges[doc.id] = clone(doc);
+    this.persist();
+  }
+  async getChallenge(code: string) {
+    const c = this.data.challenges[code];
+    return c ? clone(c) : null;
+  }
+  async updateChallenge(code: string, mutate: (c: ChallengeDoc) => void) {
+    return this.update(this.data.challenges, code, mutate, "Challenge");
+  }
+
+  async insertOfflinePack(doc: OfflinePackDoc) {
+    this.data.offlinePacks[doc.id] = clone(doc);
+    this.persist();
+  }
+  async getOfflinePack(id: string) {
+    const p = this.data.offlinePacks[id];
+    return p ? clone(p) : null;
+  }
+  async updateOfflinePack(id: string, mutate: (p: OfflinePackDoc) => void) {
+    return this.update(this.data.offlinePacks, id, mutate, "Offline pack");
+  }
+
+  async recordAnswerStat(questionId: string, correct: boolean, timeMs: number) {
+    const s = (this.data.answerStats[questionId] ??= { id: questionId, answered: 0, correct: 0, totalTimeMs: 0 });
+    s.answered += 1;
+    if (correct) s.correct += 1;
+    s.totalTimeMs += timeMs;
+    this.persist();
+  }
+  async listAnswerStats() {
+    return Object.values(this.data.answerStats).map(clone);
+  }
+  async totals() {
+    return {
+      players: Object.keys(this.data.users).length,
+      quizzes: Object.keys(this.data.attempts).length,
+      dailyAnswers: Object.keys(this.data.daily).length,
+      redemptions: Object.keys(this.data.redemptions).length,
+    };
   }
 
   async topUsers(field: LeaderboardField, limit: number) {
