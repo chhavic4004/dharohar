@@ -45,6 +45,7 @@ The quiz is built as a self-contained module, so teammates can merge it into the
 ### Third batch: accounts, languages and the map
 
 - **Accounts**: sign up and sign in with email and password, or with Google. Passwords are hashed with scrypt; logins use signed tokens (JWT, 30 days). Everything a player does (quizzes, Problem of the Day, rewards, offline packs, badges, streaks) is saved on the account and follows them to any device.
+- **Verified email and mobile only**: sign up sends a 6 digit code to the email and another by SMS; the account is created only when both are correct. Sign in works with email or mobile number. "Forgot password" resets with an email code. Google users are asked to verify a mobile number before continuing. Codes are hashed, expire in 10 minutes, allow 5 tries, and can be resent after 30 seconds. Without email/SMS keys the server runs in demo mode (codes printed in the console and shown on the page, never in production).
 - **Guest progress is never lost**: when a guest signs up or signs in, their progress and history in that browser are moved into the account automatically.
 - **Account page** (`/account`): name, password (or set one for Google accounts), "sign out of all devices", and the **full account history** with paging.
 - **One language switch for the whole site**: the button at the top right (and in the mobile menu) now drives the header, footer, sign in, account, Heritage Map and every quiz screen. It is remembered across visits and tabs, sets `<html lang>`, and switches Urdu to right-to-left. Quiz UI text is complete in all four languages; question content is complete in English and Hindi.
@@ -75,7 +76,7 @@ No database setup is needed. By default the API saves data to `server/data/db.js
 ```bash
 npm run typecheck                    # frontend types
 npm --prefix server run typecheck    # backend types
-npm run test:api                     # 39 API tests (quiz, daily, rewards, modes, review, challenges, Hindi, offline, admin, accounts, Google, guest merge, history)
+npm run test:api                     # 48 API tests (quiz, daily, rewards, modes, review, challenges, Hindi, offline, admin, accounts, Google, guest merge, history)
 npm --prefix server run check:bank   # validates every question: ids, answers, sources, map coordinates, Hindi coverage, no emojis
 npm run build                        # production build of the website
 ```
@@ -210,6 +211,8 @@ All MongoDB collections are prefixed with `quiz_`, so they never clash with othe
 | server | `AUTH_SECRET` | signs login tokens; **required in production** (32+ random characters) |
 | server | `AUTH_TOKEN_DAYS` | how long a login lasts (default 30) |
 | server | `GOOGLE_CLIENT_ID` | enables "Continue with Google" |
+| server | `BREVO_API_KEY` or `RESEND_API_KEY`, `EMAIL_FROM` | sends OTP emails |
+| server | `TWILIO_*` or `FAST2SMS_API_KEY` | sends OTP SMS |
 
 ## API
 
@@ -218,8 +221,12 @@ Account routes are under `/api/auth`:
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/config` | Whether Google sign-in is on, password rules |
-| POST | `/register` | `{ email, password, displayName }`; moves this browser's guest progress into the new account |
-| POST | `/login` | `{ email, password }`; also merges guest progress |
+| POST | `/register/start` | `{ email, phone, password, displayName }`; sends email and SMS codes, saves nothing yet |
+| POST | `/register/verify` | `{ verificationId, emailCode, phoneCode }`; creates the account, moves guest progress in |
+| POST | `/otp/resend` | `{ verificationId, channel }` (after 30 seconds) |
+| POST | `/login` | `{ identifier, password }`, identifier is email or mobile; also merges guest progress |
+| POST | `/password/forgot`, `/password/reset` | Email code, then `{ verificationId, code, newPassword }` |
+| POST | `/phone/start`, `/phone/verify` | Add or change the account's mobile (signed in) |
 | POST | `/google` | `{ credential }` from Google Identity Services |
 | GET / PATCH | `/me` | Account details; change display name |
 | POST | `/password` | Change or set password; signs out other devices |
