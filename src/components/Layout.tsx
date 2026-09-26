@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { Mic, Map as MapIcon, ShieldCheck, Compass, BarChart2, ShieldAlert, Menu, X, Heart, ChevronDown, Check, HelpCircle, Globe } from "lucide-react";
-import { AccountMenu, AuthProvider } from "../features/auth";
+import { AccountMenu, AuthProvider, PhoneGate } from "../features/auth";
 import { useSiteT } from "../i18n/site";
 import { SITE_LANGS, langDir, setLang, useLang } from "../lib/language";
 import { ToastHost } from "../lib/toast";
@@ -11,6 +11,7 @@ export function Layout() {
   return (
     <AuthProvider>
       <Shell />
+      <PhoneGate />
       <ToastHost />
     </AuthProvider>
   );

@@ -16,4 +16,5 @@ export const authRoutes: RouteObject[] = [
 
 export { AuthProvider, useAuth } from "./AuthProvider";
 export { default as AccountMenu } from "./components/AccountMenu";
+export { default as PhoneGate } from "./components/PhoneGate";
 export { authApi } from "./api";

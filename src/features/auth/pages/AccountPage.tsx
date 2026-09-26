@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router";
-import { History, KeyRound, Loader2, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { BadgeCheck, History, KeyRound, Loader2, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { PASSWORD_MIN_LENGTH } from "@shared/auth-contract";
 import { QuizHistory } from "../../quiz";
 import { useSiteT } from "../../../i18n/site";
@@ -12,6 +12,16 @@ import { useAuth } from "../AuthProvider";
 const input =
   "w-full rounded-xl border border-maroon/25 bg-white px-4 py-2.5 text-sm text-ink focus:outline-2 focus:outline-maroon focus:border-transparent";
 const card = "bg-white/85 rounded-2xl border border-maroon/10 shadow-sm p-5 sm:p-6";
+
+function VerifiedBadge({ ok }: { ok: boolean }) {
+  const t = useSiteT();
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${ok ? "bg-heritage/10 text-heritage" : "bg-alert/10 text-alert"}`}>
+      {ok ? <BadgeCheck className="w-3 h-3" aria-hidden /> : null}
+      {ok ? t("verified") : t("notVerified")}
+    </span>
+  );
+}
 
 /** /account: profile, security and the full activity history. */
 export default function AccountPage() {
@@ -99,8 +109,24 @@ export default function AccountPage() {
             )}
             <div className="min-w-0 flex-1">
               <h1 className="font-serif text-2xl font-bold text-ink truncate">{account.displayName}</h1>
-              <p className="text-sm text-ink/60 truncate" dir="ltr">
-                {account.email}
+              <p className="text-sm text-ink/60 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span dir="ltr" className="truncate">{account.email}</span>
+                <VerifiedBadge ok={account.emailVerified} />
+              </p>
+              <p className="text-sm text-ink/60 flex flex-wrap items-center gap-x-2 gap-y-1">
+                {account.phone ? (
+                  <>
+                    <span dir="ltr">{account.phone}</span>
+                    <VerifiedBadge ok={account.phoneVerified} />
+                    <Link to="/login?step=phone&next=/account" className="text-xs font-semibold text-maroon underline">
+                      {t("changePhone")}
+                    </Link>
+                  </>
+                ) : (
+                  <Link to="/login?step=phone&next=/account" className="text-xs font-semibold text-maroon underline">
+                    {t("addPhone")}
+                  </Link>
+                )}
               </p>
               <p className="text-xs text-ink/45 mt-0.5">
                 {t("memberSince", { date: new Date(account.createdAt).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }) })}
