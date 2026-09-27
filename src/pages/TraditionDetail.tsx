@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { Play, Pause, ChevronRight, ShieldCheck, MapPin, Users, Globe, ExternalLink, Scissors, Map, Palette, Image as ImageIcon, BookOpen } from "lucide-react";
 import { Reveal } from "../components/Reveal";
-import { HeritageQuizCard } from "../features/quiz";
+import { HeritageMiniMap, HeritageQuizCard } from "../features/quiz";
 import { usePageText } from "../i18n/page";
 import { traditionText } from "../i18n/pages/tradition";
 
@@ -199,6 +199,10 @@ export default function TraditionDetail() {
                   </div>
                 </dl>
               </div>
+            </Reveal>
+
+            <Reveal delay={250}>
+              <HeritageMiniMap heritageId="phulkari" />
             </Reveal>
 
             <Reveal delay={300}>

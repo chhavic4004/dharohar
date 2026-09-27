@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Mic, ArrowRight, ShieldCheck, Search, Activity, BookOpen, Clock, Heart, Map as MapIcon, HelpCircle, Award } from "lucide-react";
 import { Reveal } from "../components/Reveal";
+import { DailyQuestionCard } from "../features/quiz";
 import { usePageText } from "../i18n/page";
 import { homeText } from "../i18n/pages/home";
 
@@ -94,6 +95,13 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Today's heritage question (from the quiz) */}
+      <section className="bg-parchment pt-10 sm:pt-12">
+        <div className="max-w-3xl mx-auto px-6">
+          <DailyQuestionCard />
+        </div>
+      </section>
 
       {/* Three Pillars */}
       <Reveal as="section" className="py-16 sm:py-20 bg-parchment">
@@ -231,9 +239,9 @@ export default function Home() {
             ))}
           </div>
           
-          <button className="w-full md:hidden mt-8 flex items-center justify-center gap-2 text-terracotta font-medium py-4 border border-terracotta/30 rounded">
-            {t("viewAllMap")} <ArrowRight className="w-4 h-4" />
-          </button>
+          <Link to="/map" className="w-full md:hidden mt-8 flex items-center justify-center gap-2 text-terracotta font-medium py-4 border border-terracotta/30 rounded">
+            {t("viewAllMap")} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+          </Link>
         </div>
       </Reveal>
 

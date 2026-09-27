@@ -21,6 +21,10 @@ const BAND_KEY: Record<HvsBand, SiteKey> = { Stable: "bandStable", Vulnerable: "
 interface Props {
   /** Called once the entries are loaded, for example to show a count */
   onLoaded?: (count: number) => void;
+  /** Entries to show. When omitted the layer loads them itself. */
+  items?: HeritageQuizInfo[];
+  /** Only show one vulnerability band */
+  band?: HvsBand | "all";
 }
 
 /**
@@ -30,15 +34,18 @@ interface Props {
  * vulnerability. Understands the links quiz answers make:
  *   /map?focus=<heritage id>&lat=..&lng=..  flies to that spot and opens it.
  */
-export default function HeritageMapLayer({ onLoaded }: Props) {
+export default function HeritageMapLayer({ onLoaded, items: given, band = "all" }: Props) {
   const map = useMap();
   const lang = useLang();
   const t = (k: SiteKey, v?: Record<string, string | number>) => siteText(lang, k, v);
   const [params] = useSearchParams();
-  const [items, setItems] = useState<HeritageQuizInfo[]>([]);
+  const [loaded, setItems] = useState<HeritageQuizInfo[]>([]);
+  const all = given ?? loaded;
+  const items = band === "all" ? all : all.filter((i) => i.heritage.hvs?.band === band);
   const markers = useRef(new Map<string, LeafletCircleMarker>());
 
   useEffect(() => {
+    if (given) return;
     let live = true;
     quizApi
       .allHeritage()
@@ -52,15 +59,17 @@ export default function HeritageMapLayer({ onLoaded }: Props) {
       live = false;
     };
     // Names change with the language (Hindi names come from the registry)
-  }, [lang, onLoaded]);
+  }, [lang, onLoaded, given]);
 
   // Focus requested by a quiz answer link
   const focus = params.get("focus");
   const lat = Number(params.get("lat"));
   const lng = Number(params.get("lng"));
+  // Changes on every click in a list, so the same place can be focused again
+  const nonce = params.get("n");
   useEffect(() => {
     if (!focus) return;
-    const entry = items.find((i) => i.heritage.id === focus);
+    const entry = all.find((i) => i.heritage.id === focus);
     const target = entry?.heritage.location ?? (Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng) ? { lat, lng } : null);
     if (!target) return;
     map.flyTo([target.lat, target.lng], Math.max(map.getZoom(), 9), { duration: 1.2 });
@@ -69,7 +78,7 @@ export default function HeritageMapLayer({ onLoaded }: Props) {
     return () => {
       map.off("moveend", open);
     };
-  }, [focus, lat, lng, items, map]);
+  }, [focus, lat, lng, all, map, nonce]);
 
   return (
     <>

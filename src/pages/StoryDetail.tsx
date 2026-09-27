@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Play, Pause, MapPin, CheckCircle, Info, ExternalLink } from "lucide-react";
 import { Link } from "react-router";
 import { Reveal } from "../components/Reveal";
+import { HeritageMiniMap } from "../features/quiz";
 import { usePageText } from "../i18n/page";
 import { storyText } from "../i18n/pages/story";
 
@@ -167,6 +168,10 @@ export default function StoryDetail() {
                   </div>
                 </dl>
               </div>
+            </Reveal>
+
+            <Reveal delay={250}>
+              <HeritageMiniMap heritageId="phulkari" />
             </Reveal>
 
             <Reveal delay={300}>
