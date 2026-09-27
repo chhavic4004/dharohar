@@ -48,7 +48,7 @@ The quiz is built as a self-contained module, so teammates can merge it into the
 - **Verified email and mobile only**: sign up sends a 6 digit code to the email and another by SMS; the account is created only when both are correct. Sign in works with email or mobile number. "Forgot password" resets with an email code. Google users are asked to verify a mobile number before continuing. Codes are hashed, expire in 10 minutes, allow 5 tries, and can be resent after 30 seconds. Without email/SMS keys the server runs in demo mode (codes printed in the console and shown on the page, never in production).
 - **Guest progress is never lost**: when a guest signs up or signs in, their progress and history in that browser are moved into the account automatically.
 - **Account page** (`/account`): name, password (or set one for Google accounts), "sign out of all devices", and the **full account history** with paging.
-- **One language switch for the whole site**: the button at the top right (and in the mobile menu) now drives the header, footer, sign in, account, Heritage Map and every quiz screen. It is remembered across visits and tabs, sets `<html lang>`, and switches Urdu to right-to-left. Quiz UI text is complete in all four languages; question content is complete in English and Hindi.
+- **One language switch for the whole site**: the button at the top right (and in the mobile menu) switches every page: header, footer, home, explore, tradition and story pages, preserve, passport, AR walk, dashboards, admin heatmap, map, sign in, account and every quiz screen. All 271 quiz questions, badges, rewards and heritage names exist in English, Hindi, Punjabi and Urdu. The choice is remembered across visits and tabs, sets `<html lang>`, and switches Urdu to right-to-left. Each page keeps its own text in `src/i18n/pages/<page>.ts`, so teammates can edit their copy without touching anyone else's file.
 - **Heritage Map integration**: the map shows a "Heritage quiz spots" layer with every tradition and site that has questions (98 across India), coloured by vulnerability. Popups link to "Quiz on this" and the archive. "View on map" links from quiz answers fly to the spot and open it.
 
 ## Quick start
@@ -163,7 +163,7 @@ Heritage ids are listed in `server/src/modules/quiz/heritage/registry.ts`. `GET 
 
 **Real archive and HVS data.** Call `setArchiveAdapter({ getLinks(ids) { ... } })` (in `heritage/adapter.ts`) once at startup to replace the sample registry values with data from the archive and Vitality modules. Nothing else changes.
 
-**Language.** The header picker is the single control. In your own pages:
+**Language.** The header picker is the single control. For a new page, put its text in `src/i18n/pages/<page>.ts` with `definePageText({...english}, { hi, pa, ur })` and read it with `const { t, dir, locale } = usePageText(myPageText)` (see `src/i18n/page.ts`). Shared text can also use:
 
 ```tsx
 import { useLang, setLang } from "../lib/language";   // "en" | "hi" | "pa" | "ur"
