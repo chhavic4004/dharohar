@@ -4,6 +4,8 @@ import { Link, useSearchParams } from "react-router";
 import { HeritageMapLayer } from "../features/quiz";
 import { useSiteT, type SiteKey } from "../i18n/site";
 import { langDir, useLang } from "../lib/language";
+import { usePageText } from "../i18n/page";
+import { mapText } from "../i18n/pages/map";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -47,6 +49,7 @@ const TAG_KEY: Record<string, SiteKey> = {
 export default function Map() {
   const t = useSiteT();
   const lang = useLang();
+  const { t: st } = usePageText(mapText);
   const [params] = useSearchParams();
   const [showMigrationPath, setShowMigrationPath] = useState(true);
   const [activeFilter, setActiveFilter] = useState("All");
@@ -63,35 +66,35 @@ export default function Map() {
   const stories = [
     {
       id: "lahore-amritsar",
-      title: "Lahore Se Amritsar — 1947 Ki Yaadein",
+      title: st("storyLahoreTitle"),
       tag: "Oral History",
-      loc: "Amritsar, Punjab",
+      loc: st("storyLahoreLoc"),
       coords: [31.6340, 74.8723] as [number, number],
-      preview: "Partition memory from a family that crossed the border in August 1947.",
+      preview: st("storyLahorePreview"),
     },
     {
       id: "phulkari",
-      title: "Phulkari — Mere Nani Ki Ungliyon Ki Kala",
+      title: st("storyPhulkariTitle"),
       tag: "Craft & Tradition",
-      loc: "Patiala, Punjab",
+      loc: st("storyPhulkariLoc"),
       coords: [30.3398, 76.3869] as [number, number],
-      preview: "Bibi Surjit Kaur, age 78, demonstrates the traditional Bagh stitch.",
+      preview: st("storyPhulkariPreview"),
     },
     {
       id: "mirza-sahiban",
-      title: "Mirza Sahiban",
+      title: st("storyMirzaTitle"),
       tag: "Folk Song",
-      loc: "Jalandhar, Punjab",
+      loc: st("storyMirzaLoc"),
       coords: [31.3260, 75.5762] as [number, number],
-      preview: "A traditional rendition of the Mirza Sahiban folk love tragedy.",
+      preview: st("storyMirzaPreview"),
     },
     {
       id: "vaisakhi",
-      title: "Vaisakhi Mele Ki Paramparaa",
+      title: st("storyVaisakhiTitle"),
       tag: "Living Tradition",
-      loc: "Anandpur Sahib, Punjab",
+      loc: st("storyVaisakhiLoc"),
       coords: [31.2343, 76.4996] as [number, number],
-      preview: "Documentation of the annual Vaisakhi gathering rituals.",
+      preview: st("storyVaisakhiPreview"),
     },
   ];
 
@@ -226,7 +229,7 @@ export default function Map() {
               icon={icons[story.tag as keyof typeof icons] || icons["Oral History"]}
             >
               <Popup className="heritage-popup" closeButton={false}>
-                <div className="p-1 max-w-[220px]">
+                <div className="p-1 max-w-[220px]" dir={langDir(lang)}>
                   <div className="text-[9px] font-bold uppercase tracking-wider text-terracotta mb-1">{t(TAG_KEY[story.tag])}</div>
                   <h4 className="font-serif text-sm leading-tight text-maroon mb-2">{story.title}</h4>
                   <p className="text-xs text-ink/70 mb-3 leading-snug">{story.preview}</p>

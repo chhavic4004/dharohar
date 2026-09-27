@@ -44,6 +44,16 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: normal !important;
 }
 
+/* Right-to-left pages: physical "text-left" utilities in older pages follow the reading direction */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+@media (min-width: 768px) {
+  [dir="rtl"] .md\:text-left {
+    text-align: right;
+  }
+}
+
 .stitch-border {
   border: 1px dashed var(--color-maroon);
   border-radius: 4px;

@@ -59,6 +59,15 @@ export function setLang(lang: SiteLang) {
   listeners.forEach((l) => l());
 }
 
+/**
+ * Locale for dates and numbers, for example "hi-IN". Digits always stay 0-9
+ * (Urdu would otherwise switch to Eastern Arabic digits), so scores, years
+ * and codes look the same in every language.
+ */
+export function localeOf(lang: SiteLang): string {
+  return lang === "en" ? "en-IN" : `${lang}-IN-u-nu-latn`;
+}
+
 export function langDir(lang: SiteLang): "ltr" | "rtl" {
   return lang === "ur" ? "rtl" : "ltr";
 }
