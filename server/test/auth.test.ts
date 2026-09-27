@@ -279,3 +279,15 @@ describe("verification codes", () => {
     expect(JSON.stringify(doc)).not.toContain(start.body.devCodes.phone);
   });
 });
+
+describe("language preference", () => {
+  it("saves the chosen site language on the account", async () => {
+    const reg = await register({ email: "lang@x.in", password: "heritage123", displayName: "Ash" });
+    expect(reg.body.account.preferredLang).toBeNull();
+    const res = await bearer(reg.body.token).patch("/api/auth/me", { preferredLang: "ur" });
+    expect(res.body.preferredLang).toBe("ur");
+    const login = await request(app).post("/api/auth/login").send({ identifier: "lang@x.in", password: "heritage123" });
+    expect(login.body.account.preferredLang).toBe("ur");
+    expect((await bearer(reg.body.token).patch("/api/auth/me", { preferredLang: "fr" })).status).toBe(400);
+  });
+});

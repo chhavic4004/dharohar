@@ -13,6 +13,8 @@ export interface Account {
   emailVerified: boolean;
   phoneVerified: boolean;
   displayName: string;
+  /** Site language this person chose; applied when they sign in on any device */
+  preferredLang: "en" | "hi" | "pa" | "ur" | null;
   avatarUrl: string | null;
   /** Ways this account can sign in */
   providers: AuthProvider[];

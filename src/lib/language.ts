@@ -26,12 +26,30 @@ const listeners = new Set<() => void>();
 
 const isLang = (v: unknown): v is SiteLang => v === "en" || v === "hi" || v === "pa" || v === "ur";
 
+/**
+ * Starting language, in order: ?lang= in the URL (shareable links), the
+ * visitor's saved choice, then the browser's own languages, then English.
+ */
 function read(): SiteLang {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get("lang");
+    if (isLang(fromUrl)) {
+      localStorage.setItem(KEY, fromUrl);
+      return fromUrl;
+    }
+  } catch {
+    /* ignore */
+  }
   try {
     const v = localStorage.getItem(KEY);
     if (isLang(v)) return v;
   } catch {
     /* storage blocked */
+  }
+  const browser = typeof navigator === "undefined" ? [] : [...(navigator.languages ?? []), navigator.language];
+  for (const l of browser) {
+    const base = (l || "").toLowerCase().split("-")[0];
+    if (isLang(base)) return base;
   }
   return "en";
 }

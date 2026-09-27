@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { ArrowLeft, Award, Lock, Printer } from "lucide-react";
 import { quizApi } from "../api/quizApi";
 import { useApi } from "../hooks/useApi";
-import { useI18n } from "../i18n";
+import { useI18n, useDisplayName } from "../i18n";
 import { Button, Card, ErrorState, Spinner } from "../components/ui";
 import { useLevelName } from "./QuizHome";
 import { localeOf } from "../../../lib/language";
@@ -10,6 +10,7 @@ import { localeOf } from "../../../lib/language";
 /** Printable certificate, unlocked by redeeming "Heritage Supporter Certificate". */
 export default function Certificate() {
   const { t, lang } = useI18n();
+  const showName = useDisplayName();
   const navigate = useNavigate();
   const levelName = useLevelName();
   const profile = useApi(() => quizApi.profile(), [lang]);
@@ -61,7 +62,7 @@ export default function Certificate() {
           <span className="h-px w-16 bg-turmeric" />
         </div>
         <p className="text-sm text-ink/60">{t("certPresented")}</p>
-        <p className="font-serif text-3xl sm:text-4xl font-semibold text-ink mt-2 mb-4 break-words">{p.displayName}</p>
+        <p className="font-serif text-3xl sm:text-4xl font-semibold text-ink mt-2 mb-4 break-words">{showName(p.displayName)}</p>
         <p className="text-base text-ink/75 max-w-xl mx-auto leading-relaxed">
           {t("certBody", {
             level: p.level.level,

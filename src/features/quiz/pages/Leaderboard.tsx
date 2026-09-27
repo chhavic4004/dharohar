@@ -5,13 +5,14 @@ import { quizApi } from "../api/quizApi";
 import { CATEGORY_IDS } from "../constants";
 import { useApi } from "../hooks/useApi";
 import { Card, ErrorState, Spinner, cx } from "../components/ui";
-import { useI18n } from "../i18n";
+import { useI18n, useDisplayName } from "../i18n";
 import { useCategoryLabel } from "./QuizHome";
 
 const MEDAL = ["#C68A1D", "#9aa3ad", "#b0714a"];
 
 export default function Leaderboard() {
   const { t } = useI18n();
+  const showName = useDisplayName();
   const catLabel = useCategoryLabel();
   const [scope, setScope] = useState<CategoryId | "overall">("overall");
   const board = useApi(() => quizApi.leaderboard(scope), [scope]);
@@ -64,7 +65,7 @@ export default function Leaderboard() {
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className="block font-medium text-ink truncate">
-                        {e.displayName}
+                        {showName(e.displayName)}
                         {e.isYou && <span className="text-xs text-maroon ms-1.5">({t("you")})</span>}
                       </span>
                       <span className="block text-xs text-ink/50">{t("level", { n: e.level })}</span>

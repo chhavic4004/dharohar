@@ -51,3 +51,12 @@ export function useI18n(): Ctx {
 }
 
 export type { StringKey };
+
+/** Guest names are stored as "Explorer 1A2B"; show the word in the site language. */
+export function useDisplayName() {
+  const { t } = useI18n();
+  return (name: string) => {
+    const m = /^Explorer ([A-Z0-9]{4})$/.exec(name);
+    return m ? `${t("explorerName")} ${m[1]}` : name;
+  };
+}

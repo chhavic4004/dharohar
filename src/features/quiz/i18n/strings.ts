@@ -342,6 +342,8 @@ export const EN = {
   a11yLevelProgress: "Level progress",
   a11yQuizProgress: "Quiz progress",
 
+  explorerName: "Explorer",
+
   // Category and level names
   cat_rhythms: "Rhythms & Ragas",
   cat_architecture: "Architectural Marvels",

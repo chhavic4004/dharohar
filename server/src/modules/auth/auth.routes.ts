@@ -94,8 +94,14 @@ export function authRouter(service: AuthService) {
   });
 
   r.patch("/me", async (req, res) => {
-    const body = z.object({ displayName }).parse(req.body);
-    res.json(await service.rename(accountIdOf(req), body.displayName));
+    const body = z
+      .object({ displayName: displayName.optional(), preferredLang: z.enum(["en", "hi", "pa", "ur"]).optional() })
+      .refine((b) => b.displayName !== undefined || b.preferredLang !== undefined, "Nothing to update.")
+      .parse(req.body);
+    const id = accountIdOf(req);
+    let account = body.preferredLang ? await service.setPreferredLang(id, body.preferredLang) : null;
+    if (body.displayName !== undefined) account = await service.rename(id, body.displayName);
+    res.json(account);
   });
 
   r.post("/password", ...strict, async (req, res) => {

@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Account, AuthResponse } from "@shared/auth-contract";
 import { getAuthToken, onAuthTokenChange, resetGuestId, setAuthToken } from "../../lib/http";
+import { setLang, useLang } from "../../lib/language";
 import { authApi } from "./api";
 
 type Status = "loading" | "guest" | "signedIn";
@@ -65,6 +66,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setAccount = useCallback((a: Account) => setAccountState(a), []);
+
+  // Language follows the person: their saved choice is applied when they sign
+  // in (on any device), and changing the language while signed in saves it.
+  const lang = useLang();
+  const appliedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (status !== "signedIn" || !account) {
+      appliedFor.current = null;
+      return;
+    }
+    if (appliedFor.current !== account.id) {
+      appliedFor.current = account.id;
+      if (account.preferredLang && account.preferredLang !== lang) {
+        setLang(account.preferredLang);
+        return;
+      }
+    }
+    if (account.preferredLang === lang) return;
+    const id = setTimeout(() => {
+      authApi
+        .setPreferredLang(lang)
+        .then((a) => setAccountState(a))
+        .catch(() => undefined);
+    }, 600);
+    return () => clearTimeout(id);
+  }, [status, account, lang]);
 
   const value = useMemo(() => ({ status, account, completeSignIn, signOut, setAccount }), [status, account, completeSignIn, signOut, setAccount]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

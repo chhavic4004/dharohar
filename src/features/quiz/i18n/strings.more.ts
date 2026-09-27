@@ -9,6 +9,7 @@ type Dict = Partial<Record<StringKey, string>>;
  */
 
 export const HI_MORE: Dict = {
+  explorerName: "खोजी",
   a11ySections: "क्विज़ के भाग",
   a11yOptions: "उत्तर के विकल्प",
   a11yOrder: "आपके चुने क्रम में",
@@ -49,6 +50,7 @@ export const HI_MORE: Dict = {
 };
 
 export const PA_MORE: Dict = {
+  explorerName: "ਖੋਜੀ",
   a11ySections: "ਕੁਇਜ਼ ਦੇ ਹਿੱਸੇ",
   a11yOptions: "ਜਵਾਬ ਦੇ ਵਿਕਲਪ",
   a11yOrder: "ਤੁਹਾਡੇ ਚੁਣੇ ਕ੍ਰਮ ਵਿੱਚ",
@@ -289,6 +291,7 @@ export const PA_MORE: Dict = {
 };
 
 export const UR_MORE: Dict = {
+  explorerName: "متلاشی",
   a11ySections: "کوئز کے حصے",
   a11yOptions: "جواب کے اختیارات",
   a11yOrder: "آپ کی چنی ترتیب میں",

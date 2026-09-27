@@ -11,10 +11,36 @@ export function Layout() {
   return (
     <AuthProvider>
       <Shell />
+      <DocumentTitle />
       <PhoneGate />
       <ToastHost />
     </AuthProvider>
   );
+}
+
+/** Browser tab title in the site language, for example "नक्शा · धरोहर". */
+function DocumentTitle() {
+  const { pathname } = useLocation();
+  const t = useSiteT();
+  useEffect(() => {
+    const page: [string, Parameters<typeof t>[0]][] = [
+      ["/map", "navMap"],
+      ["/quiz", "navQuiz"],
+      ["/preserve", "navPreserve"],
+      ["/passport", "navPassport"],
+      ["/ar-walk", "navArWalk"],
+      ["/dashboard", "navVulnerability"],
+      ["/admin-heatmap", "navAdmin"],
+      ["/explore/", "pageTradition"],
+      ["/explore", "pageExplore"],
+      ["/story", "pageStory"],
+      ["/account", "myAccount"],
+      ["/login", "signIn"],
+    ];
+    const hit = page.find(([prefix]) => pathname.startsWith(prefix));
+    document.title = hit ? `${t(hit[1])} · ${t("brand")}` : t("brand");
+  }, [pathname, t]);
+  return null;
 }
 
 function Shell() {

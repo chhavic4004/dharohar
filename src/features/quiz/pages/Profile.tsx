@@ -5,13 +5,14 @@ import { siteText } from "../../../i18n/site";
 import { quizApi } from "../api/quizApi";
 import { CATEGORY_IDS, CATEGORY_META } from "../constants";
 import { useApi } from "../hooks/useApi";
-import { useI18n, type StringKey } from "../i18n";
+import { useI18n, type StringKey, useDisplayName } from "../i18n";
 import { Button, Card, CoinBadge, ErrorState, ProgressBar, Spinner, cx } from "../components/ui";
 import { useCategoryLabel, useLevelName } from "./QuizHome";
 import { localeOf } from "../../../lib/language";
 
 export default function Profile() {
   const { t, lang } = useI18n();
+  const showName = useDisplayName();
   const locale = localeOf(lang);
   const catLabel = useCategoryLabel();
   const levelName = useLevelName();
@@ -72,7 +73,7 @@ export default function Profile() {
                 </div>
               ) : (
                 <h1 className="font-serif text-2xl font-bold text-ink flex items-center gap-2">
-                  {p.displayName}
+                  {showName(p.displayName)}
                   <button
                     onClick={() => {
                       setName(p.displayName);

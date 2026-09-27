@@ -4,7 +4,7 @@ import { Copy, Swords, Timer, Users } from "lucide-react";
 import { quizApi } from "../api/quizApi";
 import { CATEGORY_META } from "../constants";
 import { useApi } from "../hooks/useApi";
-import { useI18n } from "../i18n";
+import { useI18n, useDisplayName } from "../i18n";
 import { Button, Card, ErrorState, Pill, Spinner, Toast, cx } from "../components/ui";
 import { useCategoryLabel } from "./QuizHome";
 import { localeOf } from "../../../lib/language";
@@ -19,6 +19,7 @@ export default function ChallengePage() {
   const { code = "" } = useParams();
   const navigate = useNavigate();
   const { t, lang } = useI18n();
+  const showName = useDisplayName();
   const catLabel = useCategoryLabel();
   const info = useApi(() => quizApi.challenge(code.toUpperCase()), [code]);
   const [starting, setStarting] = useState(false);
@@ -59,7 +60,7 @@ export default function ChallengePage() {
     <div className="bg-parchment pb-16">
       <div className="bg-ink text-parchment px-5 pt-10 pb-12 text-center">
         <Swords className="w-9 h-9 text-turmeric mx-auto mb-3" aria-hidden />
-        <h1 className="font-serif text-2xl sm:text-3xl font-bold">{c.isCreator ? t("modeChallenge") : t("challengeTitle", { name: c.creatorName })}</h1>
+        <h1 className="font-serif text-2xl sm:text-3xl font-bold">{c.isCreator ? t("modeChallenge") : t("challengeTitle", { name: showName(c.creatorName) })}</h1>
         <p className="text-parchment/70 text-sm mt-2 max-w-md mx-auto">
           {c.isCreator ? t("ownChallenge") : t("challengeBody", { n: c.totalQuestions, score: c.creatorScore })}
         </p>
@@ -96,7 +97,7 @@ export default function ChallengePage() {
               <li key={`${p.displayName}-${i}`} className={cx("flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-lg", p.isYou && "bg-turmeric/10")}>
                 <span className="w-6 text-center text-sm font-bold text-ink/50">{i + 1}</span>
                 <span className="flex-1 text-sm font-medium text-ink truncate">
-                  {p.displayName} {p.isYou && <span className="text-xs text-maroon">({t("you")})</span>}
+                  {showName(p.displayName)} {p.isYou && <span className="text-xs text-maroon">({t("you")})</span>}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-ink/50">
                   <Timer className="w-3.5 h-3.5" aria-hidden /> {fmtTime(p.timeSeconds)}

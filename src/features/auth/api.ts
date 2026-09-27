@@ -27,6 +27,7 @@ export const authApi = {
 
   me: () => api<Account>("GET", "/auth/me"),
   rename: (displayName: string) => api<Account>("PATCH", "/auth/me", { displayName }),
+  setPreferredLang: (preferredLang: "en" | "hi" | "pa" | "ur") => api<Account>("PATCH", "/auth/me", { preferredLang }),
   changePassword: (newPassword: string, currentPassword?: string) =>
     api<AuthResponse>("POST", "/auth/password", { newPassword, ...(currentPassword ? { currentPassword } : {}) }),
   logoutAll: () => api<void>("POST", "/auth/logout-all"),

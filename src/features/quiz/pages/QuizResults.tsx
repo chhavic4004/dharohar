@@ -24,7 +24,7 @@ import { CATEGORY_META } from "../constants";
 import { HeritageLinks } from "../components/ExplanationCard";
 import { Button, Card, CoinBadge, ErrorState, ProgressBar, Spinner, Toast, cx } from "../components/ui";
 import { useApi } from "../hooks/useApi";
-import { useI18n } from "../i18n";
+import { useI18n, useDisplayName } from "../i18n";
 import { useCategoryLabel, useLevelName } from "./QuizHome";
 
 function ScoreRing({ score, total }: { score: number; total: number }) {
@@ -71,6 +71,7 @@ function Results({ result }: { result: QuizResult }) {
   const navigate = useNavigate();
   const { t, lang } = useI18n();
   const levelName = useLevelName();
+  const showName = useDisplayName();
   const catLabel = useCategoryLabel();
   const [open, setOpen] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "wrong">("all");
@@ -119,7 +120,7 @@ function Results({ result }: { result: QuizResult }) {
     try {
       const ch = await quizApi.createChallenge(result.attemptId);
       const link = `${window.location.origin}/quiz/challenge/${ch.code}`;
-      await copy(`${t("challengeTitle", { name: ch.creatorName })}: ${link}`, t("challengeCreated"));
+      await copy(`${t("challengeTitle", { name: showName(ch.creatorName) })}: ${link}`, t("challengeCreated"));
       navigate(`/quiz/challenge/${ch.code}`);
     } catch (e) {
       setToast((e as Error).message);
@@ -162,7 +163,7 @@ function Results({ result }: { result: QuizResult }) {
         {result.challenge && !result.challenge.isCreator && (
           <Card className={cx("p-5 border-2", result.challenge.youWon ? "border-heritage/40" : "border-maroon/20")}>
             <p className="text-xs uppercase tracking-widest text-ink/50 mb-3 flex items-center gap-2">
-              <Swords className="w-4 h-4" aria-hidden /> {t("vsFriend", { name: result.challenge.creatorName })}
+              <Swords className="w-4 h-4" aria-hidden /> {t("vsFriend", { name: showName(result.challenge.creatorName) })}
             </p>
             <div className="grid grid-cols-2 gap-3 text-center">
               <div className={cx("rounded-xl p-3", result.challenge.youWon ? "bg-heritage/10" : "bg-parchment")}>
@@ -171,13 +172,13 @@ function Results({ result }: { result: QuizResult }) {
                 <p className="text-[11px] text-ink/50">{result.totalTimeSeconds}s</p>
               </div>
               <div className={cx("rounded-xl p-3", result.challenge.youWon === false ? "bg-heritage/10" : "bg-parchment")}>
-                <p className="text-xs text-ink/50">{result.challenge.creatorName}</p>
+                <p className="text-xs text-ink/50">{showName(result.challenge.creatorName)}</p>
                 <p className="font-serif text-3xl font-bold text-ink">{result.challenge.creatorScore}</p>
                 <p className="text-[11px] text-ink/50">{result.challenge.creatorTimeSeconds}s</p>
               </div>
             </div>
             <p className="text-sm text-center mt-3 font-semibold text-ink">
-              {result.challenge.youWon === null ? t("tie") : result.challenge.youWon ? t("youWon") : t("youLost", { name: result.challenge.creatorName })}
+              {result.challenge.youWon === null ? t("tie") : result.challenge.youWon ? t("youWon") : t("youLost", { name: showName(result.challenge.creatorName) })}
             </p>
           </Card>
         )}

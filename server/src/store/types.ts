@@ -155,6 +155,7 @@ export interface AccountDoc extends BaseDoc {
   phone?: string;
   emailVerified?: boolean;
   phoneVerified?: boolean;
+  preferredLang?: "en" | "hi" | "pa" | "ur";
   displayName: string;
   avatarUrl?: string;
   /** Bumped to sign out every device (password change, "log out everywhere") */

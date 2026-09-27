@@ -35,6 +35,7 @@ export function toAccount(a: AccountDoc): Account {
     emailVerified: !!a.emailVerified,
     phoneVerified: !!(a.phone && a.phoneVerified),
     displayName: a.displayName,
+    preferredLang: a.preferredLang ?? null,
     avatarUrl: a.avatarUrl ?? null,
     providers,
     createdAt: a.createdAt,
@@ -352,6 +353,14 @@ export class AuthService {
   async get(accountId: string): Promise<Account> {
     const a = await this.store.getAccount(accountId);
     if (!a) throw new ApiError(404, "not_found", "Account not found");
+    return toAccount(a);
+  }
+
+  async setPreferredLang(accountId: string, lang: "en" | "hi" | "pa" | "ur"): Promise<Account> {
+    const a = await this.store.updateAccount(accountId, (x) => {
+      x.preferredLang = lang;
+      x.updatedAt = this.now().toISOString();
+    });
     return toAccount(a);
   }
 
