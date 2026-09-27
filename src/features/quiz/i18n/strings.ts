@@ -332,6 +332,16 @@ export const EN = {
   adminWrongKey: "That key was not accepted.",
   certRedeemFirst: "Unlock certificate",
 
+  a11ySections: "Quiz sections",
+  a11yOptions: "Answer options",
+  a11yOrder: "Items in your chosen order",
+  a11yCorrectPos: "Correct position",
+  a11yWrongPos: "Wrong position",
+  close: "Close",
+  a11ySchedule: "Review schedule in days",
+  a11yLevelProgress: "Level progress",
+  a11yQuizProgress: "Quiz progress",
+
   // Category and level names
   cat_rhythms: "Rhythms & Ragas",
   cat_architecture: "Architectural Marvels",

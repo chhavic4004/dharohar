@@ -9,6 +9,7 @@ import { Button, Card, Pill, ProgressBar, cx } from "../components/ui";
 import { useI18n } from "../i18n";
 import { onPacksChange, readPacks, removePack, savePack, saveResult, syncPending, type StoredPack } from "../offline/storage";
 import { useCategoryLabel } from "./QuizHome";
+import { localeOf } from "../../../lib/language";
 
 type Answer = { choice: number } | { order: number[] } | { pairs: number[] };
 
@@ -176,7 +177,7 @@ export default function Offline() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
-  const locale = lang === "en" ? "en-IN" : `${lang}-IN`;
+  const locale = localeOf(lang);
 
   const download = async () => {
     setBusy(true);

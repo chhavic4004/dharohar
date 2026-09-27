@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { heritageName, stateName } from "../heritageText";
 import { BookOpen, CheckCircle2, Clock, ExternalLink, HandHeart, Lightbulb, MapPin, PlayCircle, Square, Volume2, XCircle } from "lucide-react";
 import type { Explanation, HeritageLink, Source } from "@shared/quiz-contract";
 import { ARCHIVE_LINKS } from "../constants";
@@ -35,8 +36,8 @@ export function HeritageLinks({ links, compact }: { links: HeritageLink[]; compa
         <div key={l.id} className="rounded-xl border border-maroon/10 bg-parchment/50 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold text-sm text-ink me-auto">
-              {lang === "hi" && l.hindi ? l.hindi : l.name}
-              {l.state && <span className="font-normal text-ink/50"> · {l.state}</span>}
+              {heritageName(l, lang)}
+              {l.state && <span className="font-normal text-ink/50"> · {stateName(l.state, lang)}</span>}
             </p>
             {l.hvs && (
               <span className={cx("text-[11px] font-semibold rounded-full border px-2 py-0.5", BAND_STYLE[l.hvs.band])} title={l.hvs.isSample ? t("hvsSample") : undefined}>

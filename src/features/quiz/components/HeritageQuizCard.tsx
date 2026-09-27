@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { heritageName } from "../heritageText";
 import { Link } from "react-router";
 import { ArrowRight, Brain } from "lucide-react";
 import type { HeritageQuizInfo } from "@shared/quiz-contract";
@@ -29,7 +30,7 @@ function Inner({ heritageId, className }: Props) {
 
   // Stay invisible if the backend is down or the id has no questions.
   if (!info || info.questionCount === 0) return null;
-  const name = lang === "hi" && info.heritage.hindi ? info.heritage.hindi : info.heritage.name;
+  const name = heritageName(info.heritage, lang);
 
   return (
     <div className={cx("rounded-2xl border border-maroon/15 bg-gradient-to-br from-[#fbf3e4] to-[#f4e3c8] p-5 flex items-center gap-4 shadow-sm", className)}>

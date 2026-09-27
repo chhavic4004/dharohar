@@ -139,7 +139,7 @@ function Results({ result }: { result: QuizResult }) {
           </p>
           <ScoreRing score={result.score} total={result.totalQuestions} />
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mt-3">{lang === "hi" ? result.rating.hindi : result.rating.title}</h1>
-          {lang !== "hi" && <p className="font-devanagari text-white/75 text-sm">{result.rating.hindi}</p>}
+          {lang === "en" && <p className="font-devanagari text-white/75 text-sm">{result.rating.hindi}</p>}
           <p className="text-white/85 text-sm max-w-md mt-2">{result.rating.message}</p>
           <div className="flex flex-wrap justify-center gap-2 mt-4">
             {result.isPersonalBest && result.previousBest !== null && (
@@ -220,13 +220,13 @@ function Results({ result }: { result: QuizResult }) {
           <div className="mt-4 rounded-xl bg-parchment/70 p-3">
             <div className="flex justify-between text-xs mb-1.5">
               <span className="font-semibold text-ink">
-                {t("level", { n: result.levelAfter.level })}: {lang === "hi" ? result.levelAfter.hindi : result.levelAfter.name}
+                {t("level", { n: result.levelAfter.level })}: {levelName(result.levelAfter.level)}
               </span>
               <span className="text-ink/50">
                 {result.levelAfter.nextLevelXp ? t("xpOf", { xp: result.levelAfter.xp, next: result.levelAfter.nextLevelXp }) : t("topReached")}
               </span>
             </div>
-            <ProgressBar value={result.levelAfter.progress} label="Level progress" />
+            <ProgressBar value={result.levelAfter.progress} label={t("a11yLevelProgress")} />
             <p className="text-xs text-ink/60 mt-2">
               {t("coinBalance", { n: result.coinBalance })}{" "}
               <Link to="/quiz/rewards" className="text-maroon underline">
@@ -250,7 +250,7 @@ function Results({ result }: { result: QuizResult }) {
                   </div>
                   <div>
                     <p className="font-semibold text-sm text-ink">
-                      {lang === "hi" ? b.hindi : b.label} {lang !== "hi" && <span className="font-devanagari text-xs text-maroon/80">{b.hindi}</span>}
+                      {lang === "hi" ? b.hindi : b.label} {lang === "en" && <span className="font-devanagari text-xs text-maroon/80">{b.hindi}</span>}
                     </p>
                     <p className="text-xs text-ink/60">{b.description}</p>
                   </div>

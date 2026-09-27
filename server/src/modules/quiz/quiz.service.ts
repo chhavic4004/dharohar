@@ -59,6 +59,7 @@ import { localize } from "./i18n";
 import { correctAnswerFor, correctAnswerText, createLayout, grade, identityLayout, responseText, toPublic } from "./present";
 import { applyReview, dueQuestionIds, summarize } from "./review";
 import { REWARDS, rewardById } from "./rewards.catalog";
+import { localizeBadge, localizeRating, localizeRedemption, localizeReward } from "./i18n/meta";
 
 const RECENT_LIMIT = 20;
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id);
@@ -274,7 +275,7 @@ export class QuizService {
     return last === today || last === previousDateKey(today) ? u.daily.streak : 0;
   }
 
-  async getProfile(user: RequestUser): Promise<PlayerProfile> {
+  async getProfile(user: RequestUser, lang: Lang = "en"): Promise<PlayerProfile> {
     const u = await this.ensureUser(user);
     const attempts = await this.store.listAttempts(u.id, 10);
     const earned = new Set(u.badges.map((b) => b.id));
@@ -288,8 +289,8 @@ export class QuizService {
       totalAnswered: u.totalAnswered,
       bestStreak: u.bestStreak,
       daily: { ...u.daily, streak: this.effectiveDailyStreak(u, istDateKey(this.clock())) },
-      badges: u.badges.filter((b) => badgeById.has(b.id)).map((b) => ({ ...badgeById.get(b.id)!, earnedAt: b.earnedAt })),
-      lockedBadges: BADGES.filter((b) => !earned.has(b.id)),
+      badges: u.badges.filter((b) => badgeById.has(b.id)).map((b) => localizeBadge({ ...badgeById.get(b.id)!, earnedAt: b.earnedAt }, lang)),
+      lockedBadges: BADGES.filter((b) => !earned.has(b.id)).map((b) => localizeBadge(b, lang)),
       stats: u.stats,
       review: summarize(u.review, this.clock()),
       recentAttempts: attempts.map((a) => ({
@@ -308,14 +309,14 @@ export class QuizService {
   /** Set in app.ts so renaming a signed-in player also renames their account. */
   onAccountRename?: (userId: string, displayName: string) => Promise<void>;
 
-  async updateDisplayName(user: RequestUser, displayName: string): Promise<PlayerProfile> {
+  async updateDisplayName(user: RequestUser, displayName: string, lang: Lang = "en"): Promise<PlayerProfile> {
     await this.ensureUser(user);
     await this.updateUser(user.id, (u) => {
       u.displayName = displayName;
       u.updatedAt = this.nowIso();
     });
     if (!user.isGuest) await this.onAccountRename?.(user.id, displayName);
-    return this.getProfile(user);
+    return this.getProfile(user, lang);
   }
 
   // ─── Heritage (archive links) ───────────────────────────────────────────────
@@ -674,10 +675,10 @@ export class QuizService {
       coinBalance,
       levelBefore,
       levelAfter: levelFor(userAfter.xp),
-      newBadges,
+      newBadges: newBadges.map((b) => localizeBadge(b, lang)),
       previousBest,
       isPersonalBest: s.mode === "standard" && (previousBest === null || s.score > previousBest),
-      rating: ratingFor(accuracy),
+      rating: localizeRating(ratingFor(accuracy), accuracy, lang),
       byType: [...byType].map(([type, v]) => ({ type, ...v })),
       byCategory: [...byCategory].map(([category, v]) => ({ category, correct: v.correct, total: v.total })),
       review,
@@ -841,7 +842,7 @@ export class QuizService {
         xpEarned: xp,
         streak,
         longestStreak: doc.daily.longestStreak,
-        newBadges: award(doc, ids, nowIso),
+        newBadges: award(doc, ids, nowIso).map((b) => localizeBadge(b, lang)),
       };
     });
 
@@ -1004,10 +1005,10 @@ export class QuizService {
 
   // ─── Rewards ────────────────────────────────────────────────────────────────
 
-  async listRewards(user: RequestUser): Promise<Reward[]> {
+  async listRewards(user: RequestUser, lang: Lang = "en"): Promise<Reward[]> {
     const u = await this.ensureUser(user);
     const level = levelFor(u.xp).level;
-    return REWARDS.map((r) => ({ ...r, affordable: u.coins >= r.cost, unlocked: level >= r.minLevel }));
+    return REWARDS.map((r) => localizeReward({ ...r, affordable: u.coins >= r.cost, unlocked: level >= r.minLevel }, lang));
   }
 
   private toRedemption(r: RedemptionDoc): Redemption {
@@ -1025,7 +1026,7 @@ export class QuizService {
     };
   }
 
-  async redeem(user: RequestUser, rewardId: string): Promise<RedeemResponse> {
+  async redeem(user: RequestUser, rewardId: string, lang: Lang = "en"): Promise<RedeemResponse> {
     await this.ensureUser(user);
     const reward = rewardById.get(rewardId);
     if (!reward) throw new ApiError(404, "not_found", "Reward not found");
@@ -1055,11 +1056,11 @@ export class QuizService {
       expiresAt: new Date(now.getTime() + reward.validityDays * 86_400_000).toISOString(),
     };
     await this.store.insertRedemption(doc);
-    return { redemption: this.toRedemption(doc), coinBalance: u.coins };
+    return { redemption: localizeRedemption(this.toRedemption(doc), lang), coinBalance: u.coins };
   }
 
-  async listRedemptions(user: RequestUser): Promise<Redemption[]> {
-    return (await this.store.listRedemptions(user.id)).map((r) => this.toRedemption(r));
+  async listRedemptions(user: RequestUser, lang: Lang = "en"): Promise<Redemption[]> {
+    return (await this.store.listRedemptions(user.id)).map((r) => localizeRedemption(this.toRedemption(r), lang));
   }
 
   // ─── Admin analytics ────────────────────────────────────────────────────────

@@ -17,7 +17,7 @@ const LINKS: { to: string; label: StringKey; icon: typeof LayoutGrid; end?: bool
 export function QuizNav() {
   const { t } = useI18n();
   return (
-    <nav aria-label="Quiz sections" className="bg-parchment border-b border-maroon/10">
+    <nav aria-label={t("a11ySections")} className="bg-parchment border-b border-maroon/10">
       <div className="max-w-4xl mx-auto px-2 flex items-center gap-2">
         <div className="flex gap-1 overflow-x-auto flex-1">
           {LINKS.map(({ to, label, icon: Icon, end }) => (

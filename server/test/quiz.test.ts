@@ -367,9 +367,22 @@ describe("languages", () => {
     expect(result.newBadges.map((b) => b.id)).toContain("polyglot");
   });
 
-  it("falls back to English when no translation is available", async () => {
-    const daily = await as(GUEST_A).get("/api/quiz/daily?lang=pa");
-    expect(daily.body.question.lang).toBe("en");
+  it("serves Punjabi and Urdu content too", async () => {
+    const pa = await as(GUEST_A).get("/api/quiz/daily?lang=pa");
+    expect(pa.body.question.lang).toBe("pa");
+    expect(pa.body.question.prompt).toMatch(/[\u0A00-\u0A7F]/);
+    const ur = await as(GUEST_A).get("/api/quiz/daily").set("X-Lang", "ur");
+    expect(ur.body.question.lang).toBe("ur");
+    expect(ur.body.question.prompt).toMatch(/[\u0600-\u06FF]/);
+  });
+
+  it("localizes badges and rewards", async () => {
+    const me = await as(GUEST_A).get("/api/quiz/me?lang=pa");
+    expect(me.body.lockedBadges[0].label).toMatch(/[\u0A00-\u0A7F]/);
+    const rewards = await as(GUEST_A).get("/api/quiz/rewards").set("X-Lang", "ur");
+    expect(rewards.body[0].title).toMatch(/[\u0600-\u06FF]/);
+    const heritage = await as(GUEST_A).get("/api/quiz/heritage/phulkari");
+    expect(heritage.body.heritage.names).toMatchObject({ pa: expect.stringMatching(/[\u0A00-\u0A7F]/), ur: expect.stringMatching(/[\u0600-\u06FF]/) });
   });
 });
 

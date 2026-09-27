@@ -45,6 +45,9 @@ export interface HeritageLink {
   kind: "tradition" | "site" | "food";
   name: string;
   hindi?: string;
+  /** Punjabi and Urdu names */
+  names?: { pa?: string; ur?: string };
+  /** English state name; the website translates it (src/i18n/states.ts) */
   state?: string;
   location?: LatLng;
   /** Heritage Vulnerability Score (0 to 100, higher means more at risk) */

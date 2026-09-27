@@ -145,11 +145,11 @@ export default function QuizPlay() {
             <span className={cx("inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2 py-0.5", streak >= 2 ? "bg-turmeric text-white" : "text-ink/50")}>
               <Flame className="w-3.5 h-3.5" aria-hidden />
               {streak}
-              <span className="sr-only">answer streak</span>
+              <span className="sr-only">{t("currentStreak")}</span>
             </span>
           </div>
         </div>
-        <ProgressBar value={answeredCount / totalQuestions} className="max-w-2xl mx-auto h-1.5" label="Quiz progress" />
+        <ProgressBar value={answeredCount / totalQuestions} className="max-w-2xl mx-auto h-1.5" label={t("a11yQuizProgress")} />
         {isHistorian && !result && timeLeft !== null && (
           <div className="max-w-2xl mx-auto mt-2 flex items-center gap-2">
             <Timer className={cx("w-4 h-4", lowTime ? "text-alert" : "text-terracotta")} aria-hidden />

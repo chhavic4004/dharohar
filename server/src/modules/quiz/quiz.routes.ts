@@ -139,7 +139,7 @@ export function quizRouter(service: QuizService): Router {
   });
 
   r.get("/me", async (req, res) => {
-    res.json(await service.getProfile(req.user!));
+    res.json(await service.getProfile(req.user!, langOf(req)));
   });
 
   r.patch("/me", async (req, res) => {
@@ -153,7 +153,7 @@ export function quizRouter(service: QuizService): Router {
           .regex(/^[\p{L}\p{M}\p{N} ._'-]+$/u, "Use letters, numbers and spaces only"),
       })
       .parse(req.body);
-    res.json(await service.updateDisplayName(req.user!, body.displayName));
+    res.json(await service.updateDisplayName(req.user!, body.displayName, langOf(req)));
   });
 
   r.get("/leaderboard", async (req, res) => {
@@ -162,12 +162,12 @@ export function quizRouter(service: QuizService): Router {
   });
 
   r.get("/rewards", async (req, res) => {
-    res.json(await service.listRewards(req.user!));
+    res.json(await service.listRewards(req.user!, langOf(req)));
   });
 
   r.post("/rewards/:id/redeem", async (req, res) => {
     const id = z.string().min(1).max(60).parse(req.params.id);
-    res.status(201).json(await service.redeem(req.user!, id));
+    res.status(201).json(await service.redeem(req.user!, id, langOf(req)));
   });
 
   r.get("/me/history", async (req, res) => {
@@ -178,7 +178,7 @@ export function quizRouter(service: QuizService): Router {
   });
 
   r.get("/me/redemptions", async (req, res) => {
-    res.json(await service.listRedemptions(req.user!));
+    res.json(await service.listRedemptions(req.user!, langOf(req)));
   });
 
   return r;

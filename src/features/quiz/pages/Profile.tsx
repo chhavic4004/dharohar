@@ -8,14 +8,15 @@ import { useApi } from "../hooks/useApi";
 import { useI18n, type StringKey } from "../i18n";
 import { Button, Card, CoinBadge, ErrorState, ProgressBar, Spinner, cx } from "../components/ui";
 import { useCategoryLabel, useLevelName } from "./QuizHome";
+import { localeOf } from "../../../lib/language";
 
 export default function Profile() {
   const { t, lang } = useI18n();
-  const locale = lang === "en" ? "en-IN" : `${lang}-IN`;
+  const locale = localeOf(lang);
   const catLabel = useCategoryLabel();
   const levelName = useLevelName();
-  const profile = useApi(() => quizApi.profile());
-  const wallet = useApi(() => quizApi.redemptions());
+  const profile = useApi(() => quizApi.profile(), [lang]);
+  const wallet = useApi(() => quizApi.redemptions(), [lang]);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -211,7 +212,7 @@ export default function Profile() {
                 </div>
                 <div>
                   <p className={cx("text-sm font-semibold", b.earned ? "text-ink" : "text-ink/60")}>
-                    {hi ? b.hindi : b.label} {!hi && <span className="font-devanagari text-xs font-normal text-maroon/70">{b.hindi}</span>}
+                    {hi ? b.hindi : b.label} {lang === "en" && <span className="font-devanagari text-xs font-normal text-maroon/70">{b.hindi}</span>}
                   </p>
                   <p className="text-xs text-ink/55">{b.description}</p>
                 </div>

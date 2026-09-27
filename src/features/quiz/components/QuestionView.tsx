@@ -78,13 +78,14 @@ export default function QuestionView({ question, correctAnswer, submitted, busy,
 }
 
 function ChoiceOptions({ question, correctAnswer, submitted, busy, onSubmit }: Props) {
+  const { t } = useI18n();
   const revealed = correctAnswer !== null;
   const correctId = correctAnswer && "choice" in correctAnswer ? correctAnswer.choice : -1;
   const chosenId = submitted && "choice" in submitted ? submitted.choice : -1;
   const isTF = question.type === "true_false";
 
   return (
-    <div className={cx("gap-2.5", isTF ? "grid grid-cols-2" : "flex flex-col")} role="group" aria-label="Answer options">
+    <div className={cx("gap-2.5", isTF ? "grid grid-cols-2" : "flex flex-col")} role="group" aria-label={t("a11yOptions")}>
       {question.options!.map((opt, idx) => {
         const isCorrect = revealed && opt.id === correctId;
         const isWrongPick = revealed && opt.id === chosenId && chosenId !== correctId;
@@ -143,7 +144,7 @@ function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Prop
 
   return (
     <div>
-      <ol className="space-y-2" aria-label="Items in your chosen order">
+      <ol className="space-y-2" aria-label={t("a11yOrder")}>
         {shown.map((id, pos) => {
           const right = revealed && correctOrder[pos] === id;
           return (
@@ -180,9 +181,9 @@ function Chronology({ question, correctAnswer, submitted, busy, onSubmit }: Prop
                   </button>
                 </span>
               ) : right ? (
-                <Check className="w-5 h-5 text-heritage" aria-label="Correct position" />
+                <Check className="w-5 h-5 text-heritage" aria-label={t("a11yCorrectPos")} />
               ) : (
-                <X className="w-5 h-5 text-terracotta" aria-label="Wrong position" />
+                <X className="w-5 h-5 text-terracotta" aria-label={t("a11yWrongPos")} />
               )}
             </li>
           );

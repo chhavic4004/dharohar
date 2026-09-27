@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { heritageName } from "../heritageText";
 import { useNavigate, useParams } from "react-router";
 import { quizApi } from "../api/quizApi";
 import { useApi } from "../hooks/useApi";
@@ -18,7 +19,7 @@ export default function HeritageQuiz() {
   if (info.loading) return <Spinner label={t("loading")} />;
   if (info.error || !info.data) return <ErrorState error={info.error ?? new Error(t("notFound"))} onRetry={info.reload} />;
   const { heritage: h, questionCount, directCount } = info.data;
-  const name = lang === "hi" && h.hindi ? h.hindi : h.name;
+  const name = heritageName(h, lang);
 
   const start = async () => {
     setStarting(true);
@@ -38,7 +39,7 @@ export default function HeritageQuiz() {
         <div>
           <p className="text-xs uppercase tracking-widest text-terracotta font-semibold">{t("mode_heritage")}</p>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ink mt-1">{t("heritageQuizTitle", { name })}</h1>
-          {lang !== "hi" && h.hindi && <p className="font-devanagari text-maroon/80 mt-0.5">{h.hindi}</p>}
+          {lang === "en" && h.hindi && <p className="font-devanagari text-maroon/80 mt-0.5">{h.hindi}</p>}
           <p className="text-sm text-ink/65 mt-2">
             {directCount < questionCount ? t("heritageQuizIntroMixed", { n: questionCount, d: directCount }) : t("heritageQuizIntro", { n: questionCount })}          </p>
         </div>

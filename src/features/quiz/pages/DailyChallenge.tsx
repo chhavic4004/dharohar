@@ -10,6 +10,7 @@ import { Card, ErrorState, Spinner, cx } from "../components/ui";
 import { useApi } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { useCategoryLabel } from "./QuizHome";
+import { localeOf } from "../../../lib/language";
 
 function useCountdown(target: string | undefined) {
   const [now, setNow] = useState(Date.now());
@@ -42,7 +43,7 @@ export default function DailyChallenge() {
   const streak = result?.streak ?? d.streak;
   const longest = Math.max(result?.longestStreak ?? 0, d.longestStreak);
   const meta = CATEGORY_META[d.question.category];
-  const dateLabel = new Date(`${d.date}T00:00:00+05:30`).toLocaleDateString(lang === "en" ? "en-IN" : `${lang}-IN`, { weekday: "long", day: "numeric", month: "long" });
+  const dateLabel = new Date(`${d.date}T00:00:00+05:30`).toLocaleDateString(localeOf(lang), { weekday: "long", day: "numeric", month: "long" });
 
   const submit = async (payload: AnswerPayload) => {
     setBusy(true);

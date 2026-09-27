@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { heritageName, stateName } from "../heritageText";
 import { Link, useSearchParams } from "react-router";
 import { CircleMarker, Popup, useMap } from "react-leaflet";
 import type { CircleMarker as LeafletCircleMarker } from "leaflet";
@@ -75,7 +76,7 @@ export default function HeritageMapLayer({ onLoaded }: Props) {
       {items.map(({ heritage: h, questionCount }) => {
         if (!h.location) return null;
         const color = BAND_COLOR[h.hvs?.band ?? "none"];
-        const name = lang === "hi" && h.hindi ? h.hindi : h.name;
+        const name = heritageName(h, lang);
         const focused = h.id === focus;
         return (
           <CircleMarker
@@ -91,10 +92,10 @@ export default function HeritageMapLayer({ onLoaded }: Props) {
             <Popup className="heritage-popup" closeButton={false}>
               <div className="p-1 max-w-[230px]" dir={lang === "ur" ? "rtl" : "ltr"}>
                 <div className="text-[9px] font-bold uppercase tracking-wider text-terracotta mb-1">
-                  {h.state ?? ""} · {t("questionsCount", { n: questionCount })}
+                  {stateName(h.state, lang)} · {t("questionsCount", { n: questionCount })}
                 </div>
                 <h4 className="font-serif text-sm leading-tight text-maroon mb-1">{name}</h4>
-                {lang !== "hi" && h.hindi && <p className="text-[11px] text-ink/50 mb-1.5">{h.hindi}</p>}
+                {lang === "en" && h.hindi && <p className="text-[11px] text-ink/50 mb-1.5">{h.hindi}</p>}
                 {h.hvs && (
                   <p className="text-[11px] mb-2.5">
                     <span className="inline-block w-2 h-2 rounded-full me-1.5 align-middle" style={{ backgroundColor: color }} />

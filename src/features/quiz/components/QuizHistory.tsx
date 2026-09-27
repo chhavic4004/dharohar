@@ -8,6 +8,7 @@ import { CATEGORY_META } from "../constants";
 import { I18nProvider, useI18n, type StringKey } from "../i18n";
 import { useCategoryLabel } from "../pages/QuizHome";
 import { cx } from "./ui";
+import { localeOf } from "../../../lib/language";
 
 const ICON = { quiz: Trophy, daily: CalendarDays, reward: Gift, offline: WifiOff } as const;
 
@@ -19,7 +20,7 @@ function Inner() {
   const [next, setNext] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const locale = lang === "en" ? "en-IN" : `${lang}-IN`;
+  const locale = localeOf(lang);
 
   const load = useCallback(async (before?: string) => {
     setLoading(true);

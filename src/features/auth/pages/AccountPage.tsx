@@ -8,6 +8,7 @@ import { langDir, useLang } from "../../../lib/language";
 import { showToast } from "../../../lib/toast";
 import { authApi } from "../api";
 import { useAuth } from "../AuthProvider";
+import { localeOf } from "../../../lib/language";
 
 const input =
   "w-full rounded-xl border border-maroon/25 bg-white px-4 py-2.5 text-sm text-ink focus:outline-2 focus:outline-maroon focus:border-transparent";
@@ -51,7 +52,7 @@ export default function AccountPage() {
   if (status === "guest" || !account) return <Navigate to="/login?next=/account" replace />;
 
   const hasPassword = account.providers.includes("password");
-  const locale = lang === "en" ? "en-IN" : `${lang}-IN`;
+  const locale = localeOf(lang);
   const shownName = name ?? account.displayName;
 
   const saveName = async (e: FormEvent) => {

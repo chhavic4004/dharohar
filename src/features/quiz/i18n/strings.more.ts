@@ -9,6 +9,15 @@ type Dict = Partial<Record<StringKey, string>>;
  */
 
 export const HI_MORE: Dict = {
+  a11ySections: "क्विज़ के भाग",
+  a11yOptions: "उत्तर के विकल्प",
+  a11yOrder: "आपके चुने क्रम में",
+  a11yCorrectPos: "सही जगह",
+  a11yWrongPos: "ग़लत जगह",
+  close: "बंद करें",
+  a11ySchedule: "दोहराव की समय सारणी, दिनों में",
+  a11yLevelProgress: "स्तर की प्रगति",
+  a11yQuizProgress: "क्विज़ की प्रगति",
   heroTop: "भारत की अमर धरोहर",
   rating_flawless: "बेदाग़ प्रदर्शन",
   todaysQuestion: "आज का प्रश्न",
@@ -40,6 +49,15 @@ export const HI_MORE: Dict = {
 };
 
 export const PA_MORE: Dict = {
+  a11ySections: "ਕੁਇਜ਼ ਦੇ ਹਿੱਸੇ",
+  a11yOptions: "ਜਵਾਬ ਦੇ ਵਿਕਲਪ",
+  a11yOrder: "ਤੁਹਾਡੇ ਚੁਣੇ ਕ੍ਰਮ ਵਿੱਚ",
+  a11yCorrectPos: "ਸਹੀ ਥਾਂ",
+  a11yWrongPos: "ਗਲਤ ਥਾਂ",
+  close: "ਬੰਦ ਕਰੋ",
+  a11ySchedule: "ਦੁਹਰਾਈ ਦੀ ਸਮਾਂ ਸਾਰਣੀ, ਦਿਨਾਂ ਵਿੱਚ",
+  a11yLevelProgress: "ਪੱਧਰ ਦੀ ਤਰੱਕੀ",
+  a11yQuizProgress: "ਕੁਇਜ਼ ਦੀ ਤਰੱਕੀ",
   heroTop: "ਭਾਰਤ ਦੀ ਅਮਰ ਵਿਰਾਸਤ",
   heroHindi: "Heritage & Culture Quiz",
   topLevel: "{xp} XP, ਸਭ ਤੋਂ ਉੱਚਾ ਪੱਧਰ",
@@ -271,6 +289,15 @@ export const PA_MORE: Dict = {
 };
 
 export const UR_MORE: Dict = {
+  a11ySections: "کوئز کے حصے",
+  a11yOptions: "جواب کے اختیارات",
+  a11yOrder: "آپ کی چنی ترتیب میں",
+  a11yCorrectPos: "صحیح جگہ",
+  a11yWrongPos: "غلط جگہ",
+  close: "بند کریں",
+  a11ySchedule: "دہرائی کا شیڈول، دنوں میں",
+  a11yLevelProgress: "درجے کی پیش رفت",
+  a11yQuizProgress: "کوئز کی پیش رفت",
   heroTop: "ہندوستان کا لازوال ورثہ",
   heroHindi: "Heritage & Culture Quiz",
   topLevel: "{xp} XP، سب سے اونچا درجہ",

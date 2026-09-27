@@ -31,7 +31,7 @@ export default function QuizHome() {
   const [code, setCode] = useState("");
 
   const categories = useApi(() => quizApi.categories());
-  const profile = useApi(() => quizApi.profile());
+  const profile = useApi(() => quizApi.profile(), [lang]);
   const daily = useApi(() => quizApi.daily(), [lang]);
 
   const DIFFICULTIES = [
@@ -89,7 +89,7 @@ export default function QuizHome() {
               <p className="font-serif font-semibold text-ink group-hover:text-maroon">
                 {levelName(profile.data.level.level)}
               </p>
-              <ProgressBar value={profile.data.level.progress} className="mt-1.5" label="Level progress" />
+              <ProgressBar value={profile.data.level.progress} className="mt-1.5" label={t("a11yLevelProgress")} />
               <p className="text-[11px] text-ink/50 mt-1">
                 {profile.data.level.nextLevelXp
                   ? t("xpOf", { xp: profile.data.level.xp, next: profile.data.level.nextLevelXp })
@@ -177,9 +177,11 @@ export default function QuizHome() {
                     <p className="font-serif font-semibold text-sm leading-tight" style={{ color: isSel ? "#fff" : "#241B1D" }}>
                       {catLabel(id)}
                     </p>
-                    <p className="text-xs mt-0.5 font-devanagari" style={{ color: isSel ? "rgba(255,255,255,0.8)" : "#7A1F35" }}>
-                      {lang === "en" ? m.hindi : m.label}
-                    </p>
+                    {lang === "en" && m.hindi && (
+                      <p className="text-xs mt-0.5 font-devanagari" style={{ color: isSel ? "rgba(255,255,255,0.8)" : "#7A1F35" }}>
+                        {m.hindi}
+                      </p>
+                    )}
                     {n !== null && (
                       <p className="text-[11px] mt-1" style={{ color: isSel ? "rgba(255,255,255,0.7)" : "rgba(36,27,29,0.5)" }}>
                         {id === "mixed" ? t("allCategories") : t("nQuestions", { n })}

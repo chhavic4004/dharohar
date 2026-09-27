@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { heritageName, stateName } from "../heritageText";
 import { BarChart3, KeyRound } from "lucide-react";
 import type { AdminStats, QuestionStat } from "@shared/quiz-contract";
 import { ApiRequestError } from "../api/client";
@@ -169,9 +170,9 @@ export default function Admin() {
                     {stats.awarenessGaps.map((g) => (
                       <li key={g.heritage.id} className="py-3 flex items-center gap-3">
                         <span className="flex-1 min-w-0">
-                          <span className="block text-sm font-medium text-ink">{lang === "hi" && g.heritage.hindi ? g.heritage.hindi : g.heritage.name}</span>
+                          <span className="block text-sm font-medium text-ink">{heritageName(g.heritage, lang)}</span>
                           <span className="block text-[11px] text-ink/45">
-                            {g.heritage.state ?? g.heritage.kind}
+                            {g.heritage.state ? stateName(g.heritage.state, lang) : g.heritage.kind}
                             {g.heritage.hvs ? ` · HVS ${g.heritage.hvs.score} (${t(`band_${g.heritage.hvs.band}` as StringKey)})` : ""} · {g.answered} {t("answered")}
                           </span>
                         </span>

@@ -7,6 +7,7 @@ import { useApi } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Button, Card, ErrorState, Pill, Spinner, Toast, cx } from "../components/ui";
 import { useCategoryLabel } from "./QuizHome";
+import { localeOf } from "../../../lib/language";
 
 function fmtTime(s: number) {
   const m = Math.floor(s / 60);
@@ -29,7 +30,7 @@ export default function ChallengePage() {
   const c = info.data;
   const meta = CATEGORY_META[c.category];
   const link = `${window.location.origin}/quiz/challenge/${c.code}`;
-  const expires = new Date(c.expiresAt).toLocaleDateString(lang === "en" ? "en-IN" : `${lang}-IN`, { day: "numeric", month: "long" });
+  const expires = new Date(c.expiresAt).toLocaleDateString(localeOf(lang), { day: "numeric", month: "long" });
 
   const accept = async () => {
     setStarting(true);

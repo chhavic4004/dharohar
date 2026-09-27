@@ -1,4 +1,5 @@
 import type { HeritageLink, HvsBand, LatLng } from "../../../../../shared/quiz-contract";
+import { HERITAGE_NAMES } from "./names";
 
 /**
  * Heritage registry: the traditions, sites and foods that quiz questions
@@ -164,6 +165,7 @@ export function toLink(e: HeritageEntity): HeritageLink {
     kind: e.kind,
     name: e.name,
     hindi: e.hindi,
+    ...(HERITAGE_NAMES[e.id] ? { names: HERITAGE_NAMES[e.id] } : {}),
     state: e.state,
     location: e.location,
     hvs: e.sampleHvs === undefined ? undefined : { score: e.sampleHvs, band: bandFor(e.sampleHvs), isSample: true },

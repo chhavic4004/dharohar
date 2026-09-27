@@ -5,14 +5,15 @@ import { useApi } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Button, Card, ErrorState, Spinner } from "../components/ui";
 import { useLevelName } from "./QuizHome";
+import { localeOf } from "../../../lib/language";
 
 /** Printable certificate, unlocked by redeeming "Heritage Supporter Certificate". */
 export default function Certificate() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
   const levelName = useLevelName();
-  const profile = useApi(() => quizApi.profile());
-  const wallet = useApi(() => quizApi.redemptions());
+  const profile = useApi(() => quizApi.profile(), [lang]);
+  const wallet = useApi(() => quizApi.redemptions(), [lang]);
 
   if (profile.loading || wallet.loading) return <Spinner label={t("loading")} />;
   if (profile.error || wallet.error) return <ErrorState error={(profile.error ?? wallet.error)!} onRetry={() => { profile.reload(); wallet.reload(); }} />;
@@ -35,7 +36,7 @@ export default function Certificate() {
     );
   }
 
-  const issued = new Date(cert.redeemedAt).toLocaleDateString(lang === "en" ? "en-IN" : `${lang}-IN`, { day: "numeric", month: "long", year: "numeric" });
+  const issued = new Date(cert.redeemedAt).toLocaleDateString(localeOf(lang), { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div className="bg-parchment min-h-[80vh] py-8 px-4 print:p-0 print:bg-white">

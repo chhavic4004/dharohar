@@ -95,16 +95,18 @@ export function ProgressBar({ value, color = "#7A1F35", className, label }: { va
 }
 
 export function CoinBadge({ amount, className }: { amount: number; className?: string }) {
+  const { t } = useI18n();
   return (
     <span className={cx("inline-flex items-center gap-1.5 font-semibold text-[#8a5f12]", className)}>
       <Coins className="w-4 h-4 text-turmeric" aria-hidden />
       {amount.toLocaleString("en-IN")}
-      <span className="sr-only">coins</span>
+      <span className="sr-only">{t("coins")}</span>
     </span>
   );
 }
 
 export function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+  const { t } = useI18n();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -124,7 +126,7 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
       >
         <div className="flex items-center justify-between px-5 pt-5">
           <h3 className="font-serif text-lg font-semibold text-ink">{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-maroon/10 text-ink/60 cursor-pointer" aria-label="Close">
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-maroon/10 text-ink/60 cursor-pointer" aria-label={t("close")}>
             <X className="w-4 h-4" />
           </button>
         </div>

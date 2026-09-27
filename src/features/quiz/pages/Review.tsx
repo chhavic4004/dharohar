@@ -5,6 +5,7 @@ import { quizApi } from "../api/quizApi";
 import { useApi } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Button, Card, ErrorState, Spinner } from "../components/ui";
+import { localeOf } from "../../../lib/language";
 
 const STEPS = [1, 3, 7, 14, 30];
 
@@ -12,7 +13,7 @@ const STEPS = [1, 3, 7, 14, 30];
 export default function Review() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
-  const profile = useApi(() => quizApi.profile());
+  const profile = useApi(() => quizApi.profile(), [lang]);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +22,7 @@ export default function Review() {
   const r = profile.data.review;
   const empty = r.due + r.learning + r.mastered === 0;
   const nextWhen = r.nextDueAt
-    ? new Date(r.nextDueAt).toLocaleString(lang === "en" ? "en-IN" : `${lang}-IN`, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })
+    ? new Date(r.nextDueAt).toLocaleString(localeOf(lang), { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })
     : null;
 
   const start = async () => {
@@ -66,7 +67,7 @@ export default function Review() {
 
         {/* Schedule strip */}
         <Card className="p-5">
-          <ol className="flex items-center justify-between gap-1" aria-label="Review schedule in days">
+          <ol className="flex items-center justify-between gap-1" aria-label={t("a11ySchedule")}>
             {STEPS.map((d, i) => (
               <li key={d} className="flex-1 flex items-center">
                 <span className="w-10 h-10 shrink-0 rounded-full bg-maroon/10 text-maroon text-xs font-bold flex items-center justify-center">{d}d</span>
