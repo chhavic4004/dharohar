@@ -1,10 +1,12 @@
 import type { Lang } from "../../../../../shared/quiz-contract";
 import type { BankQuestion } from "../bank/types";
 import { HI } from "./hi";
+import { PA } from "./pa";
+import { UR } from "./ur";
 import { translateTexts } from "./translator";
 import type { QuestionTranslation } from "./types";
 
-const TABLES: Partial<Record<Lang, Record<string, QuestionTranslation>>> = { hi: HI };
+const TABLES: Partial<Record<Lang, Record<string, QuestionTranslation>>> = { hi: HI, pa: PA, ur: UR };
 
 function apply(q: BankQuestion, t: QuestionTranslation): BankQuestion {
   const out = { ...q, prompt: t.prompt, explanation: t.explanation } as BankQuestion;

@@ -9,6 +9,15 @@
 import { DAILY_BANK, QUIZ_BANK } from "../src/modules/quiz/bank";
 import type { BankQuestion } from "../src/modules/quiz/bank/types";
 import { HI } from "../src/modules/quiz/i18n/hi";
+import { PA } from "../src/modules/quiz/i18n/pa";
+import { UR } from "../src/modules/quiz/i18n/ur";
+import type { TranslationTable } from "../src/modules/quiz/i18n/types";
+
+const TRANSLATIONS: [string, TranslationTable, RegExp][] = [
+  ["Hindi", HI, /[\u0900-\u097F]/],
+  ["Punjabi", PA, /[\u0A00-\u0A7F]/],
+  ["Urdu", UR, /[\u0600-\u06FF]/],
+];
 
 const EMOJI = /\p{Extended_Pictographic}/u;
 const DASHES = /[–—]/;
@@ -60,25 +69,30 @@ for (const q of [...QUIZ_BANK, ...DAILY_BANK]) {
   }
   if (q.media && !q.media.url.startsWith("https://")) fail(q, "media url must be https");
 
-  // Hindi translation must exist and match the structure
-  const hi = HI[q.id];
-  if (!hi) fail(q, "missing Hindi translation");
-  else {
-    const hiTexts = [hi.prompt, hi.explanation.title, hi.explanation.body, hi.explanation.trivia ?? "", ...(hi.options ?? []), ...(hi.items ?? []), ...(hi.pairs?.flat() ?? []), hi.label ?? "", hi.alt ?? ""];
-    for (const t of hiTexts) {
-      if (EMOJI.test(t)) fail(q, "emoji in Hindi text");
-      if (DASHES.test(t)) fail(q, `em/en dash in Hindi text "${t.slice(0, 30)}"`);
+  // Hindi, Punjabi and Urdu translations must exist and match the structure
+  for (const [langName, table, script] of TRANSLATIONS) {
+    const tr = table[q.id];
+    if (!tr) {
+      fail(q, `missing ${langName} translation`);
+      continue;
     }
-    if ((q.type === "mcq" || q.type === "odd_one_out") && hi.options?.length !== q.options.length) fail(q, "Hindi options count mismatch");
-    if (q.type === "chronology" && hi.items?.length !== q.items.length) fail(q, "Hindi items count mismatch");
-    if (q.type === "match" && hi.pairs?.length !== q.pairs.length) fail(q, "Hindi pairs count mismatch");
-    if (q.type === "match" && hi.pairs && new Set(hi.pairs.map((p) => p[1])).size !== hi.pairs.length) fail(q, "Hindi duplicate right-side values");
-    if (q.type === "map_pin" && !hi.label) fail(q, "Hindi label missing");
-    if (!!hi.explanation.trivia !== !!q.explanation.trivia) fail(q, "Hindi trivia presence differs from English");
+    const texts = [tr.prompt, tr.explanation.title, tr.explanation.body, tr.explanation.trivia ?? "", ...(tr.options ?? []), ...(tr.items ?? []), ...(tr.pairs?.flat() ?? []), tr.label ?? "", tr.alt ?? ""];
+    for (const t of texts) {
+      if (EMOJI.test(t)) fail(q, `emoji in ${langName} text`);
+      if (DASHES.test(t)) fail(q, `em/en dash in ${langName} text "${t.slice(0, 30)}"`);
+    }
+    if (!script.test(tr.prompt) || !script.test(tr.explanation.body)) fail(q, `${langName} text is not in the expected script`);
+    if ((q.type === "mcq" || q.type === "odd_one_out") && tr.options?.length !== q.options.length) fail(q, `${langName} options count mismatch`);
+    if (q.type === "chronology" && tr.items?.length !== q.items.length) fail(q, `${langName} items count mismatch`);
+    if (q.type === "match" && tr.pairs?.length !== q.pairs.length) fail(q, `${langName} pairs count mismatch`);
+    if (q.type === "match" && tr.pairs && new Set(tr.pairs.map((p) => p[1])).size !== tr.pairs.length) fail(q, `${langName} duplicate right-side values`);
+    if (q.type === "map_pin" && !tr.label) fail(q, `${langName} label missing`);
+    if (!!tr.explanation.trivia !== !!q.explanation.trivia) fail(q, `${langName} trivia presence differs from English`);
+    if (q.media && !tr.alt) fail(q, `${langName} media alt text missing`);
   }
 }
 const allIds = new Set([...QUIZ_BANK, ...DAILY_BANK].map((q) => q.id));
-for (const id of Object.keys(HI)) if (!allIds.has(id)) errors.push(`Hindi translation for unknown id ${id}`);
+for (const [langName, table] of TRANSLATIONS) for (const id of Object.keys(table)) if (!allIds.has(id)) errors.push(`${langName} translation for unknown id ${id}`);
 
 const counts: Record<string, number> = {};
 for (const q of QUIZ_BANK) counts[`${q.category}/${q.difficulty}`] = (counts[`${q.category}/${q.difficulty}`] ?? 0) + 1;
