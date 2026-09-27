@@ -50,6 +50,8 @@ The quiz is built as a self-contained module, so teammates can merge it into the
 - **Account page** (`/account`): name, password (or set one for Google accounts), "sign out of all devices", and the **full account history** with paging.
 - **One language switch for the whole site**: the button at the top right (and in the mobile menu) switches every page: header, footer, home, explore, tradition and story pages, preserve, passport, AR walk, dashboards, admin heatmap, map, sign in, account and every quiz screen. All 271 quiz questions, badges, rewards and heritage names exist in English, Hindi, Punjabi and Urdu. The choice is remembered across visits and tabs, sets `<html lang>`, and switches Urdu to right-to-left. Each page keeps its own text in `src/i18n/pages/<page>.ts`, so teammates can edit their copy without touching anyone else's file.
 - **Heritage Map integration**: the map shows a "Heritage quiz spots" layer with every tradition and site that has questions (98 across India), coloured by vulnerability. Popups link to "Quiz on this" and the archive. "View on map" links from quiz answers fly to the spot and open it.
+- **Language follows the person**: first visit picks the browser's language (Hindi, Punjabi or Urdu if the browser prefers it), `?lang=hi` in any link opens the site in that language, signed-in users get their saved language on every device, browser tab titles and guest names are translated too.
+- **Map everywhere**: the Heritage Map has a "Quiz spots" tab with search in any script, vulnerability filters and a "Near me" button that sorts places by distance. Tradition and story pages show a live mini map that opens the spot on the full map. The home page shows today's heritage question.
 
 ## Quick start
 
