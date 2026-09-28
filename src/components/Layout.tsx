@@ -41,7 +41,7 @@ export function Layout() {
     { name: "Quiz", path: "/quiz", icon: <HelpCircle className="w-4 h-4" /> },
     { name: "Preserve a Story", path: "/preserve", icon: <Mic className="w-4 h-4" /> },
     { name: "Passport", path: "/passport", icon: <ShieldCheck className="w-4 h-4" /> },
-    { name: "AR Walk", path: "/ar-walk", icon: <Compass className="w-4 h-4" /> },
+    { name: "Tour guide", path: "/tour-guide", icon: <Compass className="w-4 h-4" /> },
     { name: "Vulnerability", path: "/dashboard", icon: <BarChart2 className="w-4 h-4" /> },
     { name: "Admin", path: "/admin-heatmap", icon: <ShieldAlert className="w-4 h-4" /> },
   ];
