@@ -12,9 +12,10 @@ import StoryDetail from "./pages/StoryDetail";
 import Explore from "./pages/Explore";
 import TraditionDetail from "./pages/TraditionDetail";
 import VitalityDashboard from "./pages/VitalityDashboard";
+
 import Virtual360Page from "./virtual360/Virtual360Page";
 import TourGuidePage from "./tour-guide/TourGuidePage";
-
+import PhotoDetection from "./pages/PhotoDetection";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
       { path: "admin-heatmap", Component: AdminHeatmap },
       { path: "preserve", Component: Preserve },
       { path: "story/:id", Component: StoryDetail },
+      { path: "photo-detection", Component: PhotoDetection },
       { path: "explore", Component: Explore },
       { path: "explore/:id", Component: TraditionDetail },
     ],
