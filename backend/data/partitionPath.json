@@ -1,0 +1,9 @@
+{
+  "id": "lahore-amritsar-1947",
+  "label": "Partition migration path (Lahore \u2194 Amritsar)",
+  "disclaimer": "Historical reference \u2014 Partition migration paths are approximate, based on community memory, not verified historical routes.",
+  "coordinates": [
+    { "name": "Lahore", "lat": 31.5497, "lng": 74.3436 },
+    { "name": "Amritsar", "lat": 31.634, "lng": 74.8723 }
+  ]
+}
