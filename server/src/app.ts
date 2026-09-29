@@ -1,5 +1,6 @@
+import path from "node:path";
 import cors from "cors";
-import express from "express";
+import express, { type RequestHandler } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { config } from "./config";
@@ -11,10 +12,28 @@ import { QuizService } from "./modules/quiz/quiz.service";
 import { quizRouter } from "./modules/quiz/quiz.routes";
 import type { Store } from "./store/types";
 
-export function createApp(store: Store, opts: { clock?: () => Date } = {}) {
+export interface WebExtras {
+  /** Heritage story map endpoints (/api/stories, /api/partition-path). Reads the raw body, so it runs before the JSON parser. */
+  mapApi?: RequestHandler;
+  /** AI chatbot (POST /api/ask) */
+  ask?: RequestHandler;
+  /** Built website folder to serve, with a single-page-app fallback */
+  webDir?: string;
+}
+
+export function createApp(store: Store, opts: { clock?: () => Date; web?: WebExtras } = {}) {
   const app = express();
+  const web = opts.web ?? {};
   app.disable("x-powered-by");
-  app.use(helmet());
+  // Behind Render/Railway/Nginx: trust the first proxy so rate limits see the real client IP
+  app.set("trust proxy", 1);
+  app.use(
+    helmet({
+      // The website loads map tiles, fonts, images and media from other sites
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
   app.use(
     cors({
       origin: config.corsOrigins,
@@ -22,6 +41,7 @@ export function createApp(store: Store, opts: { clock?: () => Date } = {}) {
       methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     }),
   );
+  if (web.mapApi) app.use(["/api/stories", "/api/partition-path"], web.mapApi);
   app.use(express.json({ limit: "20kb" }));
   if (!config.isTest) {
     app.use("/api", rateLimit({ windowMs: 5 * 60 * 1000, limit: 600, standardHeaders: "draft-7", legacyHeaders: false }));
@@ -51,6 +71,14 @@ export function createApp(store: Store, opts: { clock?: () => Date } = {}) {
 
   app.use("/api/auth", authRouter(auth));
   app.use("/api/quiz", quizRouter(quiz));
+  if (web.ask) app.post("/api/ask", web.ask);
+
+  if (web.webDir) {
+    const dir = web.webDir;
+    app.use(express.static(dir, { index: false, maxAge: "1h" }));
+    // Any other page (not /api, not a file) gets the app shell so client-side routes work on refresh
+    app.get(/^\/(?!api\/)(?!.*\.[A-Za-z0-9]+$).*/, (_req, res) => res.sendFile(path.join(dir, "index.html")));
+  }
 
   app.use(notFound);
   app.use(errorHandler);

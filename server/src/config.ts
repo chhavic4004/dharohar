@@ -11,6 +11,13 @@ export const config = {
     .filter(Boolean),
   isTest: process.env.NODE_ENV === "test",
   isProd: process.env.NODE_ENV === "production",
+  /** Folder with the built website (vite build). When set and present, this server also serves the site. */
+  webDir: process.env.WEB_DIR?.trim() || "",
+  /**
+   * Show OTP codes on the website when no email/SMS provider is set, even in
+   * production. Meant for hackathon demos only; leave off for real users.
+   */
+  allowDemoOtp: process.env.ALLOW_DEMO_OTP === "true",
   /** Secret used to sign login tokens. Required in production. */
   authSecret: process.env.AUTH_SECRET?.trim() || "",
   /** OAuth client id from Google Cloud Console. Google sign-in is off without it. */

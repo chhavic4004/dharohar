@@ -95,7 +95,7 @@ export class AuthService {
     for (const ch of ["email", "phone"] as const) {
       if (!channels[ch]) continue;
       const live = ch === "email" ? senders.live.email : senders.live.sms;
-      if (!live && config.isProd) {
+      if (!live && config.isProd && !config.allowDemoOtp) {
         throw new ApiError(503, "delivery_unavailable", ch === "email" ? "Email verification is not set up on this server yet." : "SMS verification is not set up on this server yet.");
       }
       const code = newCode();

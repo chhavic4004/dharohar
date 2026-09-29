@@ -14,7 +14,8 @@ import { usePageText } from "../i18n/page";
 
 type TextKey = keyof typeof arWalkText.en;
 
-const CHAT_URL = import.meta.env.VITE_CHAT_URL ?? "http://localhost:3001";
+// In development the chatbot runs on its own port (npm run dev:chat); in production the main server answers /api/ask
+const CHAT_URL = import.meta.env.VITE_CHAT_URL ?? (import.meta.env.DEV ? "http://localhost:3001" : "");
 
 // Bot messages that come from our own copy store a key, so they re-translate
 // when the site language changes; chatbot answers and user text store raw text.

@@ -5,8 +5,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { fileURLToPath } from "node:url";
 
-const dataDir = () => path.resolve(process.cwd(), "backend", "data");
+// Next to this file, so it works whatever folder the server is started from
+const dataDir = () => path.resolve(path.dirname(fileURLToPath(import.meta.url)), "data");
 const storiesFile = () => path.join(dataDir(), "stories.json");
 const readStories = () => JSON.parse(fs.readFileSync(storiesFile(), "utf-8"));
 const writeStories = (s) => fs.writeFileSync(storiesFile(), JSON.stringify(s, null, 2), "utf-8");
@@ -62,7 +64,8 @@ function filterStories(stories, q) {
   return stories;
 }
 
-async function handle(req, res, next) {
+/** Connect/Express middleware for the map endpoints (also used by the production server). */
+export async function handle(req, res, next) {
   const url = new URL(req.originalUrl || req.url, "http://localhost");
   const p = url.pathname.replace(/\/+$/, "");
   if (!p.startsWith("/api/")) return next();
