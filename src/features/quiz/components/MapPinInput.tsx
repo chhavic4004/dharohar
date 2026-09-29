@@ -14,9 +14,8 @@ interface Props {
 }
 
 // Use a stable basemap fallback; the app already uses OSM elsewhere, and this
-// avoids the blank/grey tile state that can happen with the custom CARTO URL.
-const TILES = import.meta.env.VITE_MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const TILES = import.meta.env.VITE_MAP_TILE_URL || "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+const ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 function ClickToPin({ enabled, onPick }: { enabled: boolean; onPick: (p: LatLng) => void }) {
   useMapEvents({

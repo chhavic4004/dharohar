@@ -14,10 +14,10 @@ const DEFAULT_ZOOM = 7;
 
 const TILE_URL =
   import.meta.env.VITE_MAP_TILE_URL ||
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 const TILE_ATTRIBUTION =
   import.meta.env.VITE_MAP_TILE_ATTRIBUTION ||
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 const hasCoords = (obj) =>
   obj && typeof obj.lat === "number" && typeof obj.lng === "number" && !Number.isNaN(obj.lat) && !Number.isNaN(obj.lng);
