@@ -1,0 +1,19 @@
+[
+  {
+    "id": "52ec079b-802d-49a0-bc19-289a372b7fed",
+    "storyType": "oral_history",
+    "language": "hi",
+    "title": "My village memories",
+    "audioFile": "52ec079b-802d-49a0-bc19-289a372b7fed-1790440681080.m4a",
+    "transcript": null,
+    "translation": null,
+    "visibility": "private",
+    "consentStatus": "pending",
+    "status": "recorded",
+    "createdAt": "2026-09-26T16:14:35.733Z",
+    "updatedAt": "2026-09-26T16:38:01.090Z",
+    "audioOriginalName": "Recording.m4a",
+    "audioMimeType": "audio/mp4",
+    "audioSize": 323396
+  }
+]
