@@ -182,6 +182,26 @@ const EN = {
   potdTeaserCta: "Answer now",
   potdTeaserDone: "You have answered today. See the explanation",
   potdTeaserStreak: "{n} day streak",
+
+  // Persona ("I am a…")
+  personaTitle: "I am a…",
+  personaHint: "Pick the one that fits you best. You can change it any time from your account.",
+  personaRequired: "Please choose who you are to continue.",
+  personaSaved: "Your profile type was updated.",
+  personaSection: "Who I am",
+  personaSectionHint: "This helps us suggest the right quiz level and stories for you.",
+  personaStudent: "Student",
+  personaStudentDesc: "Learning heritage for school, college or exams.",
+  personaHistorian: "Historian",
+  personaHistorianDesc: "Researching the past in depth, dates and sources.",
+  personaSeeker: "Seeker",
+  personaSeekerDesc: "A curious explorer of India's stories and traditions.",
+  personaEducator: "Educator",
+  personaEducatorDesc: "A teacher bringing heritage into the classroom.",
+  personaArtisan: "Artisan",
+  personaArtisanDesc: "A practitioner or community member keeping a tradition alive.",
+  personaTraveller: "Traveller",
+  personaTravellerDesc: "Visiting heritage sites and discovering them on the go.",
 };
 
 export type SiteKey = keyof typeof EN;
@@ -349,6 +369,26 @@ const HI: Dict = {
   potdTeaserCta: "अभी उत्तर दें",
   potdTeaserDone: "आज का उत्तर दे दिया। व्याख्या देखें",
   potdTeaserStreak: "{n} दिन की लय",
+
+  // Persona ("I am a…")
+  personaTitle: "मैं हूँ…",
+  personaHint: "जो आप पर सबसे अच्छा बैठे, वह चुनें। इसे आप कभी भी अपने खाते से बदल सकते हैं।",
+  personaRequired: "आगे बढ़ने के लिए कृपया चुनें कि आप कौन हैं।",
+  personaSaved: "आपकी प्रोफ़ाइल का प्रकार बदल दिया गया।",
+  personaSection: "मैं कौन हूँ",
+  personaSectionHint: "इससे हम आपके लिए सही क्विज़ स्तर और कहानियाँ सुझा पाते हैं।",
+  personaStudent: "विद्यार्थी",
+  personaStudentDesc: "स्कूल, कॉलेज या परीक्षा के लिए विरासत सीख रहे हैं।",
+  personaHistorian: "इतिहासकार",
+  personaHistorianDesc: "अतीत, तिथियों और स्रोतों पर गहराई से शोध करते हैं।",
+  personaSeeker: "जिज्ञासु",
+  personaSeekerDesc: "भारत की कहानियों और परंपराओं को जानने को उत्सुक खोजी।",
+  personaEducator: "शिक्षक",
+  personaEducatorDesc: "कक्षा में विरासत को जीवंत करने वाले अध्यापक।",
+  personaArtisan: "कारीगर",
+  personaArtisanDesc: "किसी परंपरा को जीवित रखने वाले साधक या समुदाय के सदस्य।",
+  personaTraveller: "यात्री",
+  personaTravellerDesc: "विरासत स्थलों की सैर करते हुए उन्हें खोजते हैं।",
 };
 
 const PA: Dict = {
@@ -513,6 +553,26 @@ const PA: Dict = {
   potdTeaserCta: "ਹੁਣੇ ਜਵਾਬ ਦਿਓ",
   potdTeaserDone: "ਅੱਜ ਦਾ ਜਵਾਬ ਦੇ ਦਿੱਤਾ। ਵਿਆਖਿਆ ਵੇਖੋ",
   potdTeaserStreak: "{n} ਦਿਨਾਂ ਦੀ ਲੜੀ",
+
+  // Persona ("I am a…")
+  personaTitle: "ਮੈਂ ਹਾਂ…",
+  personaHint: "ਜੋ ਤੁਹਾਡੇ ਉੱਤੇ ਸਭ ਤੋਂ ਵਧੀਆ ਢੁੱਕੇ, ਉਹ ਚੁਣੋ। ਤੁਸੀਂ ਇਸਨੂੰ ਕਦੇ ਵੀ ਆਪਣੇ ਖਾਤੇ ਤੋਂ ਬਦਲ ਸਕਦੇ ਹੋ।",
+  personaRequired: "ਅੱਗੇ ਵਧਣ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਚੁਣੋ ਕਿ ਤੁਸੀਂ ਕੌਣ ਹੋ।",
+  personaSaved: "ਤੁਹਾਡੀ ਪ੍ਰੋਫ਼ਾਈਲ ਦੀ ਕਿਸਮ ਬਦਲ ਦਿੱਤੀ ਗਈ।",
+  personaSection: "ਮੈਂ ਕੌਣ ਹਾਂ",
+  personaSectionHint: "ਇਸ ਨਾਲ ਅਸੀਂ ਤੁਹਾਡੇ ਲਈ ਸਹੀ ਕੁਇਜ਼ ਪੱਧਰ ਅਤੇ ਕਹਾਣੀਆਂ ਸੁਝਾ ਸਕਦੇ ਹਾਂ।",
+  personaStudent: "ਵਿਦਿਆਰਥੀ",
+  personaStudentDesc: "ਸਕੂਲ, ਕਾਲਜ ਜਾਂ ਇਮਤਿਹਾਨ ਲਈ ਵਿਰਾਸਤ ਸਿੱਖ ਰਹੇ ਹੋ।",
+  personaHistorian: "ਇਤਿਹਾਸਕਾਰ",
+  personaHistorianDesc: "ਅਤੀਤ, ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਸਰੋਤਾਂ ਦੀ ਡੂੰਘੀ ਖੋਜ ਕਰਦੇ ਹੋ।",
+  personaSeeker: "ਜਿਗਿਆਸੂ",
+  personaSeekerDesc: "ਭਾਰਤ ਦੀਆਂ ਕਹਾਣੀਆਂ ਅਤੇ ਰਵਾਇਤਾਂ ਨੂੰ ਜਾਣਨ ਦਾ ਸ਼ੌਕੀਨ ਖੋਜੀ।",
+  personaEducator: "ਅਧਿਆਪਕ",
+  personaEducatorDesc: "ਕਲਾਸ ਵਿੱਚ ਵਿਰਾਸਤ ਨੂੰ ਜੀਵੰਤ ਕਰਨ ਵਾਲੇ ਅਧਿਆਪਕ।",
+  personaArtisan: "ਕਾਰੀਗਰ",
+  personaArtisanDesc: "ਕਿਸੇ ਰਵਾਇਤ ਨੂੰ ਜਿਉਂਦਾ ਰੱਖਣ ਵਾਲੇ ਕਲਾਕਾਰ ਜਾਂ ਭਾਈਚਾਰੇ ਦੇ ਮੈਂਬਰ।",
+  personaTraveller: "ਯਾਤਰੀ",
+  personaTravellerDesc: "ਵਿਰਾਸਤੀ ਥਾਵਾਂ ਦੀ ਸੈਰ ਕਰਦਿਆਂ ਉਨ੍ਹਾਂ ਨੂੰ ਖੋਜਦੇ ਹੋ।",
 };
 
 const UR: Dict = {
@@ -677,6 +737,26 @@ const UR: Dict = {
   potdTeaserCta: "ابھی جواب دیں",
   potdTeaserDone: "آج کا جواب دے دیا۔ وضاحت دیکھیں",
   potdTeaserStreak: "{n} دن کا سلسلہ",
+
+  // Persona ("I am a…")
+  personaTitle: "میں ہوں…",
+  personaHint: "جو آپ پر سب سے زیادہ صادق آئے، وہ منتخب کریں۔ آپ اسے کبھی بھی اپنے اکاؤنٹ سے بدل سکتے ہیں۔",
+  personaRequired: "آگے بڑھنے کے لیے براہ کرم منتخب کریں کہ آپ کون ہیں۔",
+  personaSaved: "آپ کی پروفائل کی قسم تبدیل کر دی گئی۔",
+  personaSection: "میں کون ہوں",
+  personaSectionHint: "اس سے ہم آپ کے لیے صحیح کوئز کی سطح اور کہانیاں تجویز کر پاتے ہیں۔",
+  personaStudent: "طالب علم",
+  personaStudentDesc: "اسکول، کالج یا امتحان کے لیے ورثہ سیکھ رہے ہیں۔",
+  personaHistorian: "مؤرخ",
+  personaHistorianDesc: "ماضی، تاریخوں اور ماخذوں پر گہری تحقیق کرتے ہیں۔",
+  personaSeeker: "متلاشی",
+  personaSeekerDesc: "ہندوستان کی کہانیوں اور روایات کو جاننے کا شوقین کھوجی۔",
+  personaEducator: "معلم",
+  personaEducatorDesc: "کلاس روم میں ورثے کو زندہ کرنے والے استاد۔",
+  personaArtisan: "کاریگر",
+  personaArtisanDesc: "کسی روایت کو زندہ رکھنے والے فنکار یا برادری کے رکن۔",
+  personaTraveller: "مسافر",
+  personaTravellerDesc: "ورثے کے مقامات کی سیر کرتے ہوئے انہیں دریافت کرتے ہیں۔",
 };
 
 const DICTS: Record<SiteLang, Dict> = { en: EN, hi: HI, pa: PA, ur: UR };

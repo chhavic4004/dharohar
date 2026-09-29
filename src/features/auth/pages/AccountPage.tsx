@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router";
-import { BadgeCheck, History, KeyRound, Loader2, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { BadgeCheck, History, KeyRound, Loader2, LogOut, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import { PASSWORD_MIN_LENGTH } from "@shared/auth-contract";
 import { QuizHistory } from "../../quiz";
 import { useSiteT } from "../../../i18n/site";
@@ -8,6 +8,8 @@ import { langDir, useLang } from "../../../lib/language";
 import { showToast } from "../../../lib/toast";
 import { authApi } from "../api";
 import { useAuth } from "../AuthProvider";
+import { PersonaBadge, PersonaPicker } from "../components/PersonaPicker";
+import { personaOf, type Persona } from "../personas";
 import { localeOf } from "../../../lib/language";
 
 const input =
@@ -32,6 +34,7 @@ export default function AccountPage() {
 
   const [name, setName] = useState<string | null>(null);
   const [savingName, setSavingName] = useState(false);
+  const [savingPersona, setSavingPersona] = useState<Persona | null>(null);
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [savingPw, setSavingPw] = useState(false);
@@ -67,6 +70,20 @@ export default function AccountPage() {
       setError((err as Error).message);
     } finally {
       setSavingName(false);
+    }
+  };
+
+  const savePersona = async (p: Persona) => {
+    if (p === personaOf(account.persona) || savingPersona) return;
+    setSavingPersona(p);
+    setError(null);
+    try {
+      setAccount(await authApi.setPersona(p));
+      showToast(t("personaSaved"));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSavingPersona(null);
     }
   };
 
@@ -110,6 +127,7 @@ export default function AccountPage() {
             )}
             <div className="min-w-0 flex-1">
               <h1 className="font-serif text-2xl font-bold text-ink truncate">{account.displayName}</h1>
+              <PersonaBadge persona={account.persona} className="mb-1" />
               <p className="text-sm text-ink/60 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span dir="ltr" className="truncate">{account.email}</span>
                 <VerifiedBadge ok={account.emailVerified} />
@@ -196,6 +214,16 @@ export default function AccountPage() {
             </button>
           </form>
         </div>
+
+        {/* Persona */}
+        <section className={card} aria-busy={!!savingPersona}>
+          <h2 className="font-serif font-semibold text-ink mb-1 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-maroon" aria-hidden /> {t("personaSection")}
+            {savingPersona && <Loader2 className="w-4 h-4 animate-spin text-maroon" aria-label={t("loading")} />}
+          </h2>
+          <p className="text-xs text-ink/55 mb-3">{t("personaSectionHint")}</p>
+          <PersonaPicker name="account-persona" value={savingPersona ?? personaOf(account.persona)} onChange={savePersona} compact />
+        </section>
 
         {/* Sessions */}
         <section className={`${card} flex flex-wrap items-center gap-3`}>

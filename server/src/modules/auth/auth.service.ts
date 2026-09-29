@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Account, AuthProvider, AuthResponse, VerificationStarted } from "../../../../shared/auth-contract";
+import { DEFAULT_PERSONA, isPersona, type Account, type AuthProvider, type AuthResponse, type Persona, type VerificationStarted } from "../../../../shared/auth-contract";
 import { config } from "../../config";
 import { ApiError } from "../../middleware/errors";
 import type { AccountDoc, OtpDoc, Store } from "../../store/types";
@@ -37,6 +37,7 @@ export function toAccount(a: AccountDoc): Account {
     displayName: a.displayName,
     preferredLang: a.preferredLang ?? null,
     avatarUrl: a.avatarUrl ?? null,
+    persona: isPersona(a.persona) ? a.persona : DEFAULT_PERSONA,
     providers,
     createdAt: a.createdAt,
   };
@@ -183,14 +184,14 @@ export class AuthService {
 
   // ─── Sign up (email + phone both verified) ──────────────────────────────────
 
-  async startRegistration(email: string, rawPhone: string, password: string, displayName: string): Promise<VerificationStarted> {
+  async startRegistration(email: string, rawPhone: string, password: string, displayName: string, persona: Persona = DEFAULT_PERSONA): Promise<VerificationStarted> {
     const phone = normalizePhone(rawPhone);
     if (!phone) throw new ApiError(400, "invalid_phone", "Enter a valid mobile number, for example 98765 43210.");
     const e = normEmail(email);
     if (await this.store.findAccountByEmail(e)) throw new ApiError(409, "email_taken", "An account with this email already exists. Try signing in instead.");
     if (await this.store.findAccountByPhone(phone)) throw new ApiError(409, "phone_taken", "This mobile number is already linked to an account.");
 
-    const doc = this.freshOtp("register", { email: e, phone, pending: { displayName: displayName.trim(), passwordHash: await hashPassword(password) } });
+    const doc = this.freshOtp("register", { email: e, phone, pending: { displayName: displayName.trim(), passwordHash: await hashPassword(password), persona } });
     const started = await this.send(doc, { email: true, phone: true });
     await this.store.insertOtp(doc);
     return started;
@@ -214,6 +215,7 @@ export class AuthService {
       phoneVerified: true,
       passwordHash: doc.pending!.passwordHash,
       displayName: doc.pending!.displayName,
+      persona: isPersona(doc.pending!.persona) ? doc.pending!.persona : DEFAULT_PERSONA,
       tokenVersion: 0,
       createdAt: now,
       updatedAt: now,
@@ -268,6 +270,7 @@ export class AuthService {
           googleSub: g.sub,
           displayName: (g.name ?? g.email.split("@")[0]).slice(0, 40),
           avatarUrl: g.picture,
+          persona: DEFAULT_PERSONA,
           tokenVersion: 0,
           createdAt: now,
           updatedAt: now,
@@ -359,6 +362,14 @@ export class AuthService {
   async setPreferredLang(accountId: string, lang: "en" | "hi" | "pa" | "ur"): Promise<Account> {
     const a = await this.store.updateAccount(accountId, (x) => {
       x.preferredLang = lang;
+      x.updatedAt = this.now().toISOString();
+    });
+    return toAccount(a);
+  }
+
+  async setPersona(accountId: string, persona: Persona): Promise<Account> {
+    const a = await this.store.updateAccount(accountId, (x) => {
+      x.persona = persona;
       x.updatedAt = this.now().toISOString();
     });
     return toAccount(a);

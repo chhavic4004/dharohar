@@ -4,6 +4,7 @@ import { History, LogIn, LogOut, UserRound } from "lucide-react";
 import { useSiteT } from "../../../i18n/site";
 import { showToast } from "../../../lib/toast";
 import { useAuth } from "../AuthProvider";
+import { PersonaBadge } from "./PersonaPicker";
 
 /** Header button: "Sign in" for guests, avatar with a small menu when signed in. */
 export default function AccountMenu() {
@@ -47,6 +48,7 @@ export default function AccountMenu() {
         <div className="absolute end-0 mt-2 w-56 bg-parchment border border-maroon/20 rounded-lg shadow-lg py-1 z-50">
           <div className="px-3.5 py-2 border-b border-maroon/10">
             <p className="text-sm font-semibold text-ink truncate">{account.displayName}</p>
+            <PersonaBadge persona={account.persona} className="mt-0.5" />
             <p className="text-[11px] text-ink/50 truncate" dir="ltr">
               {account.email}
             </p>

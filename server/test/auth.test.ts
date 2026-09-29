@@ -20,7 +20,7 @@ let phoneSeq = 0;
 const nextPhone = () => `98765${String(10000 + ++phoneSeq).slice(-5)}`;
 
 /** Full sign up: start (codes sent), then verify with the demo codes. */
-async function register(body: { email: string; password: string; displayName: string; phone?: string }, guest?: string) {
+async function register(body: { email: string; password: string; displayName: string; phone?: string; persona?: string }, guest?: string) {
   const start = await request(app).post("/api/auth/register/start").send({ phone: nextPhone(), ...body });
   if (start.status !== 202) return start;
   const r = request(app).post("/api/auth/register/verify");
@@ -160,7 +160,7 @@ describe("Google sign-in", () => {
     );
     const created = await request(app).post("/api/auth/google").send({ credential: "good-new-00000000000000000" });
     expect(created.status).toBe(200);
-    expect(created.body.account).toMatchObject({ email: "new@x.in", displayName: "Ash G", providers: ["google"] });
+    expect(created.body.account).toMatchObject({ email: "new@x.in", displayName: "Ash G", providers: ["google"], persona: "seeker" });
 
     await register({ email: "e@x.in", password: "heritage123", displayName: "Ash" });
     const linked = await request(app).post("/api/auth/google").send({ credential: "good-existing-000000000000" });
@@ -289,5 +289,37 @@ describe("language preference", () => {
     const login = await request(app).post("/api/auth/login").send({ identifier: "lang@x.in", password: "heritage123" });
     expect(login.body.account.preferredLang).toBe("ur");
     expect((await bearer(reg.body.token).patch("/api/auth/me", { preferredLang: "fr" })).status).toBe(400);
+  });
+});
+
+describe("persona", () => {
+  it("saves the persona chosen at sign up and returns it on login and /me", async () => {
+    const reg = await register({ email: "hist@x.in", password: "heritage123", displayName: "Ash", persona: "historian" });
+    expect(reg.status).toBe(201);
+    expect(reg.body.account.persona).toBe("historian");
+    const login = await request(app).post("/api/auth/login").send({ identifier: "hist@x.in", password: "heritage123" });
+    expect(login.body.account.persona).toBe("historian");
+    expect((await bearer(login.body.token).get("/api/auth/me")).body.persona).toBe("historian");
+  });
+
+  it("rejects an unknown persona", async () => {
+    const res = await request(app).post("/api/auth/register/start").send({ email: "bad@x.in", phone: nextPhone(), password: "heritage123", displayName: "Ash", persona: "wizard" });
+    expect(res.status).toBe(400);
+    expect(await store.findAccountByEmail("bad@x.in")).toBeNull();
+  });
+
+  it("changes the persona with PATCH /me and validates it", async () => {
+    const reg = await register({ email: "edu@x.in", password: "heritage123", displayName: "Ash", persona: "student" });
+    const res = await bearer(reg.body.token).patch("/api/auth/me", { persona: "educator" });
+    expect(res.status).toBe(200);
+    expect(res.body.persona).toBe("educator");
+    expect((await bearer(reg.body.token).get("/api/auth/me")).body.persona).toBe("educator");
+    expect((await bearer(reg.body.token).patch("/api/auth/me", { persona: "king" })).status).toBe(400);
+  });
+
+  it("treats older accounts without a persona as seekers", async () => {
+    const reg = await register({ email: "old@x.in", password: "heritage123", displayName: "Ash" });
+    await store.updateAccount(reg.body.account.id, (a) => delete a.persona);
+    expect((await bearer(reg.body.token).get("/api/auth/me")).body.persona).toBe("seeker");
   });
 });

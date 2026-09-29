@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router";
 import { ArrowLeft, Eye, EyeOff, Heart, Smartphone } from "lucide-react";
 import { PASSWORD_MIN_LENGTH, type AuthConfig, type AuthResponse, type VerificationStarted } from "@shared/auth-contract";
@@ -9,6 +9,8 @@ import { authApi } from "../api";
 import { useAuth } from "../AuthProvider";
 import GoogleButton from "../components/GoogleButton";
 import { CodeInput, DemoCodes, ErrorText, inputClass, ResendButton, SubmitButton } from "../components/OtpParts";
+import { PersonaPicker } from "../components/PersonaPicker";
+import type { Persona } from "../personas";
 
 /** Only allow redirects back into this site. */
 function safeNext(raw: string | null): string {
@@ -33,6 +35,9 @@ export default function AuthPage() {
   const [config, setConfig] = useState<AuthConfig | null>(null);
   const [step, setStep] = useState<Step>(params.get("step") === "phone" ? "phone" : "form");
   const [name, setName] = useState("");
+  const [persona, setPersona] = useState<Persona | null>(null);
+  const [personaError, setPersonaError] = useState<string | null>(null);
+  const personaRef = useRef<HTMLFieldSetElement>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -93,15 +98,22 @@ export default function AuthPage() {
     setParams(p, { replace: true });
     setStep("form");
     setError(null);
+    setPersonaError(null);
   };
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
   const submitForm = (e: FormEvent) => {
     e.preventDefault();
+    if (mode === "signup" && !persona) {
+      setPersonaError(t("personaRequired"));
+      personaRef.current?.focus();
+      personaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     run(async () => {
       if (mode === "signin") return finish(await authApi.login(identifier, password));
-      setStarted(await authApi.registerStart(email, phone, password, name));
+      setStarted(await authApi.registerStart(email, phone, password, name, persona!));
       setEmailCode("");
       setPhoneCode("");
       setStep("verify");
@@ -249,6 +261,15 @@ export default function AuthPage() {
               <form onSubmit={submitForm} className="space-y-4" noValidate>
                 {mode === "signup" ? (
                   <>
+                    <PersonaPicker
+                      ref={personaRef}
+                      value={persona}
+                      onChange={(p) => {
+                        setPersona(p);
+                        setPersonaError(null);
+                      }}
+                      error={personaError}
+                    />
                     <label className="block">
                       <span className="block text-xs font-semibold text-ink/70 mb-1.5">{t("yourName")}</span>
                       <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={40} required />

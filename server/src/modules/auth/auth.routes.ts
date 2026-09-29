@@ -1,7 +1,7 @@
 import { Router, type Request } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
-import { PASSWORD_MIN_LENGTH, type AuthConfig } from "../../../../shared/auth-contract";
+import { PASSWORD_MIN_LENGTH, PERSONAS, type AuthConfig } from "../../../../shared/auth-contract";
 import { config } from "../../config";
 import { ApiError } from "../../middleware/errors";
 import { requireUser } from "../../middleware/requireUser";
@@ -20,6 +20,7 @@ const displayName = z
   .min(2, "Name must be at least 2 characters.")
   .max(40, "Name must be at most 40 characters.")
   .regex(/^[^<>]+$/, "Name cannot contain < or >.");
+const persona = z.enum(PERSONAS, { error: "Choose who you are: student, historian, seeker, educator, artisan or traveller." });
 
 /** The browser's guest id, so its quiz progress can move into the account. */
 function guestIdOf(req: Request): string | null {
@@ -50,8 +51,8 @@ export function authRouter(service: AuthService) {
 
   // Sign up, step 1: send codes to the email and the phone. Nothing is saved yet.
   r.post("/register/start", ...strict, async (req, res) => {
-    const body = z.object({ email, phone: z.string().trim().min(8).max(20), password, displayName }).parse(req.body);
-    res.status(202).json(await service.startRegistration(body.email, body.phone, body.password, body.displayName));
+    const body = z.object({ email, phone: z.string().trim().min(8).max(20), password, displayName, persona: persona.optional() }).parse(req.body);
+    res.status(202).json(await service.startRegistration(body.email, body.phone, body.password, body.displayName, body.persona));
   });
 
   // Sign up, step 2: both codes correct, then the account is created.
@@ -95,11 +96,12 @@ export function authRouter(service: AuthService) {
 
   r.patch("/me", async (req, res) => {
     const body = z
-      .object({ displayName: displayName.optional(), preferredLang: z.enum(["en", "hi", "pa", "ur"]).optional() })
-      .refine((b) => b.displayName !== undefined || b.preferredLang !== undefined, "Nothing to update.")
+      .object({ displayName: displayName.optional(), preferredLang: z.enum(["en", "hi", "pa", "ur"]).optional(), persona: persona.optional() })
+      .refine((b) => b.displayName !== undefined || b.preferredLang !== undefined || b.persona !== undefined, "Nothing to update.")
       .parse(req.body);
     const id = accountIdOf(req);
     let account = body.preferredLang ? await service.setPreferredLang(id, body.preferredLang) : null;
+    if (body.persona) account = await service.setPersona(id, body.persona);
     if (body.displayName !== undefined) account = await service.rename(id, body.displayName);
     res.json(account);
   });

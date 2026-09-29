@@ -23,9 +23,12 @@ export function setAuthVerifier(fn: AuthVerifier | null) {
   verifier = fn;
 }
 
-declare module "express-serve-static-core" {
-  interface Request {
-    user?: RequestUser;
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user?: RequestUser;
+    }
   }
 }
 

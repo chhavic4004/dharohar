@@ -10,6 +10,7 @@ import type {
   QuizMode,
   QuizResult,
 } from "../../../shared/quiz-contract";
+import type { Persona } from "../../../shared/auth-contract";
 
 /** Every stored document has an id and a version used for safe concurrent updates. */
 export interface BaseDoc {
@@ -156,6 +157,8 @@ export interface AccountDoc extends BaseDoc {
   emailVerified?: boolean;
   phoneVerified?: boolean;
   preferredLang?: "en" | "hi" | "pa" | "ur";
+  /** Absent on accounts made before personas existed (read as "seeker") */
+  persona?: Persona;
   displayName: string;
   avatarUrl?: string;
   /** Bumped to sign out every device (password change, "log out everywhere") */
@@ -182,7 +185,7 @@ export interface OtpDoc extends BaseDoc {
   lastSentAt: string;
   expiresAt: string;
   /** Sign up details, held until both codes are verified */
-  pending?: { displayName: string; passwordHash: string };
+  pending?: { displayName: string; passwordHash: string; persona?: Persona };
 }
 
 export interface QuestionStatDoc {

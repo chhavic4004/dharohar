@@ -1,4 +1,4 @@
-import type { Account, AuthConfig, AuthResponse, VerificationStarted } from "@shared/auth-contract";
+import type { Account, AuthConfig, AuthResponse, Persona, VerificationStarted } from "@shared/auth-contract";
 import { api } from "../../lib/http";
 
 /** Every account call. The browser's guest id is sent automatically, so guest progress can move into the account. */
@@ -6,8 +6,8 @@ export const authApi = {
   config: () => api<AuthConfig>("GET", "/auth/config"),
 
   /** Sign up step 1: sends a code to the email and one to the phone */
-  registerStart: (email: string, phone: string, password: string, displayName: string) =>
-    api<VerificationStarted>("POST", "/auth/register/start", { email, phone, password, displayName }),
+  registerStart: (email: string, phone: string, password: string, displayName: string, persona: Persona) =>
+    api<VerificationStarted>("POST", "/auth/register/start", { email, phone, password, displayName, persona }),
   /** Sign up step 2: creates the account once both codes are correct */
   registerVerify: (verificationId: string, emailCode: string, phoneCode: string) =>
     api<AuthResponse>("POST", "/auth/register/verify", { verificationId, emailCode, phoneCode }),
@@ -27,6 +27,7 @@ export const authApi = {
 
   me: () => api<Account>("GET", "/auth/me"),
   rename: (displayName: string) => api<Account>("PATCH", "/auth/me", { displayName }),
+  setPersona: (persona: Persona) => api<Account>("PATCH", "/auth/me", { persona }),
   setPreferredLang: (preferredLang: "en" | "hi" | "pa" | "ur") => api<Account>("PATCH", "/auth/me", { preferredLang }),
   changePassword: (newPassword: string, currentPassword?: string) =>
     api<AuthResponse>("POST", "/auth/password", { newPassword, ...(currentPassword ? { currentPassword } : {}) }),

@@ -5,6 +5,13 @@
 
 export type AuthProvider = "password" | "google";
 
+/** Who someone is on Dharohar, chosen at sign up and changeable later. */
+export const PERSONAS = ["student", "historian", "seeker", "educator", "artisan", "traveller"] as const;
+export type Persona = (typeof PERSONAS)[number];
+/** Used for accounts created before personas existed, and for new Google accounts. */
+export const DEFAULT_PERSONA: Persona = "seeker";
+export const isPersona = (v: unknown): v is Persona => typeof v === "string" && (PERSONAS as readonly string[]).includes(v);
+
 export interface Account {
   id: string;
   email: string;
@@ -16,6 +23,8 @@ export interface Account {
   /** Site language this person chose; applied when they sign in on any device */
   preferredLang: "en" | "hi" | "pa" | "ur" | null;
   avatarUrl: string | null;
+  /** Always set; older accounts without one read as "seeker" */
+  persona: Persona;
   /** Ways this account can sign in */
   providers: AuthProvider[];
   createdAt: string;
@@ -43,6 +52,7 @@ export interface RegisterStartRequest {
   phone: string;
   password: string;
   displayName: string;
+  persona: Persona;
 }
 
 /** Step 2 of sign up: both codes must match. Only then is the account created. */
@@ -85,6 +95,12 @@ export interface ResetPasswordRequest {
 export interface GoogleLoginRequest {
   /** The ID token (credential) returned by Google Identity Services */
   credential: string;
+}
+
+export interface UpdateAccountRequest {
+  displayName?: string;
+  preferredLang?: "en" | "hi" | "pa" | "ur";
+  persona?: Persona;
 }
 
 export interface ChangePasswordRequest {

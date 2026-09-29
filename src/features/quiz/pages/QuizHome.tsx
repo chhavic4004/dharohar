@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { ArrowRight, CalendarCheck, CalendarDays, Check, Flame, HandHeart, Hourglass, Lamp, Map as MapIcon, RotateCcw, Shuffle, Swords, WifiOff } from "lucide-react";
 import { QUESTIONS_PER_QUIZ, type Difficulty, type QuizCategoryParam, type StartSessionRequest } from "@shared/quiz-contract";
+import { useAuth } from "../../auth/AuthProvider";
+import { suggestedDifficulty } from "../../auth/personas";
 import { quizApi } from "../api/quizApi";
 import { CATEGORY_IDS, CATEGORY_META } from "../constants";
 import { useApi } from "../hooks/useApi";
@@ -25,7 +27,14 @@ export default function QuizHome() {
   const catLabel = useCategoryLabel();
   const levelName = useLevelName();
   const [selected, setSelected] = useState<QuizCategoryParam | null>(null);
-  const [difficulty, setDifficulty] = useState<Difficulty>("seeker");
+  // Start on the level that suits the account's persona (historians: Historian, everyone else: Seeker).
+  const { account } = useAuth();
+  const [difficulty, setDifficulty] = useState<Difficulty>(() => suggestedDifficulty(account?.persona));
+  const [suggestedFor, setSuggestedFor] = useState(account?.id ?? null);
+  if (account && suggestedFor !== account.id) {
+    setSuggestedFor(account.id);
+    setDifficulty(suggestedDifficulty(account.persona));
+  }
   const [starting, setStarting] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
   const [code, setCode] = useState("");
