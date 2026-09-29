@@ -13,9 +13,10 @@ interface Props {
   onSubmit: (answer: AnswerPayload) => void;
 }
 
-// A basemap without place names, so the map does not give the answer away.
-const TILES = "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
-const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+// Use a stable basemap fallback; the app already uses OSM elsewhere, and this
+// avoids the blank/grey tile state that can happen with the custom CARTO URL.
+const TILES = import.meta.env.VITE_MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 function ClickToPin({ enabled, onPick }: { enabled: boolean; onPick: (p: LatLng) => void }) {
   useMapEvents({
@@ -31,7 +32,17 @@ function FitReveal({ a, b }: { a: LatLng | null; b: LatLng | null }) {
   useEffect(() => {
     if (a && b) map.fitBounds([[a.lat, a.lng], [b.lat, b.lng]], { padding: [40, 40], maxZoom: 7 });
     else if (b) map.setView([b.lat, b.lng], 6);
+    requestAnimationFrame(() => map.invalidateSize());
   }, [a, b, map]);
+  return null;
+}
+
+function ResizeMap() {
+  const map = useMap();
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => map.invalidateSize());
+    return () => cancelAnimationFrame(frame);
+  }, [map]);
   return null;
 }
 
@@ -60,6 +71,7 @@ export default function MapPinInput({ question, correctAnswer, submitted, busy, 
           attributionControl
         >
           <TileLayer url={TILES} attribution={ATTRIBUTION} />
+          <ResizeMap />
           <ClickToPin enabled={!revealed && !busy} onPick={setPin} />
           {shownPin && (
             <CircleMarker center={[shownPin.lat, shownPin.lng]} radius={9} pathOptions={{ color: "#7A1F35", fillColor: "#C9622E", fillOpacity: 0.9, weight: 3 }} />

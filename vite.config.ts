@@ -40,6 +40,7 @@ export default defineConfig(({ mode }) => {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
+      allowedHosts: ['.ngrok-free.dev'],
       // Heritage Map routes (/api/stories, /api/partition-path) are answered by heritageMapApi above;
       // everything else under /api (quiz, auth) goes to the Dharohar backend in server/ on port 4000
       proxy: {
