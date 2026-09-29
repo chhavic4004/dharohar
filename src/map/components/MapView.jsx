@@ -4,6 +4,9 @@ import L from "leaflet";
 import Legend from "./Legend";
 import StoryPreviewPopup from "./StoryPreviewPopup";
 import { getCategoryColor, getStageColor } from "../data/categories";
+import { STAGE_LABEL_KEYS } from "./StoryStageDetail";
+import { usePageText } from "../../i18n/page";
+import { storyMapText } from "../../i18n/pages/storyMap";
 
 // Punjab/Haryana/Delhi pilot region default view
 const DEFAULT_CENTER = [30.9, 75.5];
@@ -99,6 +102,7 @@ export default function MapView({
   children,
   showQuizSpots = false,
 }) {
+  const { t, lang, dir } = usePageText(storyMapText);
   const markerRefs = useRef({});
 
   // Open the popup on the map when a story is selected from the sidebar list.
@@ -125,7 +129,7 @@ export default function MapView({
   return (
     <div className="map-wrapper">
       {showPartitionPath && partitionPath && (
-        <div className="map-banner">{partitionPath.disclaimer}</div>
+        <div className="map-banner" dir={dir}>{lang === "en" ? partitionPath.disclaimer : t("partitionDisclaimer")}</div>
       )}
 
       <MapContainer
@@ -161,9 +165,9 @@ export default function MapView({
               eventHandlers={{ click: () => onSelectStage(index) }}
             >
               <Popup>
-                <div className="story-popup">
+                <div className="story-popup" dir={dir}>
                   <span className="story-popup__category" style={{ color: getStageColor(point.stage) }}>
-                    {point.year} · {point.stage?.toUpperCase() || "STAGE"}
+                    {point.year} · {t(STAGE_LABEL_KEYS[point.stage] || "stageWaypoint").toUpperCase()}
                   </span>
                   <h3 className="story-popup__title">{point.city}</h3>
                   <p className="story-popup__description">{point.description}</p>

@@ -1,9 +1,12 @@
 import React, { useState } from "react";
+import { usePageText } from "../../i18n/page";
+import { storyMapText } from "../../i18n/pages/storyMap";
 
-const STAGE_LABELS = {
-  origin: "Origin",
-  waypoint: "Migration Stage",
-  present: "Present Day",
+// Stage type -> label key in storyMapText. Exported for the map popups.
+export const STAGE_LABEL_KEYS = {
+  origin: "stageOrigin",
+  waypoint: "stageWaypoint",
+  present: "stagePresent",
 };
 
 /**
@@ -13,11 +16,12 @@ const STAGE_LABELS = {
  * fully-built-out Dharohar would wire up to real audio/transcripts.
  */
 export default function StoryStageDetail({ story, stage, stageIndex, totalStages }) {
+  const { t, lang } = usePageText(storyMapText);
   const [demoNote, setDemoNote] = useState(null);
 
   if (!story || !stage) return null;
 
-  const stageLabel = STAGE_LABELS[stage.stage] || "Migration Stage";
+  const stageLabel = t(STAGE_LABEL_KEYS[stage.stage] || "stageWaypoint");
 
   const handleDemoClick = (label) => {
     setDemoNote(label);
@@ -27,14 +31,14 @@ export default function StoryStageDetail({ story, stage, stageIndex, totalStages
     <div className="stage-detail">
       <div className="stage-detail__top">
         <span className={`stage-detail__badge stage-detail__badge--${stage.stage || "waypoint"}`}>
-          {stageLabel} · {stageIndex + 1} of {totalStages}
+          {t("stageCount", { label: stageLabel, i: stageIndex + 1, n: totalStages })}
         </span>
         <span className="stage-detail__language">{story.language}</span>
       </div>
 
       <h3 className="stage-detail__heading">
         {stage.year} — {stage.city}
-        {stage.country ? `, ${stage.country}` : ""}
+        {stage.country ? `${lang === "ur" ? "،" : ","} ${stage.country}` : ""}
       </h3>
 
       <p className="stage-detail__person">
@@ -44,21 +48,20 @@ export default function StoryStageDetail({ story, stage, stageIndex, totalStages
       <p className="stage-detail__description">{stage.description}</p>
 
       <div className="stage-detail__actions">
-        <button className="stage-detail__action" onClick={() => handleDemoClick("Read Story")}>
-          📖 Read Story
+        <button className="stage-detail__action" onClick={() => handleDemoClick(t("actionReadStory"))}>
+          {t("readStory")}
         </button>
-        <button className="stage-detail__action" onClick={() => handleDemoClick("Listen")}>
-          🔊 Listen
+        <button className="stage-detail__action" onClick={() => handleDemoClick(t("actionListen"))}>
+          {t("listen")}
         </button>
-        <button className="stage-detail__action" onClick={() => handleDemoClick("View Translation")}>
-          🌐 View Translation
+        <button className="stage-detail__action" onClick={() => handleDemoClick(t("actionViewTranslation"))}>
+          {t("viewTranslation")}
         </button>
       </div>
 
       {demoNote && (
         <p className="stage-detail__demo-note">
-          "{demoNote}" is a placeholder for this SIH demo — audio and translation are not wired up
-          to real content yet.
+          {t("demoNote", { action: demoNote })}
         </p>
       )}
     </div>

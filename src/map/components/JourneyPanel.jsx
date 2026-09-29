@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from "react";
 import Timeline from "./Timeline";
 import MigrationControls from "./MigrationControls";
 import StoryStageDetail from "./StoryStageDetail";
+import { usePageText } from "../../i18n/page";
+import { storyMapText } from "../../i18n/pages/storyMap";
 
 const STEP_DURATION_MS = 1800;
 
@@ -21,6 +23,7 @@ export default function JourneyPanel({
   onReset,
   onClose,
 }) {
+  const { t, dir } = usePageText(storyMapText);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -50,13 +53,13 @@ export default function JourneyPanel({
   const atEnd = selectedIndex === journey.length - 1;
 
   return (
-    <div className="journey-panel">
+    <div className="journey-panel" dir={dir}>
       <div className="journey-panel__header">
         <div>
-          <span className="journey-panel__eyebrow">Migration Journey · Demo Data</span>
+          <span className="journey-panel__eyebrow">{t("journeyEyebrow")}</span>
           <h2 className="journey-panel__title">{story.title}</h2>
         </div>
-        <button className="journey-panel__close" onClick={onClose} aria-label="Close journey panel">
+        <button className="journey-panel__close" onClick={onClose} aria-label={t("closeJourney")}>
           ✕
         </button>
       </div>

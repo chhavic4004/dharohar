@@ -3,6 +3,8 @@ import FilterChips from "./FilterChips";
 import PartitionToggle from "./PartitionToggle";
 import LanguageFilter from "./LanguageFilter";
 import StoryListPanel from "./StoryListPanel";
+import { usePageText } from "../../i18n/page";
+import { storyMapText } from "../../i18n/pages/storyMap";
 
 export default function Sidebar({
   activeCategory,
@@ -20,20 +22,20 @@ export default function Sidebar({
   onSelectStory,
   embedded = false,
 }) {
+  const { t, dir } = usePageText(storyMapText);
   // Inside the map page's tabbed panel the outer <aside> is provided by App.
   const Tag = embedded ? "div" : "aside";
   return (
-    <Tag className={embedded ? "sidebar sidebar--embedded" : "sidebar"}>
+    <Tag className={embedded ? "sidebar sidebar--embedded" : "sidebar"} dir={dir}>
       <div className="sidebar__header">
-        <h1 className="sidebar__title">Heritage Map</h1>
+        <h1 className="sidebar__title">{t("sidebarTitle")}</h1>
         <p className="sidebar__subtitle">
-          Punjab · Haryana · Delhi pilot region. Click any pin to preview a story. Stories with a
-          migration journey show a full route and timeline.
+          {t("sidebarSubtitle")}
         </p>
 
         {usingFallback && (
           <div className="sidebar__notice">
-            Showing offline demo data — the backend API isn't reachable right now.
+            {t("offlineNotice")}
           </div>
         )}
         {error && <div className="sidebar__notice sidebar__notice--error">{error}</div>}
@@ -49,7 +51,7 @@ export default function Sidebar({
         <PartitionToggle
           checked={showPartitionPath}
           onChange={onTogglePartitionPath}
-          label="Partition migration path (Lahore ↔ Amritsar · Historical reference)"
+          label={t("partitionToggle")}
         />
       </div>
 

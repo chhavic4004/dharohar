@@ -1,21 +1,30 @@
-import React, { useState } from "react";
+import React from "react";
+import { usePageText } from "../../i18n/page";
+import { storyMapText } from "../../i18n/pages/storyMap";
+import { SITE_LANGS, setLang } from "../../lib/language";
 
 const NAV_LINKS = [
-  { label: "Home", icon: "🎙️" },
-  { label: "Map", icon: "🗺️", active: true },
-  { label: "Quiz", icon: "❓" },
-  { label: "Preserve a Story", icon: "🎤" },
-  { label: "Passport", icon: "🛂" },
-  { label: "AR Walk", icon: "🧭" },
-  { label: "Vulnerability", icon: "📊" },
-  { label: "Admin", icon: "⚠️" },
+  // `label` stays the English id passed to onNavigate; `key` is the display text.
+  { label: "Home", key: "navHome", icon: "🎙️" },
+  { label: "Map", key: "navMap", icon: "🗺️", active: true },
+  { label: "Quiz", key: "navQuiz", icon: "❓" },
+  { label: "Preserve a Story", key: "navPreserve", icon: "🎤" },
+  { label: "Passport", key: "navPassport", icon: "🛂" },
+  { label: "AR Walk", key: "navArWalk", icon: "🧭" },
+  { label: "Vulnerability", key: "navVulnerability", icon: "📊" },
+  { label: "Admin", key: "navAdmin", icon: "⚠️" },
 ];
 
 export default function Navbar({ activePage = "Map", onNavigate }) {
-  const [lang, setLang] = useState("EN");
+  const { t, lang, dir } = usePageText(storyMapText);
+  const current = SITE_LANGS.find((l) => l.code === lang);
+  const cycleLang = () => {
+    const i = SITE_LANGS.findIndex((l) => l.code === lang);
+    setLang(SITE_LANGS[(i + 1) % SITE_LANGS.length].code);
+  };
 
   return (
-    <header className="navbar">
+    <header className="navbar" dir={dir}>
       <div className="navbar__brand">
         <span className="navbar__brand-icon">❤️</span>
         <div className="navbar__brand-text">
@@ -24,7 +33,7 @@ export default function Navbar({ activePage = "Map", onNavigate }) {
         </div>
       </div>
 
-      <nav className="navbar__links">
+      <nav className="navbar__links" aria-label={t("navAria")}>
         {NAV_LINKS.map((link) => (
           <button
             key={link.label}
@@ -32,17 +41,18 @@ export default function Navbar({ activePage = "Map", onNavigate }) {
             onClick={() => onNavigate && onNavigate(link.label)}
           >
             <span className="navbar__link-icon">{link.icon}</span>
-            {link.label}
+            {t(link.key)}
           </button>
         ))}
       </nav>
 
       <button
         className="navbar__lang"
-        onClick={() => setLang(lang === "EN" ? "HI" : "EN")}
-        title="Switch language"
+        onClick={cycleLang}
+        title={t("switchLanguage")}
+        aria-label={t("switchLanguage")}
       >
-        {lang} <span className="navbar__lang-chevron">▾</span>
+        {current ? current.short : lang.toUpperCase()} <span className="navbar__lang-chevron">▾</span>
       </button>
     </header>
   );
