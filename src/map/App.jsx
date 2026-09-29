@@ -3,10 +3,49 @@ import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
 import JourneyPanel from "./components/JourneyPanel";
 import { fetchStories, fetchPartitionPath, fetchLanguages } from "./api/storiesApi";
+import { useSearchParams } from "react-router";
+import { QuizMapExtras, QuizSpotsPanel, quizApi } from "../features/quiz";
+import { useLang } from "../lib/language";
 import "leaflet/dist/leaflet.css";
 import "./map.css";
 
 export default function App() {
+  const lang = useLang();
+  const [params] = useSearchParams();
+
+  // Heritage quiz spots (from the quiz module): every tradition and site with questions
+  const [tab, setTab] = useState(params.get("focus") ? "spots" : "stories");
+  const [spots, setSpots] = useState([]);
+  const [band, setBand] = useState("all");
+  const [me, setMe] = useState(null);
+  const [locError, setLocError] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    quizApi
+      .allHeritage()
+      .then((xs) => live && setSpots(xs))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [lang]);
+
+  // A "View on map" link from the quiz opens the spots tab
+  useEffect(() => {
+    if (params.get("focus")) setTab("spots");
+  }, [params]);
+
+  const locate = useCallback(() => {
+    setLocError(false);
+    if (!navigator.geolocation) return setLocError(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setMe({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setLocError(true),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+    );
+  }, []);
+
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
@@ -95,7 +134,20 @@ export default function App() {
   return (
     <div className="map-page">
       <main className="app__body">
+        <aside className="sidebar">
+          <div className="map-tabs" role="tablist">
+            <button type="button" role="tab" aria-selected={tab === "stories"} onClick={() => setTab("stories")}>
+              Stories ({stories.length})
+            </button>
+            <button type="button" role="tab" aria-selected={tab === "spots"} onClick={() => setTab("spots")}>
+              Quiz spots ({spots.length})
+            </button>
+          </div>
+          {tab === "spots" ? (
+            <QuizSpotsPanel spots={spots} band={band} onBandChange={setBand} me={me} onLocate={locate} locError={locError} />
+          ) : (
         <Sidebar
+          embedded
           activeCategory={activeCategory}
           onCategoryChange={setActiveCategory}
           languages={languages}
@@ -110,6 +162,8 @@ export default function App() {
           activeStoryId={activeStoryId}
           onSelectStory={handleSelectStory}
         />
+          )}
+        </aside>
 
         <div className="map-column">
           <MapView
@@ -123,7 +177,10 @@ export default function App() {
             journey={activeJourney}
             selectedStageIndex={selectedStageIndex}
             onSelectStage={setSelectedStageIndex}
-          />
+            showQuizSpots={spots.length > 0}
+          >
+            <QuizMapExtras spots={spots} band={band} visible={spots.length > 0} me={me} />
+          </MapView>
 
           {activeJourney && (
             <JourneyPanel

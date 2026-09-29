@@ -96,6 +96,8 @@ export default function MapView({
   journey,
   selectedStageIndex,
   onSelectStage,
+  children,
+  showQuizSpots = false,
 }) {
   const markerRefs = useRef({});
 
@@ -185,9 +187,11 @@ export default function MapView({
             </Popup>
           </Marker>
         ))}
+        {/* Extra layers from other features (for example the quiz spots) */}
+        {children}
       </MapContainer>
 
-      <Legend showPartitionPath={showPartitionPath} showMigrationRoute={hasJourney} />
+      <Legend showPartitionPath={showPartitionPath} showMigrationRoute={hasJourney} showQuizSpots={showQuizSpots} />
     </div>
   );
 }

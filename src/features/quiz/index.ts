@@ -57,3 +57,5 @@ export { heritageName, stateName } from "./heritageText";
 export { default as HeritageMiniMap } from "./components/HeritageMiniMap";
 export { default as DailyQuestionCard } from "./components/DailyQuestionCard";
 export { I18nProvider, useI18n } from "./i18n";
+export { default as QuizSpotsPanel } from "./map/QuizSpotsPanel";
+export { default as QuizMapExtras } from "./map/QuizMapExtras";

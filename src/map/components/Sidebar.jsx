@@ -18,9 +18,12 @@ export default function Sidebar({
   usingFallback,
   activeStoryId,
   onSelectStory,
+  embedded = false,
 }) {
+  // Inside the map page's tabbed panel the outer <aside> is provided by App.
+  const Tag = embedded ? "div" : "aside";
   return (
-    <aside className="sidebar">
+    <Tag className={embedded ? "sidebar sidebar--embedded" : "sidebar"}>
       <div className="sidebar__header">
         <h1 className="sidebar__title">Heritage Map</h1>
         <p className="sidebar__subtitle">
@@ -56,6 +59,6 @@ export default function Sidebar({
         activeStoryId={activeStoryId}
         onSelectStory={onSelectStory}
       />
-    </aside>
+    </Tag>
   );
 }
