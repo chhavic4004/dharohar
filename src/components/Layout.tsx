@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, Outlet, useLocation } from "react-router";
-import { Mic, Map as MapIcon, ShieldCheck, Compass, BarChart2, ShieldAlert, Menu, X, Heart, ChevronDown, Check, HelpCircle ,Camera } from "lucide-react";
+import { Mic, Map as MapIcon, ShieldCheck, Compass, BarChart2, ShieldAlert, Menu, X, Heart, ChevronDown, Check, HelpCircle} from "lucide-react";
 
 export function Layout() {
   const location = useLocation();
@@ -42,8 +42,6 @@ export function Layout() {
     { name: "Preserve a Story", path: "/preserve", icon: <Mic className="w-4 h-4" /> },
     { name: "Passport", path: "/passport", icon: <ShieldCheck className="w-4 h-4" /> },
     { name: "Tour guide", path: "/tour-guide", icon: <Compass className="w-4 h-4" /> },
-    { name: "AR Walk", path: "/ar-walk", icon: <Compass className="w-4 h-4" /> },
-    { name: "Photo Detection", path: "/photo-detection", icon: <Camera className="w-4 h-4" /> },
     { name: "Vulnerability", path: "/dashboard", icon: <BarChart2 className="w-4 h-4" /> },
     { name: "Admin", path: "/admin-heatmap", icon: <ShieldAlert className="w-4 h-4" /> },
   ];
