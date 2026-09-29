@@ -1,0 +1,220 @@
+[
+  {
+    "id": "st001",
+    "category": "Partition Migration",
+    "isDemo": true,
+    "person": "Asha Devi",
+    "title": "A Journey from Lahore",
+    "location": "Delhi (originally Lahore)",
+    "lat": 28.6139,
+    "lng": 77.209,
+    "description": "A family's journey from pre-Partition Lahore to present-day Delhi, remembered across three generations.",
+    "contributor": "Grandchild of Asha Devi",
+    "language": "Punjabi",
+    "audioUrl": "",
+    "imageUrl": "",
+    "dateRecorded": "2025-11-02",
+    "journey": [
+      {
+        "year": 1940,
+        "city": "Lahore",
+        "country": "Undivided India",
+        "lat": 31.5204,
+        "lng": 74.3587,
+        "stage": "origin",
+        "description": "Asha Devi grows up in Lahore, in a home near the old city where her father ran a small cloth shop."
+      },
+      {
+        "year": 1947,
+        "city": "Amritsar",
+        "country": "India",
+        "lat": 31.634,
+        "lng": 74.8723,
+        "stage": "waypoint",
+        "description": "The family crosses the newly drawn border on foot during Partition, arriving in Amritsar with only what they could carry."
+      },
+      {
+        "year": 1960,
+        "city": "Ludhiana",
+        "country": "India",
+        "lat": 30.901,
+        "lng": 75.8573,
+        "stage": "waypoint",
+        "description": "The family resettles in Ludhiana, rebuilding their livelihood in the growing textile trade."
+      },
+      {
+        "year": 2026,
+        "city": "Delhi",
+        "country": "India",
+        "lat": 28.6139,
+        "lng": 77.209,
+        "stage": "present",
+        "description": "The next generation now lives in Delhi, and shares Asha Devi's story so it is not forgotten."
+      }
+    ]
+  },
+  {
+    "id": "st002",
+    "category": "Craft & Tradition",
+    "title": "Phulkari — Mere Nani Ki Ungliyon Ki Kala",
+    "location": "Patiala, Punjab",
+    "lat": 30.3398,
+    "lng": 76.3869,
+    "description": "A granddaughter documents the vanishing hand-embroidery technique of Phulkari, passed down through three generations of women in her family.",
+    "contributor": "Simran K., Patiala",
+    "language": "Punjabi",
+    "audioUrl": "",
+    "imageUrl": "",
+    "dateRecorded": "2025-10-18"
+  },
+  {
+    "id": "st003",
+    "category": "Folk Song",
+    "title": "Jalandhar Ke Boliyaan",
+    "location": "Jalandhar, Punjab",
+    "lat": 31.326,
+    "lng": 75.5762,
+    "description": "Traditional Punjabi boliyaan (folk verses) sung during harvest season, recorded live at a village gathering near Jalandhar.",
+    "contributor": "Village Cultural Group",
+    "language": "Punjabi",
+    "audioUrl": "",
+    "imageUrl": "",
+    "dateRecorded": "2025-09-27"
+  },
+  {
+    "id": "st004",
+    "category": "Craft & Tradition",
+    "title": "Kashi Ka Kaam — Hoshiarpur Wood Inlay",
+    "location": "Hoshiarpur, Punjab",
+    "lat": 31.532,
+    "lng": 75.9142,
+    "description": "A third-generation artisan demonstrates Hoshiarpur's centuries-old wood inlay (kashi) craft, now practised by fewer than a dozen families.",
+    "contributor": "Artisan Family, Hoshiarpur",
+    "language": "Hindi / Punjabi",
+    "audioUrl": "",
+    "imageUrl": "",
+    "dateRecorded": "2025-08-30"
+  },
+  {
+    "id": "st005",
+    "category": "Living Tradition",
+    "title": "Vaisakhi Mele Ki Paramparaa",
+    "location": "Anandpur Sahib, Punjab",
+    "lat": 31.2384,
+    "lng": 76.502,
+    "description": "Residents describe how the Vaisakhi fair at Anandpur Sahib has evolved over decades while keeping its core rituals and community spirit alive.",
+    "contributor": "Local Historian, Anandpur Sahib",
+    "language": "Punjabi",
+    "audioUrl": "",
+    "imageUrl": "",
+    "dateRecorded": "2025-07-11"
+  },
+  {
+    "id": "st006",
+    "category": "Partition Migration",
+    "isDemo": true,
+    "person": "Karam Singh",
+    "title": "From Sialkot to Chandigarh",
+    "location": "Chandigarh (originally Sialkot)",
+    "lat": 30.7333,
+    "lng": 76.7794,
+    "description": "A demo migration story tracing one family's path from Sialkot through Jammu to the newly built city of Chandigarh.",
+    "contributor": "Family Archive, Chandigarh",
+    "language": "Punjabi / Dogri",
+    "audioUrl": "",
+    "imageUrl": "",
+    "dateRecorded": "2025-11-10",
+    "journey": [
+      {
+        "year": 1941,
+        "city": "Sialkot",
+        "country": "Undivided India",
+        "lat": 32.4945,
+        "lng": 74.5229,
+        "stage": "origin",
+        "description": "Karam Singh's family runs a small sports-goods workshop in Sialkot, a craft the city was already known for."
+      },
+      {
+        "year": 1947,
+        "city": "Jammu",
+        "country": "India",
+        "lat": 32.7266,
+        "lng": 74.857,
+        "stage": "waypoint",
+        "description": "The family flees to Jammu during Partition, joining a refugee camp before deciding where to settle permanently."
+      },
+      {
+        "year": 1971,
+        "city": "Chandigarh",
+        "country": "India",
+        "lat": 30.7333,
+        "lng": 76.7794,
+        "stage": "waypoint",
+        "description": "The family moves to the newly planned city of Chandigarh, finding work as the city expands."
+      },
+      {
+        "year": 2026,
+        "city": "Chandigarh",
+        "country": "India",
+        "lat": 30.7333,
+        "lng": 76.7794,
+        "stage": "present",
+        "description": "Three generations later, the family still lives in Chandigarh and keeps the memory of Sialkot alive through old photographs and recipes."
+      }
+    ]
+  },
+  {
+    "id": "st007",
+    "category": "Partition Migration",
+    "isDemo": true,
+    "person": "Rukhsana Bibi",
+    "title": "From Rawalpindi to Delhi",
+    "location": "Delhi (originally Rawalpindi)",
+    "lat": 28.7041,
+    "lng": 77.1025,
+    "description": "A demo migration story following a family's crossing from Rawalpindi through Attari and Jalandhar to Delhi.",
+    "contributor": "Family Archive, Delhi",
+    "language": "Urdu / Hindi",
+    "audioUrl": "",
+    "imageUrl": "",
+    "dateRecorded": "2025-11-15",
+    "journey": [
+      {
+        "year": 1945,
+        "city": "Rawalpindi",
+        "country": "Undivided India",
+        "lat": 33.5651,
+        "lng": 73.0169,
+        "stage": "origin",
+        "description": "Rukhsana Bibi's family lives near Rawalpindi's old bazaar, where her father worked as a schoolteacher."
+      },
+      {
+        "year": 1947,
+        "city": "Attari",
+        "country": "India",
+        "lat": 31.6035,
+        "lng": 74.6395,
+        "stage": "waypoint",
+        "description": "The family joins a refugee convoy crossing at Attari during the Partition migrations of 1947."
+      },
+      {
+        "year": 1955,
+        "city": "Jalandhar",
+        "country": "India",
+        "lat": 31.326,
+        "lng": 75.5762,
+        "stage": "waypoint",
+        "description": "The family spends nearly a decade in Jalandhar, where Rukhsana Bibi's father resumes teaching at a local school."
+      },
+      {
+        "year": 2026,
+        "city": "Delhi",
+        "country": "India",
+        "lat": 28.7041,
+        "lng": 77.1025,
+        "stage": "present",
+        "description": "Her grandchildren now live in Delhi and are recording her story as part of a family history project."
+      }
+    ]
+  }
+]

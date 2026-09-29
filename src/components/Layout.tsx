@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, Outlet, useLocation } from "react-router";
-import { Mic, Map as MapIcon, ShieldCheck, Compass, BarChart2, ShieldAlert, Menu, X, Heart, ChevronDown, Check, HelpCircle, Globe } from "lucide-react";
+import { Mic, Map as MapIcon, ShieldCheck, Compass, BarChart2, ShieldAlert, Menu, X, Heart, ChevronDown, Check, HelpCircle, Globe, Camera } from "lucide-react";
 import { AccountMenu, AuthProvider, PhoneGate } from "../features/auth";
 import { useSiteT } from "../i18n/site";
 import { SITE_LANGS, langDir, setLang, useLang } from "../lib/language";
@@ -29,6 +29,9 @@ function DocumentTitle() {
       ["/preserve", "navPreserve"],
       ["/passport", "navPassport"],
       ["/ar-walk", "navArWalk"],
+      ["/tour-guide", "navTourGuide"],
+      ["/virtual-heritage", "pageVirtual"],
+      ["/photo-detection", "navPhoto"],
       ["/dashboard", "navVulnerability"],
       ["/admin-heatmap", "navAdmin"],
       ["/explore/", "pageTradition"],
@@ -78,7 +81,9 @@ function Shell() {
     { name: t("navQuiz"), path: "/quiz", icon: <HelpCircle className="w-4 h-4" /> },
     { name: t("navPreserve"), path: "/preserve", icon: <Mic className="w-4 h-4" /> },
     { name: t("navPassport"), path: "/passport", icon: <ShieldCheck className="w-4 h-4" /> },
+    { name: t("navTourGuide"), path: "/tour-guide", icon: <Compass className="w-4 h-4" /> },
     { name: t("navArWalk"), path: "/ar-walk", icon: <Compass className="w-4 h-4" /> },
+    { name: t("navPhoto"), path: "/photo-detection", icon: <Camera className="w-4 h-4" /> },
     { name: t("navVulnerability"), path: "/dashboard", icon: <BarChart2 className="w-4 h-4" /> },
     { name: t("navAdmin"), path: "/admin-heatmap", icon: <ShieldAlert className="w-4 h-4" /> },
   ];
@@ -86,7 +91,7 @@ function Shell() {
   return (
     <div className="min-h-screen bg-parchment text-ink flex flex-col font-sans">
       <header className="sticky top-0 z-50 bg-parchment/90 backdrop-blur-sm border-b border-maroon/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <div className="w-full px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0">
             <Heart className="w-5 h-5 text-terracotta fill-terracotta shrink-0" />
             <div className="flex flex-col">
@@ -99,14 +104,14 @@ function Shell() {
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-3" dir={dir}>
+          <nav className="hidden md:flex flex-1 items-center justify-center gap-1 lg:gap-1.5 whitespace-nowrap min-w-0 overflow-x-auto" dir={dir}>
             {navItems.map((item) => {
               const isActive = location.pathname === item.path || ((item.path === '/preserve' || item.path === '/quiz') && location.pathname.startsWith(item.path));
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-1.5 text-sm font-medium px-2 lg:px-2.5 py-2 rounded-full transition-all whitespace-nowrap ${
                     isActive
                       ? "bg-terracotta/15 text-maroon font-semibold shadow-xs"
                       : "text-ink/70 hover:text-maroon hover:bg-maroon/5"
@@ -119,7 +124,7 @@ function Shell() {
             })}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Multilingual Selector Dropdown */}
             <div className="relative" ref={langDropdownRef}>
               <button
@@ -246,6 +251,7 @@ function Shell() {
             <ul className="space-y-2 text-sm text-parchment/70">
               <li><Link to="/map" className="hover:text-parchment transition-colors">{t("footerHeritageMap")}</Link></li>
               <li><Link to="/dashboard" className="hover:text-parchment transition-colors">{t("footerVulnIndex")}</Link></li>
+              <li><Link to="/tour-guide" className="hover:text-parchment transition-colors">{t("navTourGuide")}</Link></li>
               <li><Link to="/ar-walk" className="hover:text-parchment transition-colors">{t("footerArTime")}</Link></li>
             </ul>
           </div>

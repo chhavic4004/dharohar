@@ -11,10 +11,16 @@
     "typecheck": "tsc --noEmit",
     "dev:api": "npm --prefix server run dev",
     "dev:full": "concurrently -n web,api -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
-    "test:api": "npm --prefix server test"
+    "test:api": "npm --prefix server test",
+    "dev:chat": "node chatbot-backend/chatbot-server.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.20.0",
     "clsx": "^2.1.1",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
     "framer-motion": "^13.2.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.46.0",

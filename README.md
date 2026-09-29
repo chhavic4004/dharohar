@@ -1,6 +1,25 @@
-# Dharohar: Heritage Quiz module
+# Dharohar
 
-This repository is the Dharohar website (from the Figma Make prototype) with a fully working **Heritage Quiz**: frontend, backend and a verified question bank.
+A React and Vite website for exploring and preserving India's cultural heritage: heritage map with migration journeys, AR walk and tour guide with a heritage chatbot, virtual 360 heritage, photo detection, story preservation, vulnerability dashboards, and the Heritage Quiz with accounts, in English, Hindi, Punjabi and Urdu.
+
+## Start the project
+
+You need Node.js 22. The project uses pnpm (`npm install --global pnpm@10.34.3`), but npm works too.
+
+```powershell
+pnpm install                 # or: npm install
+npm --prefix server install  # quiz, accounts and languages API
+npm run dev:full             # website + API together
+```
+
+Open the local URL shown in the terminal (by default http://localhost:8443).
+
+- `npm run dev` starts only the website. The Heritage Map API (`/api/stories`) runs inside the Vite dev server.
+- `npm run dev:api` starts only the quiz and accounts API (port 4000).
+- `npm run dev:chat` starts the heritage chatbot server used by the AR Walk page (port 3001; needs a Gemini API key, see `chatbot-backend/`).
+- `pnpm build`, `pnpm preview`, `pnpm format` work as before.
+
+# Heritage Quiz module
 
 The quiz is built as a self-contained module, so teammates can merge it into the main site without touching their own pages.
 
@@ -53,7 +72,7 @@ The quiz is built as a self-contained module, so teammates can merge it into the
 - **Language follows the person**: first visit picks the browser's language (Hindi, Punjabi or Urdu if the browser prefers it), `?lang=hi` in any link opens the site in that language, signed-in users get their saved language on every device, browser tab titles and guest names are translated too.
 - **Map everywhere**: the Heritage Map has a "Quiz spots" tab with search in any script, vulnerability filters and a "Near me" button that sorts places by distance. Tradition and story pages show a live mini map that opens the spot on the full map. The home page shows today's heritage question.
 
-## Quick start
+## Quiz quick start
 
 You need Node.js 20 or newer.
 

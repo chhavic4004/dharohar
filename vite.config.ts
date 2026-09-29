@@ -5,6 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
+import heritageMapApi from './backend/vitePlugin.mjs'
 
 // Works with every Vite config loader (bundled or native Node ESM, where __dirname does not exist)
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
@@ -23,6 +24,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
+      heritageMapApi(), // serves /api/* (Heritage Map) from the same dev server
       figmaSiteConfiguration(siteConfiguration),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
@@ -38,14 +40,15 @@ export default defineConfig(({ mode }) => {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
-      // Forward API calls to the Dharohar backend during development (server/ on port 4000)
+      // Heritage Map routes (/api/stories, /api/partition-path) are answered by heritageMapApi above;
+      // everything else under /api (quiz, auth) goes to the Dharohar backend in server/ on port 4000
       proxy: {
         '/api': process.env.VITE_API_PROXY || 'http://localhost:4000',
       },
       watch: {
         ignored: [
           '**/.figma/**',
-],
+        ],
       },
     },
     preview: {

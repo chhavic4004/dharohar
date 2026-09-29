@@ -13,6 +13,9 @@ import TraditionDetail from "./pages/TraditionDetail";
 import VitalityDashboard from "./pages/VitalityDashboard";
 import { authRoutes } from "./features/auth";
 import { quizRoutes } from "./features/quiz";
+import Virtual360Page from "./virtual360/Virtual360Page";
+import TourGuidePage from "./tour-guide/TourGuidePage";
+import PhotoDetection from "./pages/PhotoDetection";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +26,9 @@ const router = createBrowserRouter([
       { path: "map", Component: Map },
       { path: "passport", Component: Passport },
       { path: "ar-walk", Component: ARWalk },
+      { path: "tour-guide", Component: TourGuidePage },
+      { path: "virtual-heritage", Component: Virtual360Page },
+      { path: "photo-detection", Component: PhotoDetection },
       { path: "dashboard", Component: Dashboard },
       { path: "dashboard/:id", Component: VitalityDashboard },
       { path: "admin-heatmap", Component: AdminHeatmap },
