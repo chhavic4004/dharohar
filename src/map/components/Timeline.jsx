@@ -1,4 +1,6 @@
 import React from "react";
+import { usePageText } from "../../i18n/page";
+import { storyMapText } from "../../i18n/pages/storyMap";
 
 /**
  * Horizontal timeline for a migration journey: 1940 ── 1947 ── 1960 ── 2026
@@ -6,10 +8,11 @@ import React from "react";
  * up to it is filled in, so progress through the journey reads at a glance.
  */
 export default function Timeline({ journey, selectedIndex, onSelect }) {
+  const { t } = usePageText(storyMapText);
   if (!journey || !journey.length) return null;
 
   return (
-    <div className="timeline" role="tablist" aria-label="Migration timeline">
+    <div className="timeline" dir="ltr" role="tablist" aria-label={t("timelineAria")}>
       <div className="timeline__track">
         <div
           className="timeline__track-fill"

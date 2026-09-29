@@ -7,7 +7,8 @@
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared/*": ["./shared/*"]
     },
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -18,5 +19,5 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "shared", "vite.config.ts"]
 }

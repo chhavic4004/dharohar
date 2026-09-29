@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import Monument360Card from "./components/Monument360Card";
-import { monuments360 } from "./monuments360";
+import { localizeMonument, monuments360 } from "./monuments360";
+import { usePageText } from "../i18n/page";
+import { virtual360Text } from "../i18n/pages/virtual360";
 
 const categories = [
   "All",
@@ -8,48 +10,71 @@ const categories = [
   "Forts",
   "Palaces",
   "Monuments",
-];
+] as const;
+
+type CategoryKey = "catAll" | "catTemples" | "catForts" | "catPalaces" | "catMonuments";
+const categoryKey = (category: string): CategoryKey =>
+  `cat${category}` as CategoryKey;
 
 export default function Virtual360Page() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
+  const { t, lang, dir } = usePageText(virtual360Text);
 
   const filteredMonuments = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
+    const query = searchQuery.toLocaleLowerCase().trim();
 
-    return monuments360.filter((monument) => {
-      const matchesSearch =
-        !query ||
-        monument.name.toLowerCase().includes(query) ||
-        monument.city.toLowerCase().includes(query) ||
-        monument.state.toLowerCase().includes(query) ||
-        monument.category.toLowerCase().includes(query);
+    return monuments360
+      .map((monument) => ({
+        original: monument,
+        localized: localizeMonument(monument, lang),
+      }))
+      .filter(({ original, localized }) => {
+        // Match against both the localized and the English text.
+        const haystack = [
+          localized.name,
+          localized.city,
+          localized.state,
+          t(categoryKey(original.category)),
+          original.name,
+          original.city,
+          original.state,
+          original.category,
+        ];
+        const matchesSearch =
+          !query ||
+          haystack.some((value) =>
+            value.toLocaleLowerCase().includes(query),
+          );
 
-      const matchesCategory =
-        activeCategory === "All" ||
-        monument.category === activeCategory;
+        const matchesCategory =
+          activeCategory === "All" ||
+          original.category === activeCategory;
 
-      return matchesSearch && matchesCategory;
-    });
-  }, [searchQuery, activeCategory]);
+        return matchesSearch && matchesCategory;
+      })
+      .map(({ localized }) => localized);
+  }, [searchQuery, activeCategory, lang, t]);
 
   return (
-    <main className="min-h-screen bg-parchment text-ink">
+    <main
+      className="min-h-screen bg-parchment text-ink"
+      lang={lang}
+      dir={dir}
+    >
       {/* Hero */}
       <section className="border-b border-maroon/10 px-6 py-16 md:px-10 lg:px-16">
         <div className="mx-auto max-w-7xl">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-turmeric">
-            Dharohar · Virtual Heritage
+            {t("eyebrow")}
           </p>
 
           <h1 className="max-w-4xl font-serif text-5xl leading-tight text-maroon md:text-6xl">
-            Virtual Heritage of India
+            {t("heroTitle")}
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-ink/70">
-            Explore India's historic monuments through immersive
-            360° experiences and discover the stories behind
-            the places that shape our cultural heritage.
+            {t("heroBody")}
           </p>
         </div>
       </section>
@@ -60,18 +85,23 @@ export default function Virtual360Page() {
           {/* Search */}
           <div className="relative">
             <input
-              type="text"
+              type="search"
+              aria-label={t("searchLabel")}
               value={searchQuery}
               onChange={(event) =>
                 setSearchQuery(event.target.value)
               }
-              placeholder="Search monuments..."
+              placeholder={t("searchPlaceholder")}
               className="w-full rounded-lg border border-maroon/20 bg-white px-5 py-4 text-ink outline-none transition focus:border-maroon focus:ring-2 focus:ring-maroon/10"
             />
           </div>
 
           {/* Categories */}
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div
+            className="mt-6 flex flex-wrap gap-3"
+            role="group"
+            aria-label={t("filtersLabel")}
+          >
             {categories.map((category) => {
               const isActive = activeCategory === category;
 
@@ -80,13 +110,14 @@ export default function Virtual360Page() {
                   key={category}
                   type="button"
                   onClick={() => setActiveCategory(category)}
+                  aria-pressed={isActive}
                   className={`rounded-full border px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                     isActive
                       ? "border-maroon bg-maroon text-white"
                       : "border-maroon/20 bg-white text-ink hover:border-maroon hover:text-maroon"
                   }`}
                 >
-                  {category}
+                  {t(categoryKey(category))}
                 </button>
               );
             })}
@@ -99,11 +130,11 @@ export default function Virtual360Page() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-turmeric">
-              Explore
+              {t("exploreEyebrow")}
             </p>
 
             <h2 className="mt-2 font-serif text-4xl text-maroon">
-              360° Monument Collection
+              {t("collectionTitle")}
             </h2>
           </div>
 
@@ -119,11 +150,11 @@ export default function Virtual360Page() {
           ) : (
             <div className="rounded-xl border border-maroon/10 bg-white px-6 py-16 text-center">
               <h3 className="font-serif text-2xl text-maroon">
-                No monuments found
+                {t("emptyTitle")}
               </h3>
 
               <p className="mt-2 text-ink/60">
-                Try another monument name, location, or category.
+                {t("emptyBody")}
               </p>
             </div>
           )}

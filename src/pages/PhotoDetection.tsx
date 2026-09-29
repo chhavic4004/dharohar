@@ -1,9 +1,16 @@
 import { useState } from "react";
+import { usePageText } from "../i18n/page";
+import { photoDetectionText } from "../i18n/pages/photoDetection";
+
+type StatusKey = "analyzing" | "errorGeneric" | "errorConnect";
 
 export default function PhotoDetection() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
+  const { t, lang, dir } = usePageText(photoDetectionText);
   const [information, setInformation] = useState("");
+  // Local status messages are kept as keys so they follow language changes.
+  const [status, setStatus] = useState<StatusKey | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (
@@ -16,19 +23,22 @@ export default function PhotoDetection() {
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
     setInformation("");
+    setStatus(null);
   };
 
   const detectPhoto = async () => {
     if (!file) {
-      alert("Please select a photo first!");
+      alert(t("alertNoPhoto"));
       return;
     }
 
     setLoading(true);
-    setInformation("Analyzing your heritage image...");
+    setInformation("");
+    setStatus("analyzing");
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("lang", lang);
 
     try {
       const response = await fetch("/api/detect", {
@@ -39,16 +49,15 @@ export default function PhotoDetection() {
       const data = await response.json();
 
       if (response.ok) {
+        setStatus(null);
         setInformation(data.information);
       } else {
-        setInformation("Something went wrong. Please try again.");
+        setStatus("errorGeneric");
       }
     } catch (error) {
       console.error(error);
 
-      setInformation(
-        "Could not connect to the photo detection server."
-      );
+      setStatus("errorConnect");
     }
 
     setLoading(false);
@@ -56,6 +65,8 @@ export default function PhotoDetection() {
 
   return (
     <div
+      dir={dir}
+      lang={lang}
       style={{
         minHeight: "100vh",
         padding: "50px 20px",
@@ -92,7 +103,7 @@ export default function PhotoDetection() {
               marginBottom: "12px",
             }}
           >
-            Discover Your Heritage
+            {t("title")}
           </h1>
 
           <p
@@ -104,8 +115,7 @@ export default function PhotoDetection() {
               lineHeight: "1.6",
             }}
           >
-            Upload a photo of a monument, craft, artwork or cultural
-            object and let AI help you discover its story.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -145,7 +155,7 @@ export default function PhotoDetection() {
                 marginBottom: "8px",
               }}
             >
-              Upload a Heritage Photo
+              {t("uploadTitle")}
             </h2>
 
             <p
@@ -154,7 +164,7 @@ export default function PhotoDetection() {
                 marginBottom: "20px",
               }}
             >
-              JPG, PNG or WEBP images
+              {t("formats")}
             </p>
 
             <label
@@ -168,7 +178,7 @@ export default function PhotoDetection() {
                 fontWeight: "600",
               }}
             >
-              Choose Photo
+              {t("choosePhoto")}
 
               <input
                 type="file"
@@ -185,7 +195,7 @@ export default function PhotoDetection() {
                   color: "#5f5147",
                 }}
               >
-                Selected: <strong>{file.name}</strong>
+                {t("selected")} <strong>{file.name}</strong>
               </p>
             )}
           </div>
@@ -205,12 +215,12 @@ export default function PhotoDetection() {
                   fontSize: "20px",
                 }}
               >
-                Your Photo
+                {t("yourPhoto")}
               </h3>
 
               <img
                 src={preview}
-                alt="Selected heritage"
+                alt={t("previewAlt")}
                 style={{
                   width: "100%",
                   maxWidth: "550px",
@@ -242,14 +252,14 @@ export default function PhotoDetection() {
                 }}
               >
                 {loading
-                  ? "🔍 Discovering..."
-                  : "✨ Discover Heritage"}
+                  ? t("discovering")
+                  : t("discover")}
               </button>
             </div>
           )}
 
           {/* Information */}
-          {information && (
+          {(information || status) && (
             <div
               style={{
                 marginTop: "35px",
@@ -266,7 +276,7 @@ export default function PhotoDetection() {
                   marginBottom: "15px",
                 }}
               >
-                📖 Heritage Information
+                {t("infoTitle")}
               </h2>
 
               <p
@@ -277,7 +287,7 @@ export default function PhotoDetection() {
                   fontSize: "16px",
                 }}
               >
-                {information}
+                {status ? t(status) : information}
               </p>
             </div>
           )}
@@ -303,10 +313,10 @@ export default function PhotoDetection() {
           >
             <div style={{ fontSize: "25px" }}>🤖</div>
             <strong style={{ color: "#7d1f35" }}>
-              AI Powered
+              {t("featAiTitle")}
             </strong>
             <p style={{ color: "#6b6258", fontSize: "14px" }}>
-              AI identifies and explains cultural objects.
+              {t("featAiText")}
             </p>
           </div>
 
@@ -321,10 +331,10 @@ export default function PhotoDetection() {
           >
             <div style={{ fontSize: "25px" }}>🌍</div>
             <strong style={{ color: "#7d1f35" }}>
-              Discover Culture
+              {t("featCultureTitle")}
             </strong>
             <p style={{ color: "#6b6258", fontSize: "14px" }}>
-              Learn the history behind heritage.
+              {t("featCultureText")}
             </p>
           </div>
 
@@ -339,10 +349,10 @@ export default function PhotoDetection() {
           >
             <div style={{ fontSize: "25px" }}>❤️</div>
             <strong style={{ color: "#7d1f35" }}>
-              Preserve Heritage
+              {t("featPreserveTitle")}
             </strong>
             <p style={{ color: "#6b6258", fontSize: "14px" }}>
-              Make cultural knowledge easier to discover.
+              {t("featPreserveText")}
             </p>
           </div>
         </div>

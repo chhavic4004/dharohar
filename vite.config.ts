@@ -2,9 +2,13 @@ import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-import siteConfiguration from './.figma/make/site.json'
+import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
 import heritageMapApi from './backend/vitePlugin.mjs'
+
+// Works with every Vite config loader (bundled or native Node ESM, where __dirname does not exist)
+const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -28,14 +32,19 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(rootDir, './src'),
+        '@shared': path.resolve(rootDir, './shared'),
       },
     },
     server: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
-      
+      // Heritage Map routes (/api/stories, /api/partition-path) are answered by heritageMapApi above;
+      // everything else under /api (quiz, auth) goes to the Dharohar backend in server/ on port 4000
+      proxy: {
+        '/api': process.env.VITE_API_PROXY || 'http://localhost:4000',
+      },
       watch: {
         ignored: [
           '**/.figma/**',

@@ -38,6 +38,15 @@ Rules:
 `
 });
 
+// The site sends ISO codes; spell them out so the model replies in the right
+// language and script.
+const LANGUAGE_NAMES = {
+  en: "English",
+  hi: "Hindi (in Devanagari script)",
+  pa: "Punjabi (in Gurmukhi script)",
+  ur: "Urdu (in Perso-Arabic Nastaliq script)"
+};
+
 export async function generateHeritageAnswer({
   question,
   monumentId = "general",
@@ -52,7 +61,7 @@ export async function generateHeritageAnswer({
 
   const prompt = `
 Current page or monument: ${monumentId}
-Preferred language: ${language}
+Preferred language: ${LANGUAGE_NAMES[language] ?? language}
 
 Local heritage notes:
 ${contextText}
@@ -60,7 +69,7 @@ ${contextText}
 User question:
 ${question}
 
-Answer the question in the preferred language.
+Answer the question in the preferred language, whatever language the question is written in.
 Use relevant notes when helpful, and explain uncertainty.
 `;
 

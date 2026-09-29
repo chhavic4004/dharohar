@@ -7,6 +7,7 @@ export default function PartitionToggle({ checked, onChange, label }) {
       <button
         role="switch"
         aria-checked={checked}
+        aria-label={label}
         className={`switch ${checked ? "switch--on" : ""}`}
         onClick={() => onChange(!checked)}
       >

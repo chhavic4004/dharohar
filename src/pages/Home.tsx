@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Mic, ArrowRight, ShieldCheck, Search, Activity, BookOpen, Clock, Heart, Map as MapIcon, HelpCircle, Award } from "lucide-react";
 import { Reveal } from "../components/Reveal";
+import { DailyQuestionCard } from "../features/quiz";
+import { usePageText } from "../i18n/page";
+import { homeText } from "../i18n/pages/home";
 
-function AnimatedCounter({ end, duration = 2000 }: { end: number; duration?: number }) {
+function AnimatedCounter({ end, duration = 2000, locale }: { end: number; duration?: number; locale?: string }) {
   const [count, setCount] = useState(1);
 
   useEffect(() => {
@@ -27,40 +30,44 @@ function AnimatedCounter({ end, duration = 2000 }: { end: number; duration?: num
     return () => window.cancelAnimationFrame(animationFrameId);
   }, [end, duration]);
 
-  return <>{count.toLocaleString()}</>;
+  return <>{count.toLocaleString(locale)}</>;
 }
 
 export default function Home() {
+  const { t, lang, dir, locale } = usePageText(homeText);
+  const [recordedPre, recordedPost] = t("recordedBy").split("{name}");
   return (
-    <div className="w-full flex flex-col shadow-[inset_0_4px_4px_rgba(0,0,0,0.25)] filter-none">
+    <div dir={dir} className="w-full flex flex-col shadow-[inset_0_4px_4px_rgba(0,0,0,0.25)] filter-none">
       {/* Hero Section */}
       <section className="relative w-full h-[80vh] min-h-[520px] flex items-center overflow-hidden bg-ink">
         <div className="absolute inset-0 bg-ink/40 z-10" />
         <img
           src="https://images.unsplash.com/photo-1721508490084-1b1de5b230d4?q=80&w=2400&auto=format&fit=crop"
-          alt="Indian artisan working on a traditional craft with warm, golden-hour lighting"
+          alt={t("heroImgAlt")}
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="relative z-20 max-w-7xl mx-auto px-6 w-full">
           <div className="max-w-2xl text-parchment">
             <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-4">
-              Preserve the voices that carry our heritage
+              {t("heroTitle")}
             </h1>
-            <p className="font-devanagari text-xl sm:text-2xl text-turmeric mb-6 sm:mb-8 opacity-90">
-              हमारी विरासत को सहेजने वाली आवाज़ों को सुरक्षित करें
-            </p>
+            {lang === "en" && (
+              <p className="font-devanagari text-xl sm:text-2xl text-turmeric mb-6 sm:mb-8 opacity-90">
+                हमारी विरासत को सहेजने वाली आवाज़ों को सुरक्षित करें
+              </p>
+            )}
             <p className="text-lg sm:text-xl opacity-90 mb-8 sm:mb-10 max-w-xl font-light">
-              India's first bottom-up living cultural knowledge engine. Not a static catalog—a living, breathing archive of our elders.
+              {t("heroDesc")}
             </p>
             <div className="flex flex-wrap gap-4">
               <Link to="/preserve" className="bg-terracotta text-white px-8 py-4 rounded text-lg font-medium hover:bg-maroon transition-colors flex items-center gap-2 cursor-pointer">
-                <Mic className="w-5 h-5" /> Record a Story
+                <Mic className="w-5 h-5" /> {t("recordStory")}
               </Link>
               <Link to="/quiz" className="bg-turmeric text-ink px-8 py-4 rounded text-lg font-medium hover:bg-parchment transition-colors flex items-center gap-2 cursor-pointer shadow-sm">
-                <HelpCircle className="w-5 h-5" /> Take Heritage Quiz
+                <HelpCircle className="w-5 h-5" /> {t("takeQuiz")}
               </Link>
               <Link to="/explore" className="bg-parchment/10 backdrop-blur-md border border-parchment/30 text-parchment px-8 py-4 rounded text-lg font-medium hover:bg-parchment/20 transition-colors flex items-center gap-2">
-                Explore Archive
+                {t("exploreArchive")}
               </Link>
             </div>
           </div>
@@ -71,23 +78,30 @@ export default function Home() {
       <div className="bg-maroon text-parchment py-6 border-b-4 border-turmeric">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 divide-x divide-parchment/20">
           <div className="px-4 text-center md:text-left">
-            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={12408} /></div>
-            <div className="text-sm opacity-80 mt-1">Stories Preserved</div>
+            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={12408} locale={locale} /></div>
+            <div className="text-sm opacity-80 mt-1">{t("statStories")}</div>
           </div>
           <div className="px-4 text-center md:text-left">
-            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={842} /></div>
-            <div className="text-sm opacity-80 mt-1">Traditions Documented</div>
+            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={842} locale={locale} /></div>
+            <div className="text-sm opacity-80 mt-1">{t("statTraditions")}</div>
           </div>
           <div className="px-4 text-center md:text-left">
-            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={46} /></div>
-            <div className="text-sm opacity-80 mt-1">Languages Supported</div>
+            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={46} locale={locale} /></div>
+            <div className="text-sm opacity-80 mt-1">{t("statLanguages")}</div>
           </div>
           <div className="px-4 text-center md:text-left">
-            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={3120} /></div>
-            <div className="text-sm opacity-80 mt-1">Active Tradition Bearers</div>
+            <div className="font-serif text-3xl font-bold"><AnimatedCounter end={3120} locale={locale} /></div>
+            <div className="text-sm opacity-80 mt-1">{t("statBearers")}</div>
           </div>
         </div>
       </div>
+
+      {/* Today's heritage question (from the quiz) */}
+      <section className="bg-parchment pt-10 sm:pt-12">
+        <div className="max-w-3xl mx-auto px-6">
+          <DailyQuestionCard />
+        </div>
+      </section>
 
       {/* Three Pillars */}
       <Reveal as="section" className="py-16 sm:py-20 bg-parchment">
@@ -97,27 +111,27 @@ export default function Home() {
               <div className="w-12 h-12 bg-turmeric/20 text-turmeric rounded-full flex items-center justify-center mb-6">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-2xl text-maroon">Preserve</h3>
+              <h3 className="font-serif text-2xl text-maroon">{t("preserve")}</h3>
               <p className="text-ink/80 leading-relaxed">
-                Capture high-fidelity, dialect-preserving audio of local traditions directly from the elders who hold them, secured permanently.
+                {t("preserveDesc")}
               </p>
             </div>
             <div className="space-y-4">
               <div className="w-12 h-12 bg-heritage/20 text-heritage rounded-full flex items-center justify-center mb-6">
                 <Search className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-2xl text-maroon">Discover</h3>
+              <h3 className="font-serif text-2xl text-maroon">{t("discover")}</h3>
               <p className="text-ink/80 leading-relaxed">
-                Navigate a spatio-temporal map connecting memory to geography. Find unrecorded traditions right in your district.
+                {t("discoverDesc")}
               </p>
             </div>
             <div className="space-y-4">
               <div className="w-12 h-12 bg-terracotta/20 text-terracotta rounded-full flex items-center justify-center mb-6">
                 <Heart className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-2xl text-maroon">Pass On</h3>
+              <h3 className="font-serif text-2xl text-maroon">{t("passOn")}</h3>
               <p className="text-ink/80 leading-relaxed">
-                Bridge the generational gap. Adopt a monument, book a micro-apprenticeship, and learn dying scripts directly from masters.
+                {t("passOnDesc")}
               </p>
             </div>
           </div>
@@ -128,19 +142,19 @@ export default function Home() {
       <Reveal as="section" className="py-16 sm:py-20 border-t border-maroon/10 bg-white shadow-[0_4px_4px_rgba(0,0,0,0.25)]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="font-serif text-4xl text-maroon mb-4">How a memory becomes an archive</h2>
-            <p className="text-ink/70 max-w-2xl mx-auto">A transparent, consent-first process protecting indigenous knowledge.</p>
+            <h2 className="font-serif text-4xl text-maroon mb-4">{t("stepsTitle")}</h2>
+            <p className="text-ink/70 max-w-2xl mx-auto">{t("stepsDesc")}</p>
           </div>
           
           <div className="flex flex-col md:flex-row justify-between items-start relative">
             <div className="hidden md:block absolute top-6 left-0 right-0 h-0.5 bg-maroon/10 z-0" />
             
             {[
-              { num: "1", title: "Choose Language", desc: "Speak natively" },
-              { num: "2", title: "Record", desc: "High-fidelity audio" },
-              { num: "3", title: "AI Assists", desc: "Domain lexicons" },
-              { num: "4", title: "Review", desc: "Verify facts & consent" },
-              { num: "5", title: "Preserved", desc: "Added to global map" }
+              { num: (1).toLocaleString(locale), title: t("step1Title"), desc: t("step1Desc") },
+              { num: (2).toLocaleString(locale), title: t("step2Title"), desc: t("step2Desc") },
+              { num: (3).toLocaleString(locale), title: t("step3Title"), desc: t("step3Desc") },
+              { num: (4).toLocaleString(locale), title: t("step4Title"), desc: t("step4Desc") },
+              { num: (5).toLocaleString(locale), title: t("step5Title"), desc: t("step5Desc") }
             ].map((step, i) => (
               <div
                 key={i}
@@ -163,11 +177,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-end mb-8 sm:mb-10">
             <div>
-              <h2 className="font-serif text-4xl text-maroon mb-2">Living Traditions</h2>
-              <p className="text-ink/70">Stories verified by the community this week.</p>
+              <h2 className="font-serif text-4xl text-maroon mb-2">{t("livingTitle")}</h2>
+              <p className="text-ink/70">{t("livingDesc")}</p>
             </div>
             <Link to="/map" className="hidden md:flex items-center gap-2 text-terracotta hover:text-maroon font-medium transition-colors">
-              View all on map <ArrowRight className="w-4 h-4" />
+              {t("viewAllMap")} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           
@@ -175,26 +189,26 @@ export default function Home() {
             {[
               {
                 img: "https://images.unsplash.com/photo-1638042791745-221dae5a623b?q=80&w=1200&auto=format&fit=crop",
-                tag: "Craft",
-                title: "The Lost Stitches of Subhar Phulkari",
-                author: "Bibi Harjeet Kaur",
-                loc: "Patiala, Punjab",
+                tag: t("tagCraft"),
+                title: t("story1Title"),
+                author: t("story1Author"),
+                loc: t("story1Loc"),
                 verified: true
               },
               {
                 img: "https://images.unsplash.com/photo-1757311475307-5657a7892179?q=80&w=1200&auto=format&fit=crop",
-                tag: "Folk Song",
-                title: "Monsoon Sowing Chants",
-                author: "Rameshwar Devi",
-                loc: "Kachchh, Gujarat",
+                tag: t("tagFolkSong"),
+                title: t("story2Title"),
+                author: t("story2Author"),
+                loc: t("story2Loc"),
                 verified: true
               },
               {
                 img: "https://images.unsplash.com/photo-1707978932202-751b08324daf?q=80&w=1200&auto=format&fit=crop",
-                tag: "Partition Memory",
-                title: "Leaving Lahore: A Weaver's Tale",
-                author: "Mohammad Yusuf",
-                loc: "Delhi",
+                tag: t("tagPartition"),
+                title: t("story3Title"),
+                author: t("story3Author"),
+                loc: t("story3Loc"),
                 verified: false
               }
             ].map((story, i) => (
@@ -208,16 +222,16 @@ export default function Home() {
                 <div className="p-6 flex-1 flex flex-col">
                   <h3 className="font-serif text-xl text-maroon mb-2 leading-snug group-hover:text-terracotta transition-colors">{story.title}</h3>
                   <div className="text-sm text-ink/70 mb-4 flex-1">
-                    Recorded by <span className="font-medium text-ink">{story.author}</span><br/>
+                    {recordedPre}<span className="font-medium text-ink">{story.author}</span>{recordedPost}<br/>
                     {story.loc}
                   </div>
                   {story.verified ? (
                     <div className="flex items-center gap-2 text-xs text-heritage font-medium bg-heritage/10 px-3 py-1.5 rounded w-fit">
-                      <ShieldCheck className="w-3.5 h-3.5" /> Community Reviewed
+                      <ShieldCheck className="w-3.5 h-3.5" /> {t("communityReviewed")}
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-xs text-turmeric font-medium bg-turmeric/10 px-3 py-1.5 rounded w-fit">
-                      <Activity className="w-3.5 h-3.5" /> AI Assisted (Pending)
+                      <Activity className="w-3.5 h-3.5" /> {t("aiPending")}
                     </div>
                   )}
                 </div>
@@ -225,24 +239,24 @@ export default function Home() {
             ))}
           </div>
           
-          <button className="w-full md:hidden mt-8 flex items-center justify-center gap-2 text-terracotta font-medium py-4 border border-terracotta/30 rounded">
-            View all on map <ArrowRight className="w-4 h-4" />
-          </button>
+          <Link to="/map" className="w-full md:hidden mt-8 flex items-center justify-center gap-2 text-terracotta font-medium py-4 border border-terracotta/30 rounded">
+            {t("viewAllMap")} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+          </Link>
         </div>
       </Reveal>
 
       {/* Footer Teaser / Map Entry */}
       <Reveal as="section" className="py-20 sm:py-24 bg-ink relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-          <img src="https://images.unsplash.com/photo-1473163928189-364b2c4e1135?q=80&w=2000&auto=format&fit=crop" className="w-full h-full object-cover" alt="Vintage map texture" />
+          <img src="https://images.unsplash.com/photo-1473163928189-364b2c4e1135?q=80&w=2000&auto=format&fit=crop" className="w-full h-full object-cover" alt={t("mapImgAlt")} />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <h2 className="font-serif text-3xl sm:text-4xl text-parchment mb-6">Every pin is a voice.</h2>
+          <h2 className="font-serif text-3xl sm:text-4xl text-parchment mb-6">{t("mapTitle")}</h2>
           <p className="text-parchment/70 text-lg mb-10 max-w-2xl mx-auto">
-            Discover thousands of geo-fenced stories, from 1850s migration routes to living craft clusters right in your neighborhood.
+            {t("mapDesc")}
           </p>
           <Link to="/map" className="inline-flex items-center gap-2 bg-turmeric text-ink px-8 py-4 rounded text-lg font-medium hover:bg-parchment transition-colors shadow-sm card-shadow">
-            <MapIcon className="w-5 h-5" /> Explore the Living Map
+            <MapIcon className="w-5 h-5" /> {t("exploreMap")}
           </Link>
         </div>
       </Reveal>
