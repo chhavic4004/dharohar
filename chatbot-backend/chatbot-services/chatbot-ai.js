@@ -76,3 +76,19 @@ Use relevant notes when helpful, and explain uncertainty.
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
+
+export async function generateHeritageImageAnswer({ image, mimeType, language = "en" }) {
+  const languageName = LANGUAGE_NAMES[language] ?? LANGUAGE_NAMES.en;
+  const prompt = `
+Identify the heritage, monument, craft, artwork, or cultural object in this image.
+Respond in ${languageName}.
+If the image is unclear or not related to Indian heritage, say so honestly.
+Give a concise answer with: likely identification, region or cultural context, a short historical description, and one uncertainty note if needed.
+Do not invent specific facts when the image does not provide enough evidence.
+`;
+  const result = await model.generateContent([
+    prompt,
+    { inlineData: { data: image.toString("base64"), mimeType } },
+  ]);
+  return result.response.text();
+}

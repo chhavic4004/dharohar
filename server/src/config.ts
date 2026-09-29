@@ -1,4 +1,23 @@
-import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+// dotenv v18 can report zero injected variables in this workspace; parse the
+// local file explicitly while preserving any environment variables already set.
+const envPaths = [
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.env"),
+];
+for (const envPath of envPaths) {
+  if (fs.existsSync(envPath)) {
+    for (const [key, value] of Object.entries(dotenv.parse(fs.readFileSync(envPath)))) {
+      if (!process.env[key]) process.env[key] = value;
+    }
+  }
+}
 
 export const config = {
   port: Number(process.env.PORT ?? 4000),

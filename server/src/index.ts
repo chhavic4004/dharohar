@@ -14,7 +14,9 @@ async function loadJs<T>(rel: string): Promise<T> {
 }
 
 async function webExtras(): Promise<WebExtras> {
-  const web: WebExtras = {};
+  const web: WebExtras = {
+    detect: (await loadJs<{ detectHandler: RequestHandler }>("chatbot-backend/photoDetectionHandler.js")).detectHandler,
+  };
   if (config.webDir) {
     const dir = path.resolve(repoRoot, config.webDir);
     if (fs.existsSync(path.join(dir, "index.html"))) {

@@ -17,6 +17,8 @@ export interface WebExtras {
   mapApi?: RequestHandler;
   /** AI chatbot (POST /api/ask) */
   ask?: RequestHandler;
+  /** AI photo detection (POST /api/detect) */
+  detect?: RequestHandler;
   /** Built website folder to serve, with a single-page-app fallback */
   webDir?: string;
 }
@@ -72,6 +74,7 @@ export function createApp(store: Store, opts: { clock?: () => Date; web?: WebExt
   app.use("/api/auth", authRouter(auth));
   app.use("/api/quiz", quizRouter(quiz));
   if (web.ask) app.post("/api/ask", web.ask);
+  if (web.detect) app.post("/api/detect", web.detect);
 
   if (web.webDir) {
     const dir = web.webDir;
