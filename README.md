@@ -318,3 +318,16 @@ Problem of the Day:
 - HVS scores in the registry are samples and are labelled as such in the UI.
 - Two sources are Wikipedia pages with cited references (Khejarli, Rudrama Devi) because no official page covers those facts. Replace them if the team finds a government or UNESCO source.
 - The file store suits development and demos. Use MongoDB for anything with more than one server instance.
+
+## Deploy (Render, free)
+
+`render.yaml` sets up one web service that serves the website, the quiz/login API,
+the story map API and (with `GEMINI_API_KEY`) the AI chatbot on a single URL.
+
+1. Render dashboard → **New → Blueprint** → pick this repo (branch `main`).
+2. Fill the secret values it asks for: `MONGODB_URI` (MongoDB Atlas), optional
+   `BREVO_API_KEY` + `EMAIL_FROM` (real email OTP), optional `GEMINI_API_KEY` (chatbot).
+3. Every push to `main` redeploys automatically.
+
+`ALLOW_DEMO_OTP=true` shows codes on screen when no email/SMS provider is configured
+(demo only; set it to `false` once real providers are added).

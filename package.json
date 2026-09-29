@@ -12,7 +12,9 @@
     "dev:api": "npm --prefix server run dev",
     "dev:full": "concurrently -n web,api -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
     "test:api": "npm --prefix server test",
-    "dev:chat": "node chatbot-backend/chatbot-server.js"
+    "dev:chat": "node chatbot-backend/chatbot-server.js",
+    "build:all": "npm install --include=dev && npm --prefix server install --include=dev && npm run build",
+    "start": "npm --prefix server start"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -1,0 +1,38 @@
+# Render Blueprint: one web service serves the website, the quiz/login API,
+# the story map API and (with GEMINI_API_KEY) the AI chatbot on one URL.
+# Render dashboard -> New -> Blueprint -> pick this repo.
+services:
+  - type: web
+    name: dharohar
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm run build:all
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: WEB_DIR
+        value: dist
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: dharohar
+      - key: ALLOW_DEMO_OTP
+        value: "true"
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_FROM_NAME
+        value: Dharohar
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ADMIN_KEY
+        generateValue: true
