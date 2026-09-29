@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router";
 import { usePageText } from "../i18n/page";
 import { tourGuideText } from "../i18n/pages/tourGuide";
+import virtualTourImg from "./assets/virtual_tour.png";
+import arWalkImg from "./assets/ar-walk.png";
 
 export default function TourGuidePage() {
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ export default function TourGuidePage() {
           <article
             className="group relative min-h-[65vh] overflow-hidden rounded-2xl border border-maroon/20 bg-ink bg-cover bg-center shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
             style={{
-              backgroundImage: "url('/src/tour-guide/assets/virtual_tour.png')",
+              backgroundImage: `url(${virtualTourImg})`,
             }}
           >
             {/* Dark overlay */}
@@ -56,7 +58,7 @@ export default function TourGuidePage() {
           <article
             className="group relative min-h-[65vh] overflow-hidden rounded-2xl border border-maroon/20 bg-ink bg-cover bg-center shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
             style={{
-              backgroundImage: "url('/src/tour-guide/assets/ar-walk.png')",
+              backgroundImage: `url(${arWalkImg})`,
             }}
           >
             {/* Dark overlay */}
