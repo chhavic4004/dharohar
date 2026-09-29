@@ -1,19 +1,22 @@
 import { useNavigate } from "react-router";
+import { usePageText } from "../i18n/page";
+import { tourGuideText } from "../i18n/pages/tourGuide";
 
 export default function TourGuidePage() {
   const navigate = useNavigate();
+  const { t, dir } = usePageText(tourGuideText);
 
   return (
-    <main className="min-h-screen bg-parchment px-6 py-12 md:px-10 lg:px-16">
+    <main dir={dir} className="min-h-screen bg-parchment px-6 py-12 md:px-10 lg:px-16">
       <div className="mx-auto max-w-1500px">
         {/* Header */}
         <div className="text-center">
           <h1 className="font-serif text-4xl uppercase tracking-wide text-maroon md:text-5xl">
-            Tour Guide
+            {t("title")}
           </h1>
 
           <p className="mt-2 text-base text-ink/80 md:text-lg">
-            Experience India's heritage, your way
+            {t("subtitle")}
           </p>
         </div>
 
@@ -32,11 +35,11 @@ export default function TourGuidePage() {
 
             <div className="relative flex h-full min-h-[65vh] flex-col justify-end p-10">
               <p className="text-sm font-semibold uppercase tracking-[0.15em] text-white">
-                ◯ Virtual Tour
+                ◯ {t("virtualTitle")}
               </p>
 
               <p className="mt-2 max-w-sm text-sm leading-5 text-white/90">
-                Explore remotely. Step inside India's historical treasures.
+                {t("virtualDesc")}
               </p>
 
               <button
@@ -44,7 +47,7 @@ export default function TourGuidePage() {
                 onClick={() => navigate("/virtual-heritage")}
                 className="mt-5 w-fit rounded-md bg-terracotta px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-maroon"
               >
-                Explore →
+                {t("explore")}
               </button>
             </div>
           </article>
@@ -61,11 +64,11 @@ export default function TourGuidePage() {
 
             <div className="relative flex h-full min-h-[330px] flex-col justify-end p-7">
               <p className="text-sm font-semibold uppercase tracking-[0.15em] text-white">
-                ◯ AR Walk
+                ◯ {t("arTitle")}
               </p>
 
               <p className="mt-2 max-w-sm text-sm leading-5 text-white/90">
-                Explore around. Reconstruct heritage at historical sites.
+                {t("arDesc")}
               </p>
 
               <button
@@ -73,7 +76,7 @@ export default function TourGuidePage() {
                 onClick={() => navigate("/ar-walk")}
                 className="mt-5 w-fit rounded-md border border-turmeric/70 bg-maroon px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-terracotta"
               >
-                Start AR →
+                {t("startAr")}
               </button>
             </div>
           </article>
